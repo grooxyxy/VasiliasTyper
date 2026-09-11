@@ -10,13 +10,16 @@ class YoloV8mTilingTest {
     @Test
     fun tallStrip720x16000FullyCovered() {
         val tiles = YoloV8mBubbleDetector.splitGrid(720, 16000)
-        // Lebar 720 = 1 kolom; tinggi 16000 = 18 baris (1200/overlap 300).
-        assertEquals(18, tiles.size)
+        // FIX #1: tile 960/overlap 320 → lebar 720 = 1 kolom, tinggi 16000 = 25 baris.
+        // Hitung dinamis dari konstanta agar tidak rapuh bila tuning berubah.
+        val expectedRows = YoloV8mBubbleDetector.splitTiles(16000, YoloV8mBubbleDetector.TILE_SIZE, YoloV8mBubbleDetector.TILE_OVERLAP).size
+        val expectedCols = YoloV8mBubbleDetector.splitTiles(720, YoloV8mBubbleDetector.TILE_SIZE, YoloV8mBubbleDetector.TILE_OVERLAP).size
+        assertEquals(expectedCols * expectedRows, tiles.size)
         for (t in tiles) {
             assertTrue(t.x0 >= 0 && t.x1 <= 720 && t.x1 > t.x0)
             assertTrue(t.y0 >= 0 && t.y1 <= 16000 && t.y1 > t.y0)
-            assertTrue(t.x1 - t.x0 <= 1200)
-            assertTrue(t.y1 - t.y0 <= 1200)
+            assertTrue(t.x1 - t.x0 <= YoloV8mBubbleDetector.TILE_SIZE)
+            assertTrue(t.y1 - t.y0 <= YoloV8mBubbleDetector.TILE_SIZE)
         }
         assertEquals(0, tiles.minOf { it.y0 })
         assertEquals(16000, tiles.maxOf { it.y1 })
@@ -35,8 +38,8 @@ class YoloV8mTilingTest {
         assertTrue(tiles.any { it.x1 == 4000 })
         assertTrue(tiles.any { it.y1 == 3000 })
         for (t in tiles) {
-            assertTrue(t.x1 - t.x0 <= 1200)
-            assertTrue(t.y1 - t.y0 <= 1200)
+            assertTrue(t.x1 - t.x0 <= YoloV8mBubbleDetector.TILE_SIZE)
+            assertTrue(t.y1 - t.y0 <= YoloV8mBubbleDetector.TILE_SIZE)
         }
     }
 
