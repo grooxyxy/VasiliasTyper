@@ -7,7 +7,7 @@ local.properties
 .DS_Store
 
 # Model ONNX besar TIDAK di-commit (99-200MB melebihi batas GitHub).
-# Diunduh + dibundle saat build via task bundleBubbleModel / manual HF.
+# Diunduh + dibundle saat build via task bundleBubbleModel / bundleLamaModel.
 *.onnx
 *.tflite
 *.pt

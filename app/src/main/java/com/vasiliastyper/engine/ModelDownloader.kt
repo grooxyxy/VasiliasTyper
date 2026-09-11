@@ -6,25 +6,36 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
-/** Downloads the Apache-2.0 LaMa Manga dynamic ONNX model from Hugging Face. */
+/** Downloads the Apache-2.0 original LaMa ONNX model from Hugging Face (bundled via CI). */
 object ModelDownloader {
     private const val TAG = "ModelDownloader"
-    private const val MODEL_KEY = "lama_manga"
-    private const val MODEL_VERSION = 1
+    const val MODEL_KEY = "lama"
+    const val MODEL_VERSION = 1
+    const val LAMA_FILENAME = "lama-fp32.onnx"
+    // Original LaMa (advimman/lama, Apache-2.0), port ONNX Carve/LaMa-ONNX.
+    // Fixed 512x512, opset 17. Kontrak: image [1,3,512,512] RGB /255,
+    // mask [1,1,512,512] 1=erase, output [1,3,512,512] RGB [0,255].
+    // Ref kontrak terdokumentasi: sapienkit/LaMa-ONNX (turunan Carve, Apache-2.0).
+    const val LAMA_URL =
+        "https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx"
+
+    // Legacy manga names — tetap didukung baca agar file lama tidak crash,
+    // tapi unduhan/bundle baru selalu memakai model asli di atas.
+    @Deprecated("Gunakan LAMA_FILENAME", ReplaceWith("LAMA_FILENAME"))
     const val LAMA_MANGA_FILENAME = "lama-manga-dynamic.onnx"
-    private const val LAMA_MANGA_URL =
+    private const val LEGACY_MODEL_KEY = "lama_manga"
+    private const val LEGACY_URL =
         "https://huggingface.co/ogkalu/lama-manga-onnx-dynamic/resolve/main/lama-manga-dynamic.onnx"
 
-    // Reject HTML/error payloads and interrupted legacy downloads. The upstream
-    // file is 206,291,843 bytes; a lower bound tolerates a future valid revision.
-    private const val MIN_MODEL_BYTES = 190_000_000L
+    // Model asli ~200MB single-file. Tolak HTML/error-page (<50MB).
+    const val MIN_MODEL_BYTES = 50_000_000L
 
     private val models = listOf(
         ModelInfo(
-            filename = LAMA_MANGA_FILENAME,
-            url = LAMA_MANGA_URL,
-            displayName = "LaMa Manga ONNX Dynamic",
-            sizeDesc = "~197 MiB"
+            filename = LAMA_FILENAME,
+            url = LAMA_URL,
+            displayName = "LaMa ONNX Original",
+            sizeDesc = "~200 MiB"
         )
     )
 
@@ -43,13 +54,22 @@ object ModelDownloader {
     fun modelsDir(context: Context): File =
         File(context.filesDir, "models/$MODEL_KEY/v$MODEL_VERSION").also { it.mkdirs() }
 
-    fun lamaMangaFile(context: Context): File = File(modelsDir(context), LAMA_MANGA_FILENAME)
+    fun lamaMangaFile(context: Context): File = File(modelsDir(context), LAMA_FILENAME)
+
+    fun lamaFile(context: Context): File = lamaMangaFile(context)
 
     fun isValidLamaMangaFile(file: File): Boolean =
         file.isFile && file.length() >= MIN_MODEL_BYTES
 
+    fun isValidLamaFile(file: File): Boolean = isValidLamaMangaFile(file)
+
     fun isLamaMangaReady(context: Context): Boolean {
         if (isValidLamaMangaFile(lamaMangaFile(context))) return true
+        // Legacy file lama_manga tetap dianggap ready agar tidak crash pasca-migrasi.
+        try {
+            val legacy = File(context.filesDir, "models/$LEGACY_MODEL_KEY/v$MODEL_VERSION/$LAMA_MANGA_FILENAME")
+            if (isValidLamaMangaFile(legacy)) return true
+        } catch (_: Exception) { }
         return assetCandidates().any { assetPath ->
             try {
                 context.assets.openFd(assetPath).use { it.length >= MIN_MODEL_BYTES }
@@ -82,19 +102,28 @@ object ModelDownloader {
     ) {
         val destination = lamaMangaFile(context)
         if (!isValidLamaMangaFile(destination)) {
-            downloadFile(LAMA_MANGA_URL, destination) { downloaded, total ->
+            downloadFile(LAMA_URL, destination) { downloaded, total ->
                 onProgress?.invoke(downloaded, total)
             }
             require(isValidLamaMangaFile(destination)) {
-                "Unduhan LaMa Manga tidak lengkap (${destination.length()} bytes)"
+                "Unduhan LaMa tidak lengkap (${destination.length()} bytes)"
             }
             LamaMangaModelManager.release()
         }
     }
 
+    fun downloadLama(
+        context: Context,
+        onProgress: ((downloaded: Long, total: Long) -> Unit)? = null
+    ) = downloadLamaManga(context, onProgress)
+
     private fun assetCandidates() = listOf(
-        "models/$MODEL_KEY/v$MODEL_VERSION/$LAMA_MANGA_FILENAME",
-        "models/$MODEL_KEY/$LAMA_MANGA_FILENAME",
+        "models/$MODEL_KEY/v$MODEL_VERSION/$LAMA_FILENAME",
+        "models/$MODEL_KEY/$LAMA_FILENAME",
+        LAMA_FILENAME,
+        // Legacy manga paths (baca saja, bundle baru memakai path lama/* di atas).
+        "models/$LEGACY_MODEL_KEY/v$MODEL_VERSION/$LAMA_MANGA_FILENAME",
+        "models/$LEGACY_MODEL_KEY/$LAMA_MANGA_FILENAME",
         LAMA_MANGA_FILENAME
     )
 

@@ -176,7 +176,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
-// ── Bubble YOLOv8m bundle (Drive milik user, model lain tetap Hugging Face) ──
+// ── Bubble YOLOv8m bundle (Drive milik user) + LaMa Original bundle (Hugging Face) ──
 // Task bundleBubbleModel menyediakan comic-speech-bubble-detector.onnx (~99MB)
 // di assets/models/bubble_yolov8m/v1/ SEBELUM build, dari salah satu sumber
 // (prioritas: file lokal > URL > default Drive):
@@ -184,10 +184,15 @@ dependencies {
 //  -PBUBBLE_MODEL_URL=https://.../bubble.onnx (atau env/secret BUBBLE_MODEL_URL)
 //  - default: Google Drive user (publik "Anyone with the link"), ID:
 //      13B42NV0mPPBzUUVsIvD4SvE3QXEaLOlv
-// Unduhan Drive memakai confirm-token + cookie (file ~99MB selalu kena halaman
-// peringatan virus-scan bila direct-download polos). Hasil divalidasi >50MB.
-// File hasil TIDAK di-commit (*.onnx di .gitignore). Model lain (LaMa/PP-OCR/
-// ComicTextDetector) TIDAK dibundle — unduh manual dari Hugging Face sesuai
+// Task bundleLamaModel menyediakan lama-fp32.onnx (original LaMa ~200MB,
+// Carve/LaMa-ONNX, Apache-2.0, fixed 512) di assets/models/lama/v1/ SEBELUM
+// build, dari salah satu sumber (prioritas: file lokal > URL > default HF):
+//  -PLAMA_MODEL_PATH=/lokal/lama-fp32.onnx (atau env)
+//  -PLAMA_MODEL_URL=https://.../lama_fp32.onnx (atau env/secret LAMA_MODEL_URL)
+//  - default: https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx
+// Kedua file TIDAK di-commit (*.onnx di .gitignore) tapi DIBUNDLE ke APK,
+// sehingga aplikasi tidak perlu download model tambahan saat runtime.
+// Model lain (PP-OCR/ComicTextDetector) tetap manual via Hugging Face sesuai
 // README tiap folder assets/models.
 def bubbleDriveDefaultUrl = "https://drive.google.com/uc?export=download&id=13B42NV0mPPBzUUVsIvD4SvE3QXEaLOlv"
 def bubbleModelPath = project.findProperty("BUBBLE_MODEL_PATH") ?: System.getenv("BUBBLE_MODEL_PATH") ?: ""
@@ -219,7 +224,39 @@ tasks.register("bundleBubbleModel") {
         }
     }
 }
-tasks.findByName("preBuild")?.dependsOn("bundleBubbleModel")
+
+// ── LaMa Original bundle (Hugging Face, langsung ke CI — tanpa download lokal) ──
+def lamaDefaultUrl = "https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx"
+def lamaModelPath = project.findProperty("LAMA_MODEL_PATH") ?: System.getenv("LAMA_MODEL_PATH") ?: ""
+def lamaModelUrl = project.findProperty("LAMA_MODEL_URL") ?: System.getenv("LAMA_MODEL_URL") ?: lamaDefaultUrl
+def lamaAsset = file("src/main/assets/models/lama/v1/lama-fp32.onnx")
+
+tasks.register("bundleLamaModel") {
+    description = "Sediakan LaMa original .onnx di assets (path lokal, URL, atau HF default)."
+    onlyIf { !lamaAsset.exists() || lamaAsset.length() == 0L }
+    doLast {
+        lamaAsset.parentFile?.mkdirs()
+        if (lamaModelPath?.toString()?.trim()) {
+            def src = new File(lamaModelPath.toString())
+            if (!src.exists() || src.length() <= 0) {
+                throw new GradleException("LAMA_MODEL_PATH tidak ditemukan: $lamaModelPath")
+            }
+            src.withInputStream { ins -> lamaAsset.withOutputStream { outs -> outs << ins } }
+            println("bundleLamaModel: disalin dari $lamaModelPath")
+        } else {
+            println("bundleLamaModel: mengunduh LaMa original (~200MB, sekali per mesin CI) ...")
+            downloadDriveAware(lamaModelUrl.toString(), lamaAsset)
+            def sz = lamaAsset.length()
+            if (sz <= 50L * 1024 * 1024) {
+                lamaAsset.delete()
+                throw new GradleException("Unduhan LaMa mencurigakan (${sz} byte). " +
+                    "Pastikan URL Hugging Face benar.")
+            }
+            println("bundleLamaModel: OK ${sz / 1024 / 1024}MB -> bundled ke APK")
+        }
+    }
+}
+tasks.findByName("preBuild")?.dependsOn("bundleBubbleModel", "bundleLamaModel")
 
 // Unduh file model dengan dukungan Google Drive besar (>25MB selalu kena halaman
 // confirm virus-scan): ikuti redirect manual + cookie, lalu bila respons HTML cari

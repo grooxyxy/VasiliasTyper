@@ -28,14 +28,25 @@ jobs:
         #   comic-speech-bubble-detector.onnx (opsional).
         # - Bila secret kosong, task memakai Google Drive default milik user
         #   (ID 13B42NV0mPPBzUUVsIvD4SvE3QXEaLOlv, publik "Anyone with the link").
-        # Model lain (LaMa/PP-OCR/ComicTextDetector) TIDAK dibundle — manual via
-        # Hugging Face sesuai README assets/models. signing.properties TIDAK
-        # diperlukan di CI (build memakai keystore debug bawaan AGP).
+        # signing.properties TIDAK diperlukan di CI (build memakai keystore debug
+        # bawaan AGP).
         env:
           BUBBLE_MODEL_URL: ${{ secrets.BUBBLE_MODEL_URL }}
         run: |
           chmod +x gradlew
           ./gradlew :app:bundleBubbleModel --no-daemon --stacktrace
+
+      - name: Bundle LaMa Original (HF default / secret)
+        # Model asli Carve/LaMa-ONNX lama_fp32.onnx (~200MB, Apache-2.0, fixed 512).
+        # Langsung diunduh ke GitHub (sesuai permintaan: jangan download lokal),
+        # lalu dibundle ke APK sehingga aplikasi tanpa download tambahan.
+        # Sumber (prioritas: LAMA_MODEL_PATH > LAMA_MODEL_URL > HF default):
+        # - LAMA_MODEL_URL = secret repo opsional berisi link lama_fp32.onnx.
+        env:
+          LAMA_MODEL_URL: ${{ secrets.LAMA_MODEL_URL }}
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:bundleLamaModel --no-daemon --stacktrace
 
       - name: Unit test + Assemble debug
         run: |

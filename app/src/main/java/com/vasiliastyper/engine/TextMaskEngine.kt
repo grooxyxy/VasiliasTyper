@@ -49,6 +49,15 @@ object TextMaskEngine {
     private const val TILE_SIZE    = 1024   // lebih kecil agar lebih aman di low-end
     private const val TILE_OVERLAP = 96     // overlap cukup untuk seam
 
+    // ── Glyph mask stripe tiling untuk 720x16000+ ─────────────────────────────
+    // extractGlyphMask lama membuat Bitmap full-area (720x16000 = 11.5M px ≈ 46MB
+    // + Mat RGB + mask) sehingga OOM di low-end. Untuk area > limit, pecah vertikal
+    // jadi stripe 2000px dengan overlap 200px, proses per-stripe, lalu jahit kembali
+    // dengan trim overlap/2 agar tidak ada seam dan glyph tidak terpotong.
+    const val GLYPH_STRIPE_HEIGHT = 2000
+    const val GLYPH_STRIPE_OVERLAP = 200
+    private const val GLYPH_SINGLE_LIMIT_PIXELS = 3_000_000L
+
     fun isAvailable(context: Context): Boolean = OpenCvInit.ensureInit()
 
     fun refineBoundingBoxes(
@@ -120,6 +129,19 @@ object TextMaskEngine {
     }
 
     /**
+     * Pure stripe planner untuk glyph mask 720x16000+.
+     * Mengembalikan range vertikal relatif terhadap area (0..height).
+     * Dipakai unit test JVM tanpa Bitmap.
+     */
+    fun glyphStripeRanges(height: Int): List<IntRange> {
+        if (height <= 0) return emptyList()
+        if (height.toLong() * 720L <= GLYPH_SINGLE_LIMIT_PIXELS && height <= GLYPH_STRIPE_HEIGHT) {
+            return listOf(0 until height)
+        }
+        return StripeTiling.ranges(height, GLYPH_STRIPE_HEIGHT, GLYPH_STRIPE_OVERLAP)
+    }
+
+    /**
      * Lightweight mask path for already-detected text rectangles.
      *
      * It reads the ROI directly into an IntArray and uses local luminance contrast,
@@ -137,6 +159,9 @@ object TextMaskEngine {
         val width = area.width()
         val height = area.height()
         if (width < 2 || height < 2) return null
+        // 720x16000 full-area fast path = 11.5M IntArray (~46MB x2) → tolak,
+        // caller fallback ke detectTextMask striped yang hemat memori.
+        if (width.toLong() * height.toLong() > GLYPH_SINGLE_LIMIT_PIXELS) return null
 
         val pixels = IntArray(width * height)
         return try {
@@ -241,8 +266,81 @@ object TextMaskEngine {
         val height = area.height()
         if (width <= 0 || height <= 0) return null
 
+        // 720x16000+ (11.5M px) tidak boleh satu Bitmap+Mat penuh → stripe vertikal.
+        if (width.toLong() * height.toLong() > GLYPH_SINGLE_LIMIT_PIXELS) {
+            return extractGlyphMaskStriped(bitmap, area, paddingPx)
+        }
+        return extractGlyphMaskSingle(bitmap, area.left, area.top, width, height, paddingPx, false, false)
+    }
+
+    /**
+     * Stripe path untuk 720x16000+: tiap stripe ≤2000px tinggi (≈720x2000 = 1.44M px),
+     * dijahit dengan trim overlap/2. Tepi potongan buatan diabaikan dari edge-reject
+     * agar glyph yang terbelah stripe tidak dibuang sebagai panel/balon.
+     */
+    private fun extractGlyphMaskStriped(bitmap: Bitmap, area: Rect, paddingPx: Int): BooleanArray? {
+        val width = area.width()
+        val height = area.height()
+        if (width <= 0 || height <= 0) return null
+        val ranges = StripeTiling.ranges(height, GLYPH_STRIPE_HEIGHT, GLYPH_STRIPE_OVERLAP)
+        if (ranges.isEmpty()) return null
+        val full = BooleanArray(width * height)
+        var anyHit = false
+        val trim = GLYPH_STRIPE_OVERLAP / 2
+        for ((index, r) in ranges.withIndex()) {
+            val stripeTop = r.first
+            val stripeBottom = r.last + 1 // IntRange until → last inklusif dari ranges()
+            val stripeH = (stripeBottom - stripeTop).coerceAtLeast(1)
+            if (stripeH <= 0) continue
+            val isFirst = index == 0
+            val isLast = index == ranges.size - 1
+            val stripeMask = extractGlyphMaskSingle(
+                bitmap,
+                area.left,
+                area.top + stripeTop,
+                width,
+                stripeH,
+                paddingPx,
+                ignoreTopEdge = !isFirst,
+                ignoreBottomEdge = !isLast
+            ) ?: continue
+            // Jahit: buang overlap/2 di tepi potongan (kecuali ujung asli).
+            val copyTop = if (isFirst) 0 else trim.coerceAtMost(stripeH - 1)
+            val copyBottom = if (isLast) stripeH else (stripeH - trim).coerceAtLeast(copyTop + 1)
+            if (copyBottom <= copyTop) continue
+            for (y in copyTop until copyBottom) {
+                val srcRow = y * width
+                val dstRow = (stripeTop + y) * width
+                if (dstRow < 0 || dstRow + width > full.size) continue
+                var hit = false
+                for (x in 0 until width) {
+                    if (stripeMask[srcRow + x]) {
+                        full[dstRow + x] = true
+                        hit = true
+                    }
+                }
+                if (hit) anyHit = true
+            }
+            // Hint GC tiap beberapa stripe agar 16000px tidak menumpuk Mat.
+            if (index % 4 == 3) System.gc()
+        }
+        return if (anyHit) full else null
+    }
+
+    private fun extractGlyphMaskSingle(
+        bitmap: Bitmap,
+        left: Int,
+        top: Int,
+        width: Int,
+        height: Int,
+        paddingPx: Int,
+        ignoreTopEdge: Boolean = false,
+        ignoreBottomEdge: Boolean = false
+    ): BooleanArray? {
+        if (width <= 0 || height <= 0) return null
+
         val crop = try {
-            Bitmap.createBitmap(bitmap, area.left, area.top, width, height)
+            Bitmap.createBitmap(bitmap, left, top, width, height)
         } catch (_: Throwable) {
             return null
         }
@@ -283,12 +381,18 @@ object TextMaskEngine {
             crop.recycle()
         } ?: return null
 
-        val guarded = keepGlyphComponents(rawMask, width, height)
+        val guarded = keepGlyphComponents(rawMask, width, height, ignoreTopEdge, ignoreBottomEdge)
         if (!guarded.any { it }) return null
         return dilateMask(guarded, width, height, paddingPx.coerceIn(0, 3))
     }
 
-    private fun keepGlyphComponents(source: BooleanArray, width: Int, height: Int): BooleanArray {
+    private fun keepGlyphComponents(
+        source: BooleanArray,
+        width: Int,
+        height: Int,
+        ignoreTopEdge: Boolean = false,
+        ignoreBottomEdge: Boolean = false
+    ): BooleanArray {
         val result = BooleanArray(source.size)
         val visited = BooleanArray(source.size)
         val queue = IntArray(source.size)
@@ -314,7 +418,10 @@ object TextMaskEngine {
                 minY = min(minY, y)
                 maxX = max(maxX, x)
                 maxY = max(maxY, y)
-                if (x == 0 || y == 0 || x == width - 1 || y == height - 1) touchesEdge = true
+                val touchesLeftRight = (x == 0 || x == width - 1)
+                val touchesTop = (y == 0 && !ignoreTopEdge)
+                val touchesBottom = (y == height - 1 && !ignoreBottomEdge)
+                if (touchesLeftRight || touchesTop || touchesBottom) touchesEdge = true
 
                 fun push(next: Int) {
                     if (next in source.indices && source[next] && !visited[next]) {

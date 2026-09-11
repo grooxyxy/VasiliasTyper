@@ -7,27 +7,38 @@ import android.util.Log
 import java.io.File
 
 /**
- * Owns the ONNX Runtime session for ogkalu/lama-manga-onnx-dynamic.
+ * Owns the ONNX Runtime session for original LaMa (advimman/lama, Apache-2.0).
  *
- * Resolution order:
- *  1. filesDir/models/lama_manga/v1/lama-manga-dynamic.onnx
- *  2. assets/models/lama_manga/v1/lama-manga-dynamic.onnx
- *  3. assets/models/lama_manga/lama-manga-dynamic.onnx
- *  4. assets/lama-manga-dynamic.onnx
+ * Model: Carve/LaMa-ONNX lama_fp32.onnx (fixed 512x512, opset 17).
+ * Kontrak: image [1,3,512,512] RGB /255, mask [1,1,512,512] 1=erase,
+ * output [1,3,512,512] RGB [0,255] (dideteksi otomatis bila [0,1]).
+ *
+ * Resolution order (baru dulu, legacy manga tetap dibaca):
+ *  1. filesDir/models/lama/v1/lama-fp32.onnx
+ *  2. assets/models/lama/v1/lama-fp32.onnx  (dibundle via CI bundleLamaModel)
+ *  3. assets/models/lama/lama-fp32.onnx
+ *  4. assets/lama-fp32.onnx
+ *  5-7. legacy lama_manga paths (baca saja)
  *
  * The model is opened by file path so ORT can map it without first copying the
- * 206 MB model into the managed heap. Bundled assets are copied once to cache.
+ * ~200 MB model into the managed heap. Bundled assets are copied once to cache.
  */
 object LamaMangaModelManager {
     private const val TAG = "LamaMangaModelManager"
-    private const val MODEL_ASSET = "lama-manga-dynamic.onnx"
-    private const val MODEL_KEY = "lama_manga"
+    private const val MODEL_ASSET = "lama-fp32.onnx"
+    private const val MODEL_KEY = "lama"
     private const val MODEL_VERSION = 1
+    // Legacy manga (baca saja untuk migrasi).
+    private const val LEGACY_ASSET = "lama-manga-dynamic.onnx"
+    private const val LEGACY_KEY = "lama_manga"
 
     private val assetCandidates = listOf(
         "models/$MODEL_KEY/v$MODEL_VERSION/$MODEL_ASSET",
         "models/$MODEL_KEY/$MODEL_ASSET",
-        MODEL_ASSET
+        MODEL_ASSET,
+        "models/$LEGACY_KEY/v$MODEL_VERSION/$LEGACY_ASSET",
+        "models/$LEGACY_KEY/$LEGACY_ASSET",
+        LEGACY_ASSET
     )
 
     @Volatile private var environment: OrtEnvironment? = null

@@ -1,34 +1,38 @@
 ============================================================
-  LaMa Manga ONNX Dynamic — Model Setup
+  LaMa Original ONNX — Model Setup (bundled via CI)
 ============================================================
 
-MODEL
+MODEL (ASLI, bukan manga)
 -----
-Repository : https://huggingface.co/ogkalu/lama-manga-onnx-dynamic
-File       : lama-manga-dynamic.onnx
+Repository : https://huggingface.co/Carve/LaMa-ONNX
+File       : lama_fp32.onnx -> dibundle sebagai lama-fp32.onnx
 License    : Apache-2.0
-Size       : 206,291,843 bytes (~197 MiB)
-SHA-256    : de31ffa5ba26916b8ea35319f6c12151ff9654d4261bccf0583a69bb095315f9
+Size       : ~200 MiB single-file
+Ref kontrak: https://huggingface.co/sapienkit/LaMa-ONNX (turunan Carve)
 
-The model is intentionally not bundled in this source archive. Download it in
-app or place it at ONE of these locations:
+Model dibundle otomatis ke APK via task Gradle `bundleLamaModel`
+(langsung di GitHub Action, tanpa download lokal):
+  -PLAMA_MODEL_PATH=/lokal/lama-fp32.onnx
+  -PLAMA_MODEL_URL=https://.../lama_fp32.onnx (atau secret LAMA_MODEL_URL)
+  - default: https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx
 
-  a) app/src/main/assets/models/lama_manga/v1/lama-manga-dynamic.onnx
-  b) app/src/main/assets/models/lama_manga/lama-manga-dynamic.onnx
-  c) app/src/main/assets/lama-manga-dynamic.onnx
-  d) filesDir/models/lama_manga/v1/lama-manga-dynamic.onnx
+Lokasi asset hasil bundle:
+  a) app/src/main/assets/models/lama/v1/lama-fp32.onnx (utama)
+  b) app/src/main/assets/models/lama/lama-fp32.onnx
+  c) app/src/main/assets/lama-fp32.onnx
+  d) filesDir/models/lama/v1/lama-fp32.onnx
+Legacy manga tetap dibaca (migrasi):
+  e) models/lama_manga/v1/lama-manga-dynamic.onnx
 
-Direct download:
-https://huggingface.co/ogkalu/lama-manga-onnx-dynamic/resolve/main/lama-manga-dynamic.onnx
-
-VERIFIED ONNX CONTRACT
+VERIFIED ONNX CONTRACT (fixed 512)
 ----------------------
-Opset 18, dynamic H/W:
-  image     float32 [batch,3,h,w] RGB [0,1]
-  mask      float32 [batch,1,h,w] 1=inpaint, 0=keep
-  inpainted float32 [batch,3,h,w] RGB [0,1]
+Opset 17, fixed 512x512:
+  image  float32 [1,3,512,512] RGB [0,1] (/255)
+  mask   float32 [1,1,512,512] 1=erase, 0=keep
+  output float32 [1,3,512,512] RGB [0,255] (otomatis /255 bila [0,1])
 
-The Android pipeline aligns dimensions to multiples of 8, limits inference to
-768 px (512 px on low-memory devices), maps the model from disk, and writes only
-the exact selected Region. If model loading or inference fails, the source image
-is preserved outside the mask and the local OpenCV patch engine is used.
+Pipeline Android me-resize tiap crop/tile ke 512, lalu resize balik
+(bilinear) dan hanya menulis piksel dalam Region. Untuk 720x16000+
+dipakai TilingEngine (tile 512 + overlap 64, center-write) sehingga
+memori tetap ~1MB/tile. Bila model gagal, fallback ke OpenCV patch
+tanpa mengubah piksel di luar mask.

@@ -13779,7 +13779,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun smartFillBackendLabel(backend: SmartFillBackend): String = when (backend) {
-        SmartFillBackend.LAMA_MANGA -> "LaMa Manga"
+        SmartFillBackend.LAMA_MANGA -> "LaMa Original"
         SmartFillBackend.OPENCV_PATCH -> "OpenCV Fast Inpaint"
         @Suppress("DEPRECATION")
         SmartFillBackend.NAVIER_STOKES -> "OpenCV Fast Inpaint"
@@ -13791,14 +13791,14 @@ class MainActivity : AppCompatActivity() {
         val lamaMangaReady = ModelDownloader.isLamaMangaReady(this)
         val db = com.vasiliastyper.databinding.DialogSmartfillChooserBinding.inflate(layoutInflater)
         db.tvSmartFillStatus.text = if (lamaMangaReady) {
-            "LaMa Manga tersedia · dioptimalkan untuk manga/anime"
+            "LaMa Original tersedia · dibundle di APK"
         } else {
-            "LaMa Manga belum ada · akan fallback ke OpenCV Patch"
+            "LaMa Original belum ada · akan fallback ke OpenCV Patch"
         }
         db.tvLamaMangaDesc.text = if (lamaMangaReady) {
             "Model tersedia dan siap dipakai untuk hasil yang lebih natural."
         } else {
-            "Letakkan model di assets/models/lama_manga/v1/ atau gunakan engine lain."
+            "Model dibundle otomatis saat build (tanpa unduh di aplikasi) atau gunakan engine lain."
         }
 
         val dialog = showBottomSheetDialog {
@@ -13807,7 +13807,7 @@ class MainActivity : AppCompatActivity() {
 
         db.btnLamaManga.setOnClickListener {
             if (!lamaMangaReady) {
-                Toast.makeText(this, "lama-manga-dynamic.onnx tidak ditemukan. Letakkan di assets/models/lama_manga/v1/ atau unduh model.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "lama-fp32.onnx tidak ditemukan. Model dibundle saat build — gunakan engine lain bila belum tersedia.", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
             dialog.dismiss()
