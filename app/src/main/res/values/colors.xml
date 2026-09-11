@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Luma Deck — refined editorial dark theme.
+      Redesign notes (redesign-existing-projects):
+      - Replaced pure-black canvas with a deep neutral off-black.
+      - Desaturated the mint accent (was overly saturated #56E0C5) to a calmer,
+        more premium signal that blends with the neutral surfaces.
+      - Unified the gray family to a single cool slate tint (no warm/cool mixing).
+      - Kept every original color name so no existing reference breaks.
+    -->
+    <color name="ps_bg">#0A0C0F</color>
+    <color name="ps_panel">#13171C</color>
+    <color name="ps_toolbar">#1A2129</color>
+    <color name="ps_border">#2A333C</color>
+    <color name="ps_accent">#4FD6B8</color>
+    <color name="ps_text">#A6B2BA</color>
+    <color name="ps_text_bright">#EBF1F4</color>
+    <color name="ps_highlight">#22313A</color>
+    <color name="ps_selected">#4FD6B8</color>
+    <color name="ps_danger">#F0707E</color>
+    <color name="ps_canvas">#07090B</color>
+
+    <color name="ink_coral">#F28B94</color>
+    <color name="ink_mint">#4FD6B8</color>
+    <color name="ink_violet">#7FB4F0</color>
+    <color name="ink_sun">#EFC771</color>
+    <color name="ink_navy">#0A0C0F</color>
+    <color name="ink_surface">#13171C</color>
+    <color name="ink_surface_high">#1A2129</color>
+    <color name="ink_muted">#8B98A2</color>
+
+    <color name="vt_primary">#4FD6B8</color>
+    <color name="vt_primary_dark">#2A9C85</color>
+    <color name="vt_secondary">#7FB4F0</color>
+    <color name="vt_cyan">#7FB4F0</color>
+    <color name="vt_surface_low">#0E1216</color>
+    <color name="vt_surface">#13171C</color>
+    <color name="vt_surface_high">#1A2129</color>
+    <color name="vt_outline">#2A333C</color>
+    <color name="vt_text_muted">#8B98A2</color>
+    <color name="vt_glow">#334FD6B8</color>
+    <color name="vt_glow_soft">#1A4FD6B8</color>
+    <color name="vt_spark">#EFC771</color>
+    <color name="vt_spark_soft">#33EFC771</color>
+
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="transparent">#00000000</color>
+    <color name="vt_icon_bg">#1C2026</color>
+</resources>

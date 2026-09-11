@@ -1,0 +1,3 @@
+-keep class com.vasiliastyper.** { *; }
+-keepattributes *Annotation*
+-dontwarn kotlin.**

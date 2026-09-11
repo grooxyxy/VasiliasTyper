@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <resources>
+      <string name="app_name">VasiliasTyper</string>
+      <string name="version">1.0.0 Octopus</string>
+      <string name="made_by">Made by Vasilias</string>
+      <string name="contact_info">Saran, masukan &amp; laporan bug:</string>
+      <string name="telegram_contact">Telegram: @AnergiaPV</string>
+      <string name="discord_contact">Discord: enigmadom_</string>
+      <string name="auto_save_saved">Auto-saved</string>
+      <string name="merge_layer">Gabung Layer</string>
+      <string name="merge_visible">Gabung Semua Visible</string>
+      <string name="merge_down">Gabung Layer Bawah</string>
+      <string name="pan_tool">Pan</string>
+      <string name="move_tool">Move</string>
+      <string name="multi_script">Multi Script</string>
+      <string name="ocr_panel_title">Solo Panel OCR+Translate</string>
+    <string name="splash_subtitle">Studio tipografi, layer, dan komik dalam satu kanvas</string>
+
+    <!-- Style Manager / Preset Browser -->
+    <string name="style_preview_cd">Pratinjau style</string>
+    <string name="action_apply">Pakai</string>
+    <string name="style_manager_title">Style Manager</string>
+    <string name="preset_browser_title">Preset SFX Webtoon</string>
+    <string name="style_search_hint">Cari style atau preset…</string>
+    <string name="style_empty_state">Belum ada style.\nSimpan style dari editor teks untuk memulai.</string>
+    <string name="preset_empty_state">Preset tidak ditemukan.</string>
+</resources>

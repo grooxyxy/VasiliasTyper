@@ -1,0 +1,1996 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  VasiliasTyper Obsidian Mobile Studio
+  A canvas-first Android editor with permanent dual edge rails, contextual
+  bottom controls, and a compact project command bar. All existing IDs are
+  preserved so the mature editing engine remains binding-compatible.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/ps_bg">
+
+    <!-- Compact project command strip; detailed tools live in the thumb dock. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/editor_topbar_bg"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <HorizontalScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:scrollbars="none"
+            android:fillViewport="false"
+            android:overScrollMode="never">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- File -->
+                <LinearLayout android:id="@+id/menuFile"
+                    android:layout_width="42dp" android:layout_height="42dp"
+                    android:orientation="horizontal" android:gravity="center"
+                    android:background="@drawable/editor_menu_pill"
+                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
+                    android:clickable="true" android:focusable="true"
+                    android:contentDescription="File">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_menu_project" android:scaleType="fitCenter"
+                        app:tint="@color/ps_text_bright" android:contentDescription="Proyek"/>
+                    <TextView android:layout_width="0dp" android:layout_height="0dp"
+                        android:text="File" android:visibility="gone"/>
+                </LinearLayout>
+
+                <!-- Edit (Undo/Redo inside) -->
+                <LinearLayout android:id="@+id/menuEdit"
+                    android:layout_width="42dp" android:layout_height="42dp"
+                    android:orientation="horizontal" android:gravity="center"
+                    android:background="@drawable/editor_menu_pill"
+                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
+                    android:clickable="true" android:focusable="true"
+                    android:contentDescription="Edit">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_menu_history" android:scaleType="fitCenter"
+                        app:tint="@color/ps_text_bright"/>
+                    <TextView android:layout_width="0dp" android:layout_height="0dp"
+                        android:text="Edit" android:visibility="gone"/>
+                </LinearLayout>
+
+                <!-- Kanvas -->
+                <LinearLayout android:id="@+id/menuImage"
+                    android:layout_width="42dp" android:layout_height="42dp"
+                    android:orientation="horizontal" android:gravity="center"
+                    android:background="@drawable/editor_menu_pill"
+                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
+                    android:clickable="true" android:focusable="true"
+                    android:contentDescription="Kanvas">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_menu_canvas" android:scaleType="fitCenter"
+                        app:tint="@color/ps_text_bright"/>
+                    <TextView android:layout_width="0dp" android:layout_height="0dp"
+                        android:text="Kanvas" android:visibility="gone"/>
+                </LinearLayout>
+
+                <!-- Layer -->
+                <LinearLayout android:id="@+id/menuLayer"
+                    android:layout_width="42dp" android:layout_height="42dp"
+                    android:orientation="horizontal" android:gravity="center"
+                    android:background="@drawable/editor_menu_pill"
+                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
+                    android:clickable="true" android:focusable="true"
+                    android:contentDescription="Layer">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_menu_layer" android:scaleType="fitCenter"
+                        app:tint="@color/ps_text_bright"/>
+                    <TextView android:layout_width="0dp" android:layout_height="0dp"
+                        android:text="Layer" android:visibility="gone"/>
+                </LinearLayout>
+
+                <!-- Efek -->
+                <LinearLayout android:id="@+id/menuFilter"
+                    android:layout_width="42dp" android:layout_height="42dp"
+                    android:orientation="horizontal" android:gravity="center"
+                    android:background="@drawable/editor_menu_pill"
+                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
+                    android:clickable="true" android:focusable="true"
+                    android:contentDescription="Efek">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_menu_effect" android:scaleType="fitCenter"
+                        app:tint="@color/ps_text_bright"/>
+                    <TextView android:layout_width="0dp" android:layout_height="0dp"
+                        android:text="Efek" android:visibility="gone"/>
+                </LinearLayout>
+
+                <!-- View -->
+                <LinearLayout android:id="@+id/menuView"
+                    android:layout_width="42dp" android:layout_height="42dp"
+                    android:orientation="horizontal" android:gravity="center"
+                    android:background="@drawable/editor_menu_pill"
+                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
+                    android:clickable="true" android:focusable="true"
+                    android:contentDescription="View">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_menu_view" android:scaleType="fitCenter"
+                        app:tint="@color/ps_text_bright"/>
+                    <TextView android:layout_width="0dp" android:layout_height="0dp"
+                        android:text="View" android:visibility="gone"/>
+                </LinearLayout>
+
+                <!-- More -->
+                <LinearLayout android:id="@+id/menuWindow"
+                    android:layout_width="42dp" android:layout_height="42dp"
+                    android:orientation="horizontal" android:gravity="center"
+                    android:background="@drawable/editor_menu_pill"
+                    android:clickable="true" android:focusable="true"
+                    android:contentDescription="More">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_menu_more" android:scaleType="fitCenter"
+                        app:tint="@color/ps_text_bright"/>
+                </LinearLayout>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Compact zoom peek on top-right (statusZoom still exists in status bar too — wait, IDs must be unique!)
+             Keep zoom only in status bar. Top bar stays menus only. -->
+    </LinearLayout>
+
+    <!-- Swipeable page card strip. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:background="@drawable/editor_tabstrip_bg"
+        android:paddingVertical="4dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <HorizontalScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:scrollbars="none"
+            android:fillViewport="false"
+            android:overScrollMode="never">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="3dp"
+                android:paddingEnd="6dp">
+
+                <LinearLayout
+                    android:id="@+id/tabsContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"/>
+
+                <ImageButton
+                    android:id="@+id/btnNewTab"
+                    android:layout_width="36dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_add"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/ps_text"
+                    android:contentDescription="Workspace baru"
+                    android:padding="8dp"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/ps_border"/>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         3. MAIN WORKSPACE — left tool rail + right feature rail
+         ═══════════════════════════════════════════════════════════ -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <!-- Photoshop-style primary rail: vertical, persistent, and scrollable. -->
+                <ScrollView
+                    android:id="@+id/leftToolSidebar"
+                    android:layout_width="58dp"
+                    android:layout_height="match_parent"
+                    android:scrollbars="none"
+                    android:fillViewport="false"
+                    android:overScrollMode="never"
+                    android:background="@drawable/hipaint_rail_bg">
+
+                    <LinearLayout
+                        android:id="@+id/toolBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp">
+
+                        <ImageButton android:id="@+id/toolMove" style="@style/PSToolButton"
+                            android:src="@drawable/ic_pan" android:contentDescription="Pan Canvas" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolMoveElement" style="@style/PSToolButton"
+                            android:src="@drawable/ic_move" android:contentDescription="Move Element" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolRectSelect" style="@style/PSToolButton"
+                            android:src="@drawable/ic_rect_select" android:contentDescription="Rectangle Select" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolFreeSelect" style="@style/PSToolButton"
+                            android:src="@drawable/ic_lasso" android:contentDescription="Lasso Select" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolMagicWand" style="@style/PSToolButton"
+                            android:src="@drawable/ic_magic_wand" android:contentDescription="Magic Wand" app:tint="@color/ps_text_bright"/>
+
+                        <View android:layout_width="22dp" android:layout_height="1dp" android:background="@color/ps_border" android:layout_marginVertical="3dp"/>
+
+                        <ImageButton android:id="@+id/toolBubbleClean" style="@style/PSToolButton"
+                            android:src="@drawable/ic_bubble_clean" android:contentDescription="Auto Clean Bubble" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolBubbleDetect" style="@style/PSToolButton"
+                            android:src="@drawable/ic_magic_wand" android:contentDescription="Detect Bubble" app:tint="@color/ink_sun"/>
+                        <ImageButton android:id="@+id/toolBubbleTranslate" style="@style/PSToolButton"
+                            android:src="@drawable/ic_bubble_translate" android:contentDescription="Bubble Translation" app:tint="@color/ink_mint"/>
+
+                        <View android:layout_width="22dp" android:layout_height="1dp" android:background="@color/ps_border" android:layout_marginVertical="3dp"/>
+
+                        <ImageButton android:id="@+id/toolBrush" style="@style/PSToolButton"
+                            android:src="@drawable/ic_brush" android:contentDescription="Paint Brush" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolContentAware" style="@style/PSToolButton"
+                            android:src="@drawable/ic_erase" android:contentDescription="Inpainting Tekstur Lokal (dihapus)"
+                            android:visibility="gone" android:enabled="false" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolBrushInpaint" style="@style/PSToolButton"
+                            android:src="@drawable/ic_brush_inpaint" android:contentDescription="Brush Inpaint (dihapus)"
+                            android:visibility="gone" android:enabled="false" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolRemovR" style="@style/PSToolButton"
+                            android:src="@drawable/ic_removr" android:contentDescription="RemovR (Resynthesizer)" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolText" style="@style/PSToolButton"
+                            android:src="@drawable/ic_text" android:contentDescription="Add Text" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolTextShaper" style="@style/PSToolButton"
+                            android:src="@drawable/ic_text_shaper" android:contentDescription="Text Shaper" app:tint="@color/vt_cyan"/>
+                        <ImageButton android:id="@+id/toolPerspective" style="@style/PSToolButton"
+                            android:src="@drawable/ic_perspective" android:contentDescription="Toggle Perspective" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolPolyline" style="@style/PSToolButton"
+                            android:src="@drawable/ic_mesh_form" android:contentDescription="Toggle Free-form Mesh" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolAddImage" style="@style/PSToolButton"
+                            android:src="@drawable/ic_add_image" android:contentDescription="Import Image" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolReferenceWindow" style="@style/PSToolButton"
+                            android:src="@drawable/ic_reference_window" android:contentDescription="Open Reference Window" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolZoom" style="@style/PSToolButton"
+                            android:src="@drawable/ic_zoom" android:contentDescription="Zoom / Pan" android:visibility="gone" app:tint="@color/ps_text_bright"/>
+
+                        <View android:layout_width="22dp" android:layout_height="1dp" android:background="@color/ps_border" android:layout_marginVertical="3dp"/>
+
+                        <TextView android:id="@+id/toolOcrPanel" android:layout_width="44dp" android:layout_height="44dp"
+                            android:layout_marginVertical="2dp" android:text="OCR" android:textColor="@color/ps_danger"
+                            android:textSize="9sp" android:textStyle="bold" android:gravity="center"
+                            android:background="@drawable/tool_btn_bg" android:contentDescription="OCR Panel"/>
+                        <TextView android:id="@+id/toolMask" android:layout_width="44dp" android:layout_height="44dp"
+                            android:layout_marginVertical="2dp" android:text="MSK" android:textColor="@color/vt_secondary"
+                            android:textSize="9sp" android:textStyle="bold" android:gravity="center"
+                            android:background="@drawable/tool_btn_bg" android:contentDescription="Auto Mask Panel"/>
+                        <TextView android:id="@+id/toolScript" android:layout_width="44dp" android:layout_height="44dp"
+                            android:layout_marginVertical="2dp" android:text="SCR" android:textColor="#A5B4FC"
+                            android:textSize="9sp" android:textStyle="bold" android:gravity="center"
+                            android:background="@drawable/tool_btn_bg" android:contentDescription="Script Panel"/>
+                        <TextView android:id="@+id/toolVasType" android:layout_width="44dp" android:layout_height="44dp"
+                            android:layout_marginVertical="2dp" android:text="VT" android:textColor="#C084FC"
+                            android:textSize="9sp" android:textStyle="bold" android:gravity="center"
+                            android:background="@drawable/tool_btn_bg" android:contentDescription="VasType"/>
+                        <TextView android:id="@+id/toolAiChat" android:layout_width="44dp" android:layout_height="44dp"
+                            android:layout_marginVertical="2dp" android:text="AI" android:textColor="#A78BFA"
+                            android:textSize="10sp" android:textStyle="bold" android:gravity="center"
+                            android:background="@drawable/tool_btn_bg" android:contentDescription="AI Chat dan Canvas Vision"/>
+                        <ImageButton android:id="@+id/toolWatermark" style="@style/PSToolButton"
+                            android:src="@drawable/ic_watermark" android:contentDescription="Auto Watermark" app:tint="@color/ps_text_bright"/>
+                        <ImageButton android:id="@+id/toolUnwatermark" style="@style/PSToolButton"
+                            android:src="@drawable/ic_unwatermark" android:contentDescription="Remove Watermark" app:tint="@color/ps_text_bright"/>
+
+                        <View android:layout_width="22dp" android:layout_height="1dp" android:background="@color/ps_border" android:layout_marginVertical="3dp"/>
+
+                        <FrameLayout android:layout_width="44dp" android:layout_height="44dp" android:layout_marginVertical="2dp">
+                            <View android:id="@+id/colorBg" android:layout_width="20dp" android:layout_height="20dp"
+                                android:layout_gravity="bottom|end" android:background="#000000" android:foreground="@drawable/hipaint_color_border"/>
+                            <View android:id="@+id/colorFg" android:layout_width="20dp" android:layout_height="20dp"
+                                android:layout_gravity="top|start" android:background="#FFFFFF" android:elevation="2dp"
+                                android:foreground="@drawable/hipaint_color_border"/>
+                        </FrameLayout>
+                    </LinearLayout>
+                </ScrollView>
+
+                <!-- Large uninterrupted preview/canvas viewport. -->
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@color/ps_canvas">
+
+                    <com.vasiliastyper.view.CanvasView
+                        android:id="@+id/canvasView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#141416"/>
+
+                    <!-- Jetpack Compose owns the floating editor chrome while CanvasView keeps
+                         the mature bitmap/rendering engine underneath. -->
+                    <androidx.compose.ui.platform.ComposeView
+                        android:id="@+id/editorComposeOverlay"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        android:elevation="12dp" />
+
+                    <!-- Compare panel -->
+                    <LinearLayout
+                        android:id="@+id/comparePanel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
+                        android:layout_margin="6dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="6dp"
+                        android:background="@drawable/hipaint_quickbar_bg"
+                        android:elevation="6dp"
+                        android:visibility="gone">
+
+                        <ToggleButton
+                            android:id="@+id/toggleCompare"
+                            android:layout_width="wrap_content"
+                            android:layout_height="30dp"
+                            android:minHeight="0dp"
+                            android:textOn="B / A"
+                            android:textOff="OFF"
+                            android:textSize="10sp"
+                            android:textColor="@color/white"
+                            android:backgroundTint="@color/ps_accent"/>
+
+                        <SeekBar
+                            android:id="@+id/seekCompareDivider"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:max="100"
+                            android:progress="50"
+                            android:layout_marginHorizontal="6dp"
+                            android:progressDrawable="@drawable/slider_bg"/>
+
+                        <TextView
+                            android:id="@+id/btnCloseCompare"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:text="✕"
+                            android:textColor="@color/ps_text_bright"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:background="?attr/selectableItemBackgroundBorderless"/>
+                    </LinearLayout>
+
+                    <!-- Text quick toolbar -->
+                    <HorizontalScrollView
+                        android:id="@+id/textQuickToolbar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|center_horizontal"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/hipaint_quickbar_bg"
+                        android:elevation="6dp"
+                        android:padding="3dp"
+                        android:scrollbars="none"
+                        android:overScrollMode="never"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <Button android:id="@+id/qtbEdit" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Edit" android:backgroundTint="@color/ps_accent" android:textColor="@color/white"/>
+                            <Button android:id="@+id/qtbQuickStyle" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Quick Style" android:contentDescription="Muat style tersimpan ke teks terpilih" android:backgroundTint="@color/vt_primary_dark" android:textColor="@color/white" android:layout_marginStart="2dp"/>
+                            <Button android:id="@+id/qtbColor" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Warna" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp"/>
+                            <Button android:id="@+id/qtbSizeUp" style="@style/HiPaintActionChip" android:layout_width="34dp" android:text="A+" android:textStyle="bold" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp" android:paddingHorizontal="0dp"/>
+                            <Button android:id="@+id/qtbSizeDown" style="@style/HiPaintActionChip" android:layout_width="34dp" android:text="A-" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp" android:paddingHorizontal="0dp"/>
+                            <Button android:id="@+id/qtbBold" style="@style/HiPaintActionChip" android:layout_width="34dp" android:text="B" android:textStyle="bold" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp" android:paddingHorizontal="0dp"/>
+                            <Button android:id="@+id/qtbItalic" style="@style/HiPaintActionChip" android:layout_width="34dp" android:text="I" android:textStyle="italic" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp" android:paddingHorizontal="0dp"/>
+                            <Button android:id="@+id/qtbAlign" style="@style/HiPaintActionChip" android:layout_width="34dp" android:text="≡" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp" android:paddingHorizontal="0dp"/>
+                            <Button android:id="@+id/qtbRotateL" style="@style/HiPaintActionChip" android:layout_width="34dp" android:text="↻" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp" android:paddingHorizontal="0dp"/>
+                            <Button android:id="@+id/qtbRotateR" style="@style/HiPaintActionChip" android:layout_width="34dp" android:text="↺" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp" android:paddingHorizontal="0dp"/>
+                            <Button android:id="@+id/qtbDuplicate" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Salin" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp"/>
+                            <Button android:id="@+id/qtbBringFront" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Depan" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp"/>
+                            <Button android:id="@+id/qtbSendBack" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Blkg" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp"/>
+                            <Button android:id="@+id/qtbDelete" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Hapus" android:backgroundTint="#B91C1C" android:textColor="@color/white" android:layout_marginStart="3dp"/>
+                            <Button android:id="@+id/qtbClose" style="@style/HiPaintActionChip" android:layout_width="34dp" android:text="✕" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp" android:paddingHorizontal="0dp"/>
+                        </LinearLayout>
+                    </HorizontalScrollView>
+
+                    <!-- Image quick toolbar -->
+                    <HorizontalScrollView
+                        android:id="@+id/imageQuickToolbar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|center_horizontal"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/hipaint_quickbar_bg"
+                        android:elevation="6dp"
+                        android:padding="3dp"
+                        android:scrollbars="none"
+                        android:overScrollMode="never"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <Button android:id="@+id/iqtbDuplicate" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Salin" android:backgroundTint="@color/ps_accent" android:textColor="@color/white"/>
+                            <Button android:id="@+id/iqtbBringFront" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Depan" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp"/>
+                            <Button android:id="@+id/iqtbSendBack" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Blkg" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp"/>
+                            <Button android:id="@+id/iqtbDelete" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Hapus" android:backgroundTint="#B91C1C" android:textColor="@color/white" android:layout_marginStart="2dp"/>
+                            <Button android:id="@+id/iqtbClose" style="@style/HiPaintActionChip" android:layout_width="34dp" android:text="✕" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp" android:paddingHorizontal="0dp"/>
+                        </LinearLayout>
+                    </HorizontalScrollView>
+                </FrameLayout>
+
+                <!-- Inspector rail: layers, mask, script, compare, and styles. -->
+                <ScrollView
+                    android:id="@+id/rightFeatureSidebar"
+                    android:layout_width="58dp"
+                    android:layout_height="match_parent"
+                    android:fillViewport="false"
+                    android:scrollbars="none"
+                    android:overScrollMode="never"
+                    android:background="@drawable/hipaint_rail_bg">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp">
+
+                        <LinearLayout
+                            android:id="@+id/rightLayersShortcut"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:paddingVertical="3dp"
+                            android:background="?attr/selectableItemBackground"
+                            android:contentDescription="Panel Layers">
+                            <ImageView android:layout_width="36dp" android:layout_height="36dp"
+                                android:src="@drawable/ic_layers" app:tint="@color/ps_accent" android:padding="6dp"
+                                android:background="@drawable/tool_btn_bg"/>
+                        </LinearLayout>
+
+                        <View android:layout_width="22dp" android:layout_height="1dp"
+                            android:layout_marginVertical="3dp" android:background="@color/ps_border"/>
+
+                        <LinearLayout
+                            android:id="@+id/rightMaskPreset"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:paddingVertical="3dp"
+                            android:background="?attr/selectableItemBackground"
+                            android:contentDescription="Preset Auto Mask">
+                            <TextView android:layout_width="36dp" android:layout_height="36dp"
+                                android:text="M" android:textStyle="bold" android:textSize="13sp"
+                                android:textColor="#FBBF24" android:gravity="center"
+                                android:background="@drawable/tool_btn_bg"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/rightSelectionPreset"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:paddingVertical="3dp"
+                            android:background="?attr/selectableItemBackground"
+                            android:contentDescription="Preset Kotak Seleksi">
+                            <ImageView android:layout_width="36dp" android:layout_height="36dp"
+                                android:src="@drawable/ic_rect_select" app:tint="#60A5FA" android:padding="6dp"
+                                android:background="@drawable/tool_btn_bg"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/rightScriptPreset"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:paddingVertical="3dp"
+                            android:background="?attr/selectableItemBackground"
+                            android:contentDescription="Preset Script">
+                            <TextView android:layout_width="36dp" android:layout_height="36dp"
+                                android:text="SC" android:textStyle="bold" android:textSize="11sp"
+                                android:textColor="#A5B4FC" android:gravity="center"
+                                android:background="@drawable/tool_btn_bg"/>
+                        </LinearLayout>
+
+                        <View android:layout_width="22dp" android:layout_height="1dp"
+                            android:layout_marginVertical="3dp" android:background="@color/ps_border"/>
+
+                        <LinearLayout
+                            android:id="@+id/rightStyleRulesShortcut"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:paddingVertical="3dp"
+                            android:background="?attr/selectableItemBackground"
+                            android:contentDescription="Style Rules">
+                            <TextView android:layout_width="36dp" android:layout_height="36dp"
+                                android:text="R" android:textStyle="bold" android:textSize="13sp"
+                                android:textColor="#FBBF24" android:gravity="center"
+                                android:background="@drawable/tool_btn_bg"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/rightCompareShortcut"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:paddingVertical="3dp"
+                            android:background="?attr/selectableItemBackground"
+                            android:contentDescription="Before After Compare">
+                            <TextView android:layout_width="36dp" android:layout_height="36dp"
+                                android:text="B/A" android:textStyle="bold" android:textSize="9sp"
+                                android:textColor="#60A5FA" android:gravity="center"
+                                android:background="@drawable/tool_btn_bg"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/rightStyleManagerShortcut"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:paddingVertical="3dp"
+                            android:background="?attr/selectableItemBackground"
+                            android:contentDescription="Style Manager">
+                            <TextView android:layout_width="36dp" android:layout_height="36dp"
+                                android:text="S" android:textStyle="bold" android:textSize="13sp"
+                                android:textColor="#34D399" android:gravity="center"
+                                android:background="@drawable/tool_btn_bg"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </ScrollView>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Legacy edge handles kept hidden for binding compatibility -->
+        <TextView
+            android:id="@+id/btnToggleLeftSidebar"
+            android:layout_width="18dp"
+            android:layout_height="48dp"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="58dp"
+            android:text="‹"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="@drawable/sidebar_handle_bg"
+            android:elevation="8dp"
+            android:contentDescription="Sembunyikan atau tampilkan semua alat kiri"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/btnToggleRightSidebar"
+            android:layout_width="18dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="58dp"
+            android:text="›"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="@drawable/sidebar_handle_bg"
+            android:elevation="8dp"
+            android:contentDescription="Sembunyikan atau tampilkan semua panel kanan"
+            android:visibility="gone"/>
+    </FrameLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/ps_border"/>
+
+    <!-- Context properties strip: persistent, compact and thumb reachable. -->
+    <HorizontalScrollView
+        android:id="@+id/optionsScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@drawable/hipaint_options_bg"
+        android:scrollbars="none"
+        android:fillViewport="false"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:id="@+id/optionsBar"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <TextView
+                android:id="@+id/optionsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tol:"
+                android:textColor="@color/ink_muted"
+                android:textSize="11sp"
+                android:layout_marginEnd="4dp"/>
+
+            <SeekBar
+                android:id="@+id/seekTolerance"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:max="255"
+                android:progress="15"
+                android:progressDrawable="@drawable/slider_bg"/>
+
+            <TextView
+                android:id="@+id/tvToleranceVal"
+                android:layout_width="28dp"
+                android:layout_height="wrap_content"
+                android:text="15"
+                android:textColor="@color/ps_text_bright"
+                android:textSize="11sp"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="8dp"/>
+            <View android:id="@+id/divBubbleTranslate"
+                android:layout_width="1dp" android:layout_height="18dp"
+                android:background="@color/ps_border"
+                android:layout_marginHorizontal="6dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/optBtFill"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Fill:"
+                android:textColor="@color/ink_muted" android:textSize="11sp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"/>
+
+            <Spinner android:id="@+id/spinnerBtFill"
+                android:layout_width="wrap_content" android:layout_height="28dp"
+                android:layout_marginEnd="6dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/optBtStyle"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Style:"
+                android:textColor="@color/ink_muted" android:textSize="11sp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"/>
+
+            <Spinner android:id="@+id/spinnerBtStyle"
+                android:layout_width="wrap_content" android:layout_height="28dp"
+                android:layout_marginEnd="6dp"
+                android:visibility="gone"/>
+
+            <Button android:id="@+id/btnBtTranslate"
+                style="@style/HiPaintActionChip"
+                android:layout_width="wrap_content"
+                android:text="Translate"
+                android:textColor="@color/ps_text_bright"
+                android:backgroundTint="#1F4A3A"
+                android:visibility="gone"/>
+
+            <View android:id="@+id/divWatermark"
+                android:layout_width="1dp" android:layout_height="18dp"
+                android:background="@color/ps_border"
+                android:layout_marginHorizontal="6dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/optWmImage"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Img:"
+                android:textColor="@color/ink_muted" android:textSize="11sp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"/>
+
+            <Button android:id="@+id/btnWmPickImage"
+                style="@style/HiPaintActionChip"
+                android:layout_width="wrap_content"
+                android:text="Pilih"
+                android:textColor="@color/ps_text_bright"
+                android:backgroundTint="#2A4A2A"
+                android:layout_marginEnd="4dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/tvWmImageName"
+                android:layout_width="72dp" android:layout_height="wrap_content"
+                android:text="Belum ada"
+                android:textColor="@color/ink_muted" android:textSize="10sp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:layout_marginEnd="6dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/optWmPos"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Pos:"
+                android:textColor="@color/ink_muted" android:textSize="11sp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"/>
+
+            <Spinner android:id="@+id/spinnerWmPosition"
+                android:layout_width="wrap_content" android:layout_height="28dp"
+                android:layout_marginEnd="6dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/optWmSize"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Sz:"
+                android:textColor="@color/ink_muted" android:textSize="11sp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"/>
+
+            <SeekBar android:id="@+id/seekWmSize"
+                android:layout_width="72dp" android:layout_height="wrap_content"
+                android:max="200" android:progress="40"
+                android:progressDrawable="@drawable/slider_bg"
+                android:layout_marginEnd="2dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/tvWmSizeVal"
+                android:layout_width="24dp" android:layout_height="wrap_content"
+                android:text="40"
+                android:textColor="@color/ps_text_bright" android:textSize="10sp"
+                android:layout_marginEnd="6dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/optWmOpacity"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Op:"
+                android:textColor="@color/ink_muted" android:textSize="11sp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"/>
+
+            <SeekBar android:id="@+id/seekWmOpacity"
+                android:layout_width="72dp" android:layout_height="wrap_content"
+                android:max="100" android:progress="80"
+                android:progressDrawable="@drawable/slider_bg"
+                android:layout_marginEnd="2dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/tvWmOpacityVal"
+                android:layout_width="24dp" android:layout_height="wrap_content"
+                android:text="80"
+                android:textColor="@color/ps_text_bright" android:textSize="10sp"
+                android:layout_marginEnd="6dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/optWmSpacing"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Jrk:"
+                android:textColor="@color/ink_muted" android:textSize="11sp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"/>
+
+            <SeekBar android:id="@+id/seekWmSpacing"
+                android:layout_width="72dp" android:layout_height="wrap_content"
+                android:max="1000" android:progress="60"
+                android:progressDrawable="@drawable/slider_bg"
+                android:layout_marginEnd="2dp"
+                android:visibility="gone"/>
+
+            <TextView android:id="@+id/tvWmSpacingVal"
+                android:layout_width="24dp" android:layout_height="wrap_content"
+                android:text="60"
+                android:textColor="@color/ps_text_bright" android:textSize="10sp"
+                android:layout_marginEnd="6dp"
+                android:visibility="gone"/>
+
+            <Button android:id="@+id/btnWmApply"
+                style="@style/HiPaintActionChip"
+                android:layout_width="wrap_content"
+                android:text="Terapkan"
+                android:textColor="@color/ps_text_bright"
+                android:backgroundTint="@color/vt_primary_dark"
+                android:visibility="gone"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Brush settings now use a dedicated bottom panel instead of covering the canvas. -->
+    <LinearLayout
+        android:id="@+id/brushControlPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/system_panel_bg"
+        android:elevation="12dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/hipaint_panel_header"
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BRUSH SETTINGS"
+                    android:textColor="@color/ps_accent"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Atur karakter kuas tanpa menutupi kanvas"
+                    android:textColor="@color/ink_muted"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnToggleBrushPanel"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Buka atau tutup pengaturan brush"
+                android:gravity="center"
+                android:text="−"
+                android:textColor="@color/ps_text_bright"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:overScrollMode="never">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="12dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="12dp">
+
+                <LinearLayout android:layout_width="190dp" android:layout_height="wrap_content" android:orientation="vertical">
+                    <TextView android:id="@+id/optBrushMode" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Mode • Brush Patch" android:textColor="@color/ps_text" android:textSize="10sp" android:textStyle="bold" android:visibility="gone" />
+                    <Spinner android:id="@+id/spinnerBrushMode" android:layout_width="match_parent" android:layout_height="34dp" android:background="@drawable/edit_text_bg" android:contentDescription="Pilih mode brush" android:popupBackground="@color/ps_panel" android:visibility="gone" />
+                </LinearLayout>
+                <LinearLayout android:layout_width="164dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:orientation="vertical">
+                    <TextView android:id="@+id/optBrushSize" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Ukuran • 20 px" android:textColor="@color/ps_text" android:textSize="10sp" android:textStyle="bold" android:visibility="gone" />
+                    <SeekBar android:id="@+id/seekBrushSize" android:layout_width="match_parent" android:layout_height="30dp" android:max="200" android:progress="20" android:progressDrawable="@drawable/slider_bg" android:visibility="gone" />
+                </LinearLayout>
+                <LinearLayout android:layout_width="164dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:orientation="vertical">
+                    <TextView android:id="@+id/optOpacity" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Opasitas • 100%" android:textColor="@color/ps_text" android:textSize="10sp" android:textStyle="bold" android:visibility="gone" />
+                    <SeekBar android:id="@+id/seekOpacity" android:layout_width="match_parent" android:layout_height="30dp" android:max="100" android:progress="100" android:progressDrawable="@drawable/slider_bg" android:visibility="gone" />
+                </LinearLayout>
+                <LinearLayout android:layout_width="164dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:orientation="vertical">
+                    <TextView android:id="@+id/optHardness" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Hardness • 90%" android:textColor="@color/ps_text" android:textSize="10sp" android:textStyle="bold" android:visibility="gone" />
+                    <SeekBar android:id="@+id/seekBrushHard" android:layout_width="match_parent" android:layout_height="30dp" android:max="100" android:progress="90" android:progressDrawable="@drawable/slider_bg" android:visibility="gone" />
+                </LinearLayout>
+                <LinearLayout android:layout_width="164dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:orientation="vertical">
+                    <TextView android:id="@+id/optStabilizer" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Stabilizer • 72%" android:textColor="@color/ps_text" android:textSize="10sp" android:textStyle="bold" android:visibility="gone" />
+                    <SeekBar android:id="@+id/seekBrushStabilizer" android:layout_width="match_parent" android:layout_height="30dp" android:max="100" android:progress="72" android:progressDrawable="@drawable/slider_bg" android:visibility="gone" />
+                </LinearLayout>
+                <LinearLayout android:layout_width="164dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:orientation="vertical">
+                    <TextView android:id="@+id/optForceFade" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Force Fade • 22%" android:textColor="@color/ps_text" android:textSize="10sp" android:textStyle="bold" android:visibility="gone" />
+                    <SeekBar android:id="@+id/seekBrushFade" android:layout_width="match_parent" android:layout_height="30dp" android:max="100" android:progress="22" android:progressDrawable="@drawable/slider_bg" android:visibility="gone" />
+                </LinearLayout>
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- Contextual selection actions are grouped as one selectable bottom panel. -->
+    <LinearLayout
+        android:id="@+id/selectionActionPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/system_panel_bg"
+        android:elevation="12dp"
+        android:paddingBottom="7dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="38dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/hipaint_panel_header"
+            android:paddingHorizontal="10dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="SELECTION ACTIONS"
+                android:textColor="@color/ps_accent"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pilih mode lalu tindakan"
+                android:textColor="@color/ink_muted"
+                android:textSize="9sp" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:overScrollMode="never">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="10dp"
+                android:paddingTop="7dp"
+                android:paddingEnd="10dp">
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MODE" android:textColor="@color/ink_muted" android:textSize="9sp" android:textStyle="bold" android:layout_marginEnd="6dp" />
+                <ToggleButton android:id="@+id/btnAddToSel" android:layout_width="wrap_content" android:layout_height="32dp" android:minWidth="0dp" android:minHeight="0dp" android:textOn="TAMBAH" android:textOff="GANTI" android:textSize="9sp" android:textStyle="bold" android:textColor="@color/ps_text_bright" android:backgroundTint="@color/ps_highlight" android:layout_marginEnd="5dp" android:visibility="gone" />
+                <ToggleButton android:id="@+id/btnSubtractSel" android:layout_width="wrap_content" android:layout_height="32dp" android:minWidth="0dp" android:minHeight="0dp" android:textOn="KURANGI" android:textOff="KURANGI" android:textSize="9sp" android:textStyle="bold" android:textColor="@color/ps_text_bright" android:backgroundTint="#8B3A3A" android:layout_marginEnd="8dp" android:visibility="gone" />
+                <View android:layout_width="1dp" android:layout_height="22dp" android:background="@color/ps_border" android:layout_marginEnd="8dp" />
+                <Button android:id="@+id/btnCenterInBubble" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Center" android:textColor="@color/ps_text_bright" android:backgroundTint="@color/ps_accent" android:visibility="gone" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/btnCopySelection" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Copy" android:textColor="@color/ps_text_bright" android:backgroundTint="@color/ps_highlight" android:visibility="gone" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/btnCropToSel" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Crop" android:textColor="@color/ps_text_bright" android:backgroundTint="@color/vt_primary_dark" android:visibility="gone" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/btnFillWhite" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Isi Putih" android:textColor="#111111" android:backgroundTint="@color/white" android:visibility="gone" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/btnFillBlack" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Isi Hitam" android:textColor="#FFFFFF" android:backgroundTint="@color/black" android:visibility="gone" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/btnInpaintTelea" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:layout_height="32dp" android:text="SmartFill" android:textColor="@color/ps_text_bright" android:backgroundTint="@color/ps_accent" android:visibility="gone" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/btnInpaintSelection" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:layout_height="32dp" android:text="Inpaint" android:textColor="@color/ps_text_bright" android:backgroundTint="@color/vt_primary_dark" android:visibility="gone" />
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         5. BOTTOM FEATURE PANELS (Script / OCR / Mask / UNWM)
+         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- Script workspace panel: compact dashboard layout for phone editing -->
+    <LinearLayout
+        android:id="@+id/bottomScriptPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/system_panel_bg"
+        android:elevation="12dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/hipaint_panel_header"
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SCRIPT WORKSPACE"
+                    android:textColor="@color/ps_accent"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Import, review, and typeset dialogue"
+                    android:textColor="@color/ink_muted"
+                    android:textSize="10sp"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnCloseScript"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:text="✕"
+                android:textColor="@color/ps_text_bright"
+                android:textSize="15sp"
+                android:gravity="center"
+                android:contentDescription="Close script panel"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:overScrollMode="never">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="10dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="6dp">
+                <Button
+                    android:id="@+id/btnLoadScript"
+                    style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content"
+                    android:text="＋ Script File"
+                    android:textAllCaps="false"
+                    android:backgroundTint="@color/ps_accent"
+                    android:textColor="@color/white"/>
+                <Button
+                    android:id="@+id/btnLoadMultiScript"
+                    style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="TipeR OCR"
+                    android:textAllCaps="false"
+                    android:backgroundTint="@color/vt_primary_dark"
+                    android:textColor="@color/white"/>
+                <Button
+                    android:id="@+id/btnTypeR"
+                    style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="VasType"
+                    android:textAllCaps="false"
+                    android:backgroundTint="@color/ps_highlight"
+                    android:textColor="@color/ps_text_bright"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:background="@drawable/dialog_section_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="7dp">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/tvScriptFileName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No script loaded"
+                    android:textColor="@color/ps_text_bright"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:ellipsize="middle"
+                    android:singleLine="true"/>
+                <TextView
+                    android:id="@+id/tvScriptProgress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Ready to import"
+                    android:textColor="@color/ink_muted"
+                    android:textSize="10sp"
+                    android:singleLine="true"/>
+            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="LINE"
+                android:textColor="@color/ink_muted"
+                android:textSize="9sp"
+                android:textStyle="bold"/>
+            <EditText
+                android:id="@+id/editScriptStartLine"
+                android:layout_width="52dp"
+                android:layout_height="34dp"
+                android:layout_marginStart="5dp"
+                android:background="@drawable/edit_text_bg"
+                android:gravity="center"
+                android:hint="1"
+                android:inputType="number"
+                android:maxLines="1"
+                android:paddingHorizontal="6dp"
+                android:text="1"
+                android:textColor="@color/ps_text_bright"
+                android:textColorHint="@color/ink_muted"
+                android:textSize="11sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/dialog_section_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="6dp"
+            android:paddingVertical="5dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="URUTAN PLACE ALL"
+                android:textColor="@color/ink_muted"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+            <Spinner
+                android:id="@+id/spinnerPlaceAllDirection"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/edit_text_bg"
+                android:contentDescription="Urutan Place All"
+                android:popupBackground="@color/ps_panel" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/btnStartScriptOcr"
+                style="@style/HiPaintActionChip"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="34dp"
+                android:text="Run Script OCR"
+                android:textAllCaps="false"
+                android:enabled="false"
+                android:backgroundTint="@color/ps_highlight"
+                android:textColor="@color/ps_text_bright"/>
+            <Button
+                android:id="@+id/btnPlaceAll"
+                style="@style/HiPaintActionChip"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="34dp"
+                android:layout_marginStart="6dp"
+                android:text="Auto Typeset"
+                android:textAllCaps="false"
+                android:backgroundTint="@color/vt_primary"
+                android:textColor="@color/white"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/multiSelectBar"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/dialog_section_bg"
+            android:paddingHorizontal="8dp"
+            android:visibility="gone">
+            <TextView
+                android:id="@+id/tvSelectedCount"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="0 selected"
+                android:textColor="@color/ps_text_bright"
+                android:textSize="11sp"
+                android:textStyle="bold"/>
+            <Button
+                android:id="@+id/btnUseSelected"
+                style="@style/HiPaintActionChip"
+                android:layout_width="wrap_content"
+                android:text="Use"
+                android:textAllCaps="false"
+                android:backgroundTint="@color/ps_accent"
+                android:textColor="@color/white"/>
+            <Button
+                android:id="@+id/btnCancelMulti"
+                style="@style/HiPaintActionChip"
+                android:layout_width="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Cancel"
+                android:textAllCaps="false"
+                android:backgroundTint="@color/ps_border"
+                android:textColor="@color/ps_text"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/scriptColumnsHeader"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_marginTop="7dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@color/vt_surface_low"
+            android:paddingStart="58dp"
+            android:paddingEnd="116dp">
+            <TextView
+                android:id="@+id/tvScriptSourceHeader"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="SOURCE"
+                android:textColor="@color/ink_muted"
+                android:textStyle="bold"
+                android:textSize="9sp"
+                android:gravity="center_vertical"
+                android:paddingEnd="8dp"/>
+            <View
+                android:layout_width="1dp"
+                android:layout_height="14dp"
+                android:background="@color/ps_border"/>
+            <TextView
+                android:id="@+id/tvScriptTranslationHeader"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="TRANSLATION"
+                android:textColor="@color/ps_text"
+                android:textStyle="bold"
+                android:textSize="9sp"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/scriptLinesList"
+            android:layout_width="match_parent"
+            android:layout_height="176dp"
+            android:clipToPadding="false"
+            android:paddingStart="8dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="4dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="10dp"
+            android:paddingTop="2dp">
+            <Button
+                android:id="@+id/btnResetUsed"
+                style="@style/HiPaintActionChip"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="Reset Progress"
+                android:textAllCaps="false"
+                android:backgroundTint="@color/ps_border"
+                android:textColor="@color/ps_text"/>
+            <Button
+                android:id="@+id/btnSelectAllScript"
+                style="@style/HiPaintActionChip"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="Select Unused"
+                android:textAllCaps="false"
+                android:backgroundTint="@color/ps_highlight"
+                android:textColor="@color/ps_text_bright"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- OCR Panel -->
+    <LinearLayout
+        android:id="@+id/bottomOcrPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/system_panel_bg"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:background="@drawable/hipaint_panel_header"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="OCR STUDIO"
+                    android:textColor="@color/ps_text_bright"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ekstrak dan kelola teks per area"
+                    android:textColor="@color/ink_muted"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/ocrProgressBar"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/btnCloseOcr"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Tutup panel OCR"
+                android:gravity="center"
+                android:text="×"
+                android:textColor="@color/ps_text"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="BAHASA"
+                android:textColor="@color/ink_muted"
+                android:textSize="8sp"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/spinnerOcrSrc"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:contentDescription="Bahasa sumber OCR" />
+
+            <TextView
+                android:layout_width="28dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="→"
+                android:textColor="@color/vt_cyan"
+                android:textSize="14sp" />
+
+            <Spinner
+                android:id="@+id/spinnerOcrTgt"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:contentDescription="Bahasa tujuan OCR" />
+
+            <Switch
+                android:id="@+id/switchGeminiOcr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="Gemini"
+                android:textColor="@color/ink_muted"
+                android:textSize="9sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvOcrHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/dialog_section_bg"
+            android:paddingStart="10dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="6dp"
+            android:text="Pilih OCR kanvas untuk seluruh halaman atau OCR area untuk seleksi aktif."
+            android:textColor="@color/ps_text"
+            android:textSize="10sp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/ocrResultsList"
+            android:layout_width="match_parent"
+            android:layout_height="170dp"/>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:overScrollMode="never">
+            <LinearLayout
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingHorizontal="8dp" android:paddingVertical="4dp"
+                android:gravity="center_vertical">
+                <Button android:id="@+id/btnRunOcrSel" style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content" android:layout_height="34dp" android:text="OCR kanvas"
+                    android:backgroundTint="@color/vt_primary" android:textColor="#FFFFFF" android:layout_marginEnd="4dp"/>
+                <Button android:id="@+id/btnRunOcrArea" style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content" android:layout_height="34dp" android:text="OCR area"
+                    android:backgroundTint="@color/vt_secondary" android:textColor="#FFFFFF" android:layout_marginEnd="4dp"/>
+                <Button android:id="@+id/btnDeleteOcrRegion" style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content" android:layout_height="34dp" android:text="Hapus area"
+                    android:backgroundTint="@color/ps_danger" android:textColor="#FFFFFF" android:layout_marginEnd="4dp"/>
+                <Button android:id="@+id/btnClearOcr" style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content" android:layout_height="34dp" android:text="Bersihkan"
+                    android:backgroundTint="@color/vt_surface_high" android:textColor="@color/ps_text" android:layout_marginEnd="4dp"/>
+                <Button android:id="@+id/btnOcrToScript" style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content" android:layout_height="34dp" android:text="Kirim ke script"
+                    android:backgroundTint="@color/vt_surface_high" android:textColor="@color/vt_cyan"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- Auto Mask Panel -->
+    <LinearLayout
+        android:id="@+id/bottomMaskPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/system_panel_bg"
+        android:orientation="vertical"
+        android:paddingBottom="6dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:background="@drawable/hipaint_panel_header"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AUTO MASK"
+                    android:textColor="@color/ps_text_bright"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Deteksi dan bersihkan kotak per baris"
+                    android:textColor="@color/ink_muted"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvMaskProgressPct"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="0%"
+                android:textColor="@color/vt_cyan"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/maskProgressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="72dp"
+                android:layout_height="5dp"
+                android:layout_marginEnd="6dp"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="0"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/btnCloseMask"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Tutup panel Auto Mask"
+                android:gravity="center"
+                android:text="×"
+                android:textColor="@color/ps_text"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="34dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:background="@drawable/studio_chip_bg"
+                android:gravity="center"
+                android:text="1  PILIH MODEL"
+                android:textColor="@color/vt_cyan"
+                android:textSize="8sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/studio_chip_bg"
+                android:gravity="center"
+                android:text="2  DETEKSI"
+                android:textColor="@color/vt_cyan"
+                android:textSize="8sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/studio_chip_bg"
+                android:gravity="center"
+                android:text="3  TERAPKAN"
+                android:textColor="@color/vt_cyan"
+                android:textSize="8sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvMaskStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/dialog_section_bg"
+            android:paddingStart="10dp"
+            android:paddingTop="7dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="7dp"
+            android:text="Pilih model dan bahasa, lalu mulai deteksi."
+            android:textColor="@color/ps_text"
+            android:textSize="10sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MODEL DETEKSI"
+                    android:textColor="@color/ink_muted"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/spinnerMaskEngine"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:contentDescription="Model deteksi mask" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BAHASA"
+                    android:textColor="@color/ink_muted"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/spinnerMaskLang"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:contentDescription="Bahasa deteksi mask" />
+            </LinearLayout>
+
+            <Spinner
+                android:id="@+id/spinnerMaskOpenCvMode"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="5dp">
+
+            <Button
+                android:id="@+id/btnMaskDetect"
+                style="@style/HiPaintActionChip"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/vt_primary"
+                android:text="Mulai deteksi"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnMaskDeleteArea"
+                style="@style/HiPaintActionChip"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="5dp"
+                android:backgroundTint="@color/ps_danger"
+                android:text="Hapus area"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/btnMaskReset"
+                style="@style/HiPaintActionChip"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="5dp"
+                android:backgroundTint="@color/vt_surface_high"
+                android:text="Reset"
+                android:textColor="@color/ps_text" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/maskRegionListHeader"
+            android:layout_width="match_parent"
+            android:layout_height="34dp"
+            android:background="@color/vt_surface_low"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvMaskRegionCount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="0 kotak baris"
+                android:textColor="@color/ps_text_bright"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnMaskToggleList"
+                style="@style/HiPaintActionChip"
+                android:layout_width="wrap_content"
+                android:backgroundTint="@color/vt_surface_high"
+                android:text="Lihat daftar"
+                android:textColor="@color/vt_cyan" />
+        </LinearLayout>
+
+        <ScrollView
+            android:id="@+id/maskRegionScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="128dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/maskRegionListContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="10dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="4dp" />
+        </ScrollView>
+
+        <TextView
+            android:id="@+id/tvMaskActionHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="4dp"
+            android:text="Pilih hasil akhir untuk semua mask yang aktif"
+            android:textColor="@color/ink_muted"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnMaskSelectAll"
+            style="@style/HiPaintActionChip"
+            android:layout_width="match_parent"
+            android:layout_height="34dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="5dp"
+            android:backgroundTint="@color/vt_surface_high"
+            android:enabled="true"
+            android:text="Deteksi ulang"
+            android:textColor="@color/vt_cyan" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
+
+            <Button
+                android:id="@+id/btnMaskFillWhite"
+                style="@style/HiPaintActionChip"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/ps_text_bright"
+                android:enabled="false"
+                android:text="Isi putih"
+                android:textColor="#111111" />
+
+            <Button
+                android:id="@+id/btnMaskFillBlack"
+                style="@style/HiPaintActionChip"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:backgroundTint="#0B0B0D"
+                android:enabled="false"
+                android:text="Isi hitam"
+                android:textColor="@color/ps_text_bright" />
+
+            <Button
+                android:id="@+id/btnMaskInpaint"
+                style="@style/HiPaintActionChip"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1.25"
+                android:backgroundTint="@color/vt_secondary"
+                android:enabled="false"
+                android:text="RemovR region"
+                android:textColor="@color/white"
+                android:visibility="visible" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- UNWM Panel -->
+    <LinearLayout
+        android:id="@+id/bottomUnwatermarkPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/system_panel_bg"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="34dp"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:background="@drawable/hipaint_panel_header" android:paddingHorizontal="8dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                android:text="UNWM" android:textColor="@color/vt_cyan"
+                android:textSize="12sp" android:textStyle="bold"/>
+            <ProgressBar android:id="@+id/unwmProgress" android:layout_width="18dp" android:layout_height="18dp"
+                android:layout_marginEnd="6dp" android:visibility="gone"/>
+            <TextView android:id="@+id/btnCloseUnwm" android:layout_width="28dp" android:layout_height="28dp"
+                android:text="✕" android:textColor="@color/ink_muted" android:textSize="14sp" android:gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+        </LinearLayout>
+
+        <TextView android:id="@+id/tvUnwmHint"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Octopus auto-preset. Setelah deteksi: geser kotak / tarik handle sudut."
+            android:textColor="@color/ps_text" android:textSize="10sp" android:lineSpacingExtra="1dp"
+            android:paddingHorizontal="8dp" android:paddingTop="5dp" android:paddingBottom="3dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingHorizontal="8dp" android:paddingBottom="2dp">
+            <TextView android:layout_width="56dp" android:layout_height="wrap_content"
+                android:text="Engine" android:textColor="@color/ps_text" android:textSize="10sp"/>
+            <Spinner android:id="@+id/spinnerUnwmEngine"
+                android:layout_width="0dp" android:layout_weight="1" android:layout_height="34dp"
+                android:contentDescription="Unwatermark engine"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingHorizontal="8dp" android:paddingBottom="2dp">
+            <Button android:id="@+id/btnPickUnwmSample" style="@style/HiPaintActionChip"
+                android:layout_width="wrap_content" android:text="PNG"
+                android:backgroundTint="@color/vt_cyan" android:textColor="#FFFFFF"/>
+            <TextView android:id="@+id/tvUnwmSampleName"
+                android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                android:text="Belum ada sampel" android:textColor="@color/ink_muted" android:textSize="10sp"
+                android:ellipsize="middle" android:singleLine="true" android:paddingHorizontal="6dp"/>
+            <Switch android:id="@+id/switchUnwmAutoAlign"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Hybrid" android:textColor="@color/ps_text" android:textSize="9sp" android:checked="true"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingHorizontal="8dp" android:paddingBottom="2dp">
+            <TextView android:layout_width="56dp" android:layout_height="wrap_content"
+                android:text="Preset" android:textColor="@color/ps_text" android:textSize="10sp"/>
+            <Spinner android:id="@+id/spinnerUnwmPreset"
+                android:layout_width="0dp" android:layout_weight="1" android:layout_height="32dp"/>
+            <Switch android:id="@+id/switchUnwmRealtime"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Live" android:textColor="@color/vt_cyan" android:textSize="9sp" android:checked="true"/>
+        </LinearLayout>
+
+        <Button android:id="@+id/btnDetectUnwm" style="@style/HiPaintActionChip"
+            android:layout_width="match_parent" android:layout_height="32dp"
+            android:layout_marginHorizontal="8dp" android:layout_marginBottom="2dp"
+            android:text="Deteksi • lalu Move / Resize"
+            android:backgroundTint="@color/ps_highlight" android:textColor="#FFFFFF"/>
+
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingHorizontal="8dp">
+            <TextView android:layout_width="56dp" android:layout_height="wrap_content"
+                android:text="Strength" android:textColor="@color/ps_text" android:textSize="10sp"/>
+            <SeekBar android:id="@+id/seekUnwmStrength"
+                android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                android:max="100" android:progress="44"/>
+            <TextView android:id="@+id/tvUnwmStrength"
+                android:layout_width="40dp" android:layout_height="wrap_content"
+                android:text="0.94x" android:textColor="@color/vt_cyan" android:textSize="10sp" android:gravity="end"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingHorizontal="8dp" android:paddingBottom="6dp">
+            <Switch android:id="@+id/switchUnwmSmooth"
+                android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                android:text="Anti-artefak" android:textColor="@color/ps_text" android:textSize="9sp" android:checked="true"/>
+            <Button android:id="@+id/btnApplyUnwm" style="@style/HiPaintActionChip"
+                android:layout_width="wrap_content" android:text="Remove"
+                android:backgroundTint="#B3261E" android:textColor="#FFFFFF"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         6. STATUS DOCK — slim bottom bar with panel toggles
+         ═══════════════════════════════════════════════════════════ -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/ps_border"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/editor_statusbar_bg"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="6dp">
+
+        <TextView android:id="@+id/statusZoom"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="100%" android:textColor="@color/ink_muted" android:textSize="10sp"
+            android:layout_marginEnd="8dp"/>
+
+        <TextView android:id="@+id/statusInfo"
+            android:layout_width="0dp" android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Canvas ready" android:textColor="@color/ps_text" android:textSize="10sp"
+            android:ellipsize="end" android:singleLine="true"/>
+
+        <Button android:id="@+id/btnToggleScript" style="@style/HiPaintActionChip"
+            android:layout_width="wrap_content" android:layout_height="34dp"
+            android:text="Script" android:textSize="10sp"
+            android:backgroundTint="@color/ps_highlight" android:textColor="@color/ps_text"
+            android:layout_marginEnd="3dp" android:paddingHorizontal="7dp"/>
+
+        <Button android:id="@+id/btnOcrPanel" style="@style/HiPaintActionChip"
+            android:layout_width="wrap_content" android:layout_height="34dp"
+            android:text="OCR" android:textSize="10sp"
+            android:backgroundTint="@color/ps_danger" android:textColor="#FFFFFF"
+            android:layout_marginEnd="3dp" android:paddingHorizontal="7dp"/>
+
+        <Button android:id="@+id/btnMaskPanel" style="@style/HiPaintActionChip"
+            android:layout_width="wrap_content" android:layout_height="34dp"
+            android:text="Mask" android:textSize="10sp"
+            android:backgroundTint="@color/ps_highlight" android:textColor="@color/vt_cyan"
+            android:layout_marginEnd="5dp" android:paddingHorizontal="7dp"/>
+
+        <TextView android:id="@+id/statusCursor"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="0, 0" android:textColor="@color/ink_muted" android:textSize="10sp"/>
+    </LinearLayout>
+
+    <!-- Binding anchors for tools whose controls are supplied by contextual UI. -->
+    <ImageButton
+        android:id="@+id/toolCloneStamp"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:contentDescription="Clone Stamp"
+        android:src="@drawable/ic_brush"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/toolBrushPointer"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:contentDescription="Brush Pointer"
+        android:src="@drawable/ic_brush"
+        android:visibility="gone" />
+</LinearLayout>

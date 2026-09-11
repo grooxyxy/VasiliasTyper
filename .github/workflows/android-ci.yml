@@ -1,0 +1,48 @@
+name: VasiliasTyper CI (build di GitHub, bukan lokal)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Bundle bubble YOLOv8m (Drive default / secret)
+        # Sumber (prioritas: BUBBLE_MODEL_PATH > BUBBLE_MODEL_URL > Drive default):
+        # - BUBBLE_MODEL_URL = secret repo berisi link file
+        #   comic-speech-bubble-detector.onnx (opsional).
+        # - Bila secret kosong, task memakai Google Drive default milik user
+        #   (ID 13B42NV0mPPBzUUVsIvD4SvE3QXEaLOlv, publik "Anyone with the link").
+        # Model lain (LaMa/PP-OCR/ComicTextDetector) TIDAK dibundle — manual via
+        # Hugging Face sesuai README assets/models. signing.properties TIDAK
+        # diperlukan di CI (build memakai keystore debug bawaan AGP).
+        env:
+          BUBBLE_MODEL_URL: ${{ secrets.BUBBLE_MODEL_URL }}
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:bundleBubbleModel --no-daemon --stacktrace
+
+      - name: Unit test + Assemble debug
+        run: |
+          ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
+          ./gradlew :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: vasiliastyper-debug-apk
+          path: app/build/outputs/apk/debug/*.apk

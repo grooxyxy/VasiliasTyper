@@ -1,0 +1,23 @@
+.gradle/
+.kotlin/
+**/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+
+# Model ONNX besar TIDAK di-commit (99-200MB melebihi batas GitHub).
+# Diunduh + dibundle saat build via task bundleBubbleModel / manual HF.
+*.onnx
+*.tflite
+*.pt
+*.bin
+
+# Keystore + password JANGAN di-push ke repo publik. CI memakai keystore debug
+# bawaan AGP. Contoh: salin signing.properties ke lokal saja, jangan commit.
+app/signing.properties
+app/keystores/
+keystore.properties
+*.jks
+*.keystore
+google-services.json

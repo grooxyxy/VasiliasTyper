@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  v5.3 — Ibis Paint / Clip Studio style section folder header.
+  Visual: dark band, coloured stripe, folder glyph, title, badge.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="34dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="0dp"
+    android:paddingEnd="10dp"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="2dp"
+    android:background="@color/vt_surface_low">
+
+    <!-- Section color stripe -->
+    <View
+        android:id="@+id/sectionStripe"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:background="@color/vt_secondary"
+        android:layout_marginEnd="8dp"/>
+
+    <!-- Folder glyph -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="▸"
+        android:textSize="11sp"
+        android:textColor="@color/ink_muted"
+        android:layout_marginEnd="4dp"/>
+
+    <!-- Section title -->
+    <TextView
+        android:id="@+id/sectionTitle"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="Folder"
+        android:textColor="@color/ps_text"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.10"/>
+
+    <!-- Item count badge -->
+    <TextView
+        android:id="@+id/sectionCount"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:minWidth="22dp"
+        android:text="0"
+        android:textColor="@color/vt_surface_low"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:paddingHorizontal="7dp"
+        android:gravity="center"
+        android:background="@color/ink_muted"/>
+</LinearLayout>

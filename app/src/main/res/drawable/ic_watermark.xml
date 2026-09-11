@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- W letter for Watermark -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/ps_text"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M3,6 L6,16 L9,10 L12,16 L15,6"/>
+    <!-- diagonal lines suggesting tiled watermark -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/ink_muted"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M17,8 L21,12"/>
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/ink_muted"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M17,12 L21,16"/>
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/ink_muted"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M17,16 L21,20"/>
+    <!-- stamp border -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/ink_muted"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M16,7 H22 V21 H16 Z"/>
+</vector>

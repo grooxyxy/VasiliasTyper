@@ -1,0 +1,45 @@
+MODEL BUBBLE DETECTION (TIDAK DISERTAKAN DALAM SOURCE)
+
+Bubble Detection utama memakai YOLOv8m (pengganti RT-DETR):
+  app/src/main/assets/models/bubble_yolov8m/v1/comic-speech-bubble-detector.onnx
+Sumber (Drive milik user, publik "Anyone with the link"):
+  https://drive.google.com/file/d/13B42NV0mPPBzUUVsIvD4SvE3QXEaLOlv/view
+Otomatis dibundle saat build via task Gradle `bundleBubbleModel`
+(validasi >50MB; file ~99MB). Bila model tidak ada, detector mengembalikan
+kosong dan aplikasi memakai fallback (RT-DETR lama / OpenCV + ML Kit).
+
+Fallback lama (tetap didukung): model penuh RT-DETR-v2 INT8
+  app/src/main/assets/models/comic_text_bubble/v5/detector_int8.onnx
+
+Ukuran file yang divalidasi aplikasi:
+  43,838,857 byte
+SHA-256 resmi (LFS):
+  b5022ad46416b6fe4f88b0cc082cfd2ff5b1cfc624088c2f19879485493f5913
+
+Sumber model:
+  https://huggingface.co/ogkalu/comic-text-and-bubble-detector
+
+Interface model yang dipakai aplikasi:
+  images             float32 [N,3,H,W], RGB 0..1
+  orig_target_sizes  int64 [N,2], urutan height,width
+  labels             int64 [N,300]
+  boxes              float32 [N,300,4], x1,y1,x2,y2
+  scores             float32 [N,300]
+
+Kelas 0 (bubble) dipakai untuk geometri bubble. Kelas 1 (text_bubble) dan kelas 2
+(text_free) sengaja tidak dimasukkan ke hasil bubble. Bila model hilang, rusak,
+atau tidak kompatibel dengan ONNX Runtime, aplikasi otomatis memakai fallback
+OpenCV + ML Kit dan tidak crash.
+
+Model tidak disertakan di dalam source ZIP. Unduh sendiri lalu letakkan tepat pada
+path di atas. Folder versi v5 sengaja dipakai agar detector-v4-s_int8.onnx lama
+tidak terbaca sebagai model penuh detector_int8.onnx.
+
+Model inpainting LaMa Manga dapat diletakkan di:
+  models/lama_manga/v1/lama-manga-dynamic.onnx
+
+Sumber model:
+  https://huggingface.co/ogkalu/lama-manga-onnx-dynamic
+
+Jika model LaMa tidak tersedia atau gagal dimuat, inpainting tetap memakai engine
+OpenCV patch lokal tanpa mengubah piksel di luar mask.

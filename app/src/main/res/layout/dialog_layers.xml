@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  v5.3 — Ibis Paint / Clip Studio Paint inspired layers panel.
+
+  Structure (top → bottom):
+    ┌─────────────────────────────────────┐
+    │ Header: title + close hint          │
+    ├─────────────────────────────────────┤
+    │ Blend mode dropdown (full width)    │
+    │ Opacity slider with % readout       │
+    ├─────────────────────────────────────┤
+    │ Scrollable layer list (sections +   │
+    │ rows, newest on top)                │
+    ├─────────────────────────────────────┤
+    │ Bottom action toolbar:              │
+    │  [+]  [dup]  [↑]  [↓]  [merge↓]    │
+    │  [merge visible] [flatten]  [del]   │
+    └─────────────────────────────────────┘
+
+  All view IDs are kept the same so existing MainActivity bindings still work.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/system_panel_bg"
+    android:padding="0dp">
+
+    <!-- ── Header bar (title) ─────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/vt_surface_low"
+        android:paddingStart="18dp"
+        android:paddingEnd="14dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="13sp"
+            android:textColor="@color/ink_muted"
+            android:layout_marginEnd="8dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Layer"
+            android:textColor="@color/ps_text_bright"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.04"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tahan &amp; geser"
+            android:textColor="@color/ink_muted"
+            android:textSize="10sp"
+            android:fontFamily="sans-serif"/>
+    </LinearLayout>
+
+    <!-- ── Blend mode + opacity for the ACTIVE layer ─────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/ps_toolbar"
+        android:padding="12dp">
+
+        <!-- Blend mode row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="56dp"
+                android:layout_height="wrap_content"
+                android:text="Blend"
+                android:textColor="@color/ink_muted"
+                android:textSize="11sp"/>
+
+            <Spinner
+                android:id="@+id/spinnerBlendMode"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="36dp"
+                android:backgroundTint="@color/ps_border"
+                android:popupBackground="@color/ps_panel"/>
+        </LinearLayout>
+
+        <!-- Opacity row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="56dp"
+                android:layout_height="wrap_content"
+                android:text="Opacity"
+                android:textColor="@color/ink_muted"
+                android:textSize="11sp"/>
+
+            <SeekBar
+                android:id="@+id/seekLayerOpacity"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="100"
+                android:progressDrawable="@drawable/slider_bg"/>
+
+            <TextView
+                android:id="@+id/tvLayerOpacity"
+                android:layout_width="44dp"
+                android:layout_height="wrap_content"
+                android:text="100 %"
+                android:gravity="end"
+                android:textColor="@color/ps_text_bright"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:layout_marginStart="4dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ── Separator ──────────────────────────────────────────────────── -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/ps_bg"/>
+
+    <!-- ── Unified stack: pixel, image, and text can cross each other ─── -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/layersList"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:background="@color/ps_bg"
+        android:clipToPadding="false"
+        android:paddingVertical="4dp"
+        android:paddingHorizontal="6dp"
+        android:scrollbars="vertical"/>
+
+    <!-- ── Separator ──────────────────────────────────────────────────── -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/ps_bg"/>
+
+    <!-- ── Bottom toolbar (Ibis-style icon row) ───────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/vt_surface_low"
+        android:paddingHorizontal="6dp">
+
+        <!-- Add new layer -->
+        <ImageButton
+            android:id="@+id/btnAddLayer"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_input_add"
+            app:tint="@color/ps_text_bright"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Add layer"
+            android:padding="6dp"/>
+
+        <!-- Duplicate -->
+        <ImageButton
+            android:id="@+id/btnDuplicateLayer"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_copy_layer"
+            app:tint="@color/ps_text_bright"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Duplicate layer"
+            android:padding="6dp"/>
+
+        <!-- Move up (in stacking order) -->
+        <ImageButton
+            android:id="@+id/btnLayerUp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/arrow_up_float"
+            app:tint="@color/ps_text_bright"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Move layer up"
+            android:padding="6dp"/>
+
+        <!-- Move down -->
+        <ImageButton
+            android:id="@+id/btnLayerDown"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/arrow_down_float"
+            app:tint="@color/ps_text_bright"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Move layer down"
+            android:padding="6dp"/>
+
+        <!-- Merge Down (button-styled, takes flex space) -->
+        <Button
+            android:id="@+id/btnMergeVisible"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="34dp"
+            android:text="@string/merge_down"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/vt_primary"
+            android:contentDescription="@string/merge_down"
+            android:layout_marginHorizontal="4dp"
+            android:paddingHorizontal="4dp"
+            android:minWidth="0dp"/>
+
+        <!-- Flatten All -->
+        <Button
+            android:id="@+id/btnFlatten"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="34dp"
+            android:text="Satukan"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/ps_border"
+            android:layout_marginEnd="4dp"
+            android:paddingHorizontal="4dp"
+            android:minWidth="0dp"/>
+
+        <!-- Delete (danger) -->
+        <ImageButton
+            android:id="@+id/btnDeleteLayer"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_menu_delete"
+            app:tint="@color/ps_danger"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete layer"
+            android:padding="6dp"/>
+    </LinearLayout>
+</LinearLayout>

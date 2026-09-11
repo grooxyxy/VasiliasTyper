@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="2dp"
+    android:layout_marginVertical="5dp"
+    app:cardBackgroundColor="@color/ps_panel"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/ps_border"
+    app:strokeWidth="1dp"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <!-- Live style preview ("Ag" rendered with actual style) -->
+        <ImageView
+            android:id="@+id/ivStylePreview"
+            android:layout_width="92dp"
+            android:layout_height="46dp"
+            android:background="@drawable/style_preview_frame"
+            android:contentDescription="@string/style_preview_cd"
+            android:padding="3dp"
+            android:scaleType="fitCenter" />
+
+        <!-- Style info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvStyleName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:text="Style Name"
+                android:textColor="@color/ps_text_bright"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvStyleDesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:ellipsize="end"
+                android:lineSpacingExtra="1dp"
+                android:maxLines="2"
+                android:text="36sp · Outline · Center"
+                android:textColor="@color/ink_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Apply button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApplyStyle"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="6dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="16dp"
+            android:text="@string/action_apply"
+            android:textAllCaps="false"
+            android:textColor="@color/ink_navy"
+            android:textSize="11sp"
+            app:backgroundTint="@color/ps_accent"
+            app:cornerRadius="12dp" />
+
+        <!-- Delete button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteStyle"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="38dp"
+            android:layout_height="36dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:text="✕"
+            android:textColor="@color/ps_danger"
+            android:textSize="12sp"
+            app:backgroundTint="@color/vt_surface_high"
+            app:cornerRadius="12dp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

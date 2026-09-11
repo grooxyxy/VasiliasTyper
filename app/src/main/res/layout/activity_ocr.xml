@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ps_bg"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@drawable/editor_topbar_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="12dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ocr_panel_title"
+                android:textColor="@color/ps_text_bright"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Pilih area, ekstrak teks, lalu terjemahkan"
+                android:textColor="@color/ink_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:background="@drawable/studio_chip_bg"
+            android:gravity="center"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="OCR STUDIO"
+            android:textColor="@color/vt_cyan"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="41dp"
+        android:background="@color/vt_surface_low"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="Bahasa"
+            android:textColor="@color/ink_muted"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinnerLangSrc"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/vt_secondary"
+            android:contentDescription="Bahasa sumber OCR" />
+
+        <TextView
+            android:layout_width="32dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="→"
+            android:textColor="@color/vt_cyan"
+            android:textSize="16sp" />
+
+        <Spinner
+            android:id="@+id/spinnerLangTgt"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/vt_secondary"
+            android:contentDescription="Bahasa tujuan terjemahan" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:background="@color/vt_surface_low"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:text="AI TERJEMAHAN"
+            android:textColor="@color/ink_muted"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinnerAiProvider"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/vt_secondary"
+            android:contentDescription="Penyedia AI untuk terjemahan hasil OCR" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:background="@color/ps_panel"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="8dp">
+
+        <View
+            android:layout_width="7dp"
+            android:layout_height="7dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/studio_chip_bg" />
+
+        <TextView
+            android:id="@+id/tvGeminiStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Gemini AI nonaktif - mode offline"
+            android:textColor="@color/ink_muted"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/btnGeminiApiKey"
+            style="@style/HiPaintActionChip"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:backgroundTint="@color/vt_surface_high"
+            android:text="Atur AI"
+            android:textColor="@color/ps_text_bright" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_weight="1.7"
+        android:background="@drawable/panel_bg">
+
+        <ImageView
+            android:id="@+id/ivPagePreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Pratinjau gambar OCR"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_image_placeholder" />
+
+        <com.vasiliastyper.view.SelectionOverlayView
+            android:id="@+id/selectionOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/tvSelectionHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/studio_chip_bg"
+            android:paddingStart="12dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="6dp"
+            android:text="Seret untuk menandai bubble"
+            android:textColor="@color/ps_text_bright"
+            android:textSize="11sp"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <Button
+            android:id="@+id/btnPickImage"
+            style="@style/HiPaintActionChip"
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/vt_primary"
+            android:text="Buka gambar"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnUndo"
+            style="@style/HiPaintActionChip"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:layout_marginStart="6dp"
+            android:backgroundTint="@color/vt_surface_high"
+            android:text="Urungkan"
+            android:textColor="@color/ps_text" />
+
+        <Button
+            android:id="@+id/btnClearAll"
+            style="@style/HiPaintActionChip"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:layout_marginStart="6dp"
+            android:backgroundTint="@color/ps_danger"
+            android:text="Bersihkan"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_weight="0.9"
+        android:background="@drawable/system_panel_bg"
+        android:orientation="vertical"
+        android:paddingTop="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
+
+            <TextView
+                android:id="@+id/tvOcrTabInfo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Belum ada hasil OCR"
+                android:textColor="@color/ps_text_bright"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HASIL"
+                android:textColor="@color/vt_cyan"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/ocrTabStrip"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp" />
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/tvOcrEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp"
+            android:text="Belum ada hasil. Tandai area atau jalankan OCR seluruh gambar."
+            android:textColor="@color/ink_muted"
+            android:textSize="10sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TEKS ASLI"
+                    android:textColor="@color/ink_muted"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etOcrOriginal"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/edit_text_bg"
+                    android:gravity="top|start"
+                    android:hint="Teks OCR..."
+                    android:inputType="textMultiLine"
+                    android:minLines="2"
+                    android:padding="8dp"
+                    android:textColor="@color/ps_text"
+                    android:textColorHint="@color/ink_muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="6dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TERJEMAHAN"
+                    android:textColor="@color/vt_cyan"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etOcrTranslated"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/edit_text_bg"
+                    android:gravity="top|start"
+                    android:hint="Terjemahan..."
+                    android:inputType="textMultiLine"
+                    android:minLines="2"
+                    android:padding="8dp"
+                    android:textColor="@color/vt_cyan"
+                    android:textColorHint="@color/ink_muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp">
+
+                <Button
+                    android:id="@+id/btnCopyOriginalOcr"
+                    style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content"
+                    android:backgroundTint="@color/vt_surface_high"
+                    android:text="Salin asli"
+                    android:textColor="@color/ps_text" />
+
+                <Button
+                    android:id="@+id/btnCopyTranslatedOcr"
+                    style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:backgroundTint="@color/vt_primary"
+                    android:text="Salin terjemahan"
+                    android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/btnRetranslateOcr"
+                    style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:backgroundTint="@color/vt_secondary"
+                    android:text="Terjemah ulang"
+                    android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/btnDeleteCurrentOcr"
+                    style="@style/HiPaintActionChip"
+                    android:layout_width="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:backgroundTint="@color/ps_danger"
+                    android:text="Hapus hasil"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:background="@drawable/editor_statusbar_bg"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp">
+
+        <Button
+            android:id="@+id/btnRunOcr"
+            style="@style/HiPaintActionChip"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/vt_primary"
+            android:text="Jalankan OCR"
+            android:textColor="@color/white"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btnAddToScript"
+            style="@style/HiPaintActionChip"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/vt_secondary"
+            android:text="Tambahkan ke script"
+            android:textColor="@color/white"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBarOcr"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+</LinearLayout>

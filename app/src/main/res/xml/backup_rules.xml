@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- API keys (Gemini/Agnes/AI chat) tidak boleh ikut backup cloud. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="gemini_settings" />
+    <exclude domain="sharedpref" path="agnes_image_ai" />
+    <exclude domain="sharedpref" path="ai_chat_settings" />
+</full-backup-content>

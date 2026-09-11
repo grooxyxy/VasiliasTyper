@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="toolbar_height">40dp</dimen>
+    <dimen name="tool_panel_width">48dp</dimen>
+    <dimen name="panel_width">220dp</dimen>
+    <dimen name="layer_item_height">52dp</dimen>
+    <dimen name="status_bar_height">28dp</dimen>
+    <dimen name="tab_height">30dp</dimen>
+    <dimen name="options_bar_height">40dp</dimen>
+    <dimen name="rail_width">48dp</dimen>
+    <dimen name="tool_btn_size">36dp</dimen>
+</resources>

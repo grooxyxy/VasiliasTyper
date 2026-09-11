@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      android:layout_width="match_parent" android:layout_height="wrap_content"
+      android:orientation="vertical" android:background="@color/ps_panel"
+      android:padding="8dp" android:layout_marginBottom="4dp">
+      <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:orientation="horizontal" android:gravity="center_vertical">
+          <TextView android:id="@+id/tvOcrIndex" android:layout_width="0dp"
+              android:layout_height="wrap_content" android:layout_weight="1"
+              android:textColor="@color/vt_secondary" android:textSize="12sp" android:textStyle="bold"/>
+          <TextView android:id="@+id/tvOcrLang" android:layout_width="wrap_content"
+              android:layout_height="wrap_content" android:textColor="@color/ink_muted" android:textSize="11sp"
+              android:layout_marginEnd="8dp"/>
+          <ImageButton android:id="@+id/btnCopyOcrOriginal"
+              android:layout_width="28dp" android:layout_height="28dp" android:background="@null"
+              android:src="@drawable/ic_copy_layer" app:tint="@color/ps_text"
+              android:layout_marginEnd="2dp" android:contentDescription="Salin teks asli"/>
+          <ImageButton android:id="@+id/btnCopyOcrTranslated"
+              android:layout_width="28dp" android:layout_height="28dp" android:background="@null"
+              android:src="@drawable/ic_copy_layer" app:tint="@color/vt_cyan"
+              android:layout_marginEnd="2dp" android:contentDescription="Salin terjemahan"/>
+          <ImageButton android:id="@+id/btnRetranslate"
+              android:layout_width="28dp" android:layout_height="28dp" android:background="@null"
+              android:src="@android:drawable/ic_menu_rotate" app:tint="@color/vt_secondary"
+              android:layout_marginEnd="4dp" android:contentDescription="Terjemah ulang"/>
+          <ImageButton android:id="@+id/btnDeleteOcr"
+              android:layout_width="28dp" android:layout_height="28dp" android:background="@null"
+              android:src="@android:drawable/ic_menu_delete" app:tint="@color/ps_danger"
+              android:contentDescription="Hapus"/>
+      </LinearLayout>
+      <EditText android:id="@+id/etOcrOriginal"
+          android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:hint="Teks asli (normalized: satu baris, lowercase)..." android:textColorHint="@color/ps_border"
+          android:textColor="@color/ps_text" android:textSize="12sp" android:background="@color/vt_surface_low"
+          android:padding="6dp" android:minLines="1" android:maxLines="3"
+          android:inputType="text" android:gravity="top|start" android:layout_marginTop="4dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+          android:text="▼ Terjemahan" android:textColor="@color/ink_muted" android:textSize="10sp"
+          android:layout_marginTop="4dp"/>
+      <EditText android:id="@+id/etOcrTranslated"
+          android:layout_width="match_parent" android:layout_height="wrap_content"
+          android:hint="Terjemahan..." android:textColorHint="@color/ps_border"
+          android:textColor="@color/vt_cyan" android:textSize="12sp" android:background="@color/vt_surface_low"
+          android:padding="6dp" android:minLines="2" android:maxLines="5"
+          android:inputType="textMultiLine" android:gravity="top" android:layout_marginTop="2dp"/>
+  </LinearLayout>

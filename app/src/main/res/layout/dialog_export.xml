@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/system_panel_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ekspor Gambar"
+            android:textColor="@color/ps_text_bright"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Pilih format, kualitas, dan preset keluaran."
+            android:textColor="@color/ink_muted"
+            android:textSize="11sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/dialog_section_bg"
+            android:orientation="vertical"
+            android:padding="13dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Preset"
+                android:textColor="@color/vt_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <Spinner
+                    android:id="@+id/spinnerExportPreset"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/vt_secondary"
+                    android:popupBackground="@color/ps_panel" />
+
+                <Button
+                    android:id="@+id/btnSaveExportPreset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/vt_primary_dark"
+                    android:text="Simpan"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/cbExportAllTabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:buttonTint="@color/vt_secondary"
+                android:text="Ekspor semua tab ke Pictures/VasiliasTyper"
+                android:textColor="@color/ps_text"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/dialog_section_bg"
+            android:orientation="vertical"
+            android:padding="13dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Format"
+                android:textColor="@color/vt_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:id="@+id/rgExportFormat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/rbExportPng"
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:buttonTint="@color/vt_secondary"
+                    android:checked="true"
+                    android:text="PNG · lossless &amp; transparan"
+                    android:textColor="@color/ps_text"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rbExportJpg"
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:buttonTint="@color/vt_secondary"
+                    android:text="JPG · ukuran file lebih kecil"
+                    android:textColor="@color/ps_text"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rbExportWebp"
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:buttonTint="@color/vt_secondary"
+                    android:text="WebP · kompresi modern"
+                    android:textColor="@color/ps_text"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rbExportPsd"
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:buttonTint="@color/vt_secondary"
+                    android:text="PSD · pertahankan multi-layer"
+                    android:textColor="@color/ps_text"
+                    android:textSize="12sp" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/qualityRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/dialog_section_bg"
+            android:orientation="vertical"
+            android:padding="13dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Kualitas"
+                    android:textColor="@color/ps_text_bright"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvExportQuality"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="90%"
+                    android:textColor="@color/vt_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekExportQuality"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:max="99"
+                android:progress="89"
+                android:progressDrawable="@drawable/slider_bg" />
+
+            <TextView
+                android:id="@+id/tvExportQualityHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Kualitas lebih tinggi menghasilkan file lebih besar."
+                android:textColor="@color/ink_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

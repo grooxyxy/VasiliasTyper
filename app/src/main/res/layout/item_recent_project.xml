@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="136dp"
+    android:layout_height="180dp"
+    android:layout_marginEnd="10dp"
+    android:orientation="vertical"
+    android:background="@drawable/recent_card_bg"
+    android:padding="7dp">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="116dp">
+
+        <ImageView
+            android:id="@+id/imgThumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="@color/ink_surface_high"
+            android:clipToOutline="true"
+            android:contentDescription="Project thumbnail" />
+
+        <TextView
+            android:id="@+id/btnProjectInfo"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="3dp"
+            android:background="@drawable/studio_chip_bg"
+            android:gravity="center"
+            android:text="⋮"
+            android:textColor="@color/ps_text_bright"
+            android:textSize="18sp"
+            android:contentDescription="Informasi proyek" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tvProjectName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="3dp"
+        android:textColor="@color/ps_text_bright"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:ellipsize="end"
+        android:maxLines="1" />
+
+    <TextView
+        android:id="@+id/tvProjectMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="3dp"
+        android:textColor="@color/ink_muted"
+        android:textSize="9sp"
+        android:ellipsize="end"
+        android:maxLines="1" />
+</LinearLayout>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true"
+    android:background="@drawable/system_panel_bg"
+    android:overScrollMode="never"
+    android:paddingBottom="18dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/vt_surface"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/ps_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Agnes Image 2.1 Flash"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvAgnesHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Enter your Agnes AI API key. The image-editing prompt can be customized for object or text removal."
+                    android:textColor="@color/ink_muted"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/vt_surface"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/ps_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <EditText
+                    android:id="@+id/etAgnesApiKey"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:background="@drawable/edit_text_bg"
+                    android:hint="Agnes AI API key"
+                    android:inputType="text"
+                    android:paddingHorizontal="10dp"
+                    android:singleLine="true"
+                    android:textColor="@color/ps_text_bright"
+                    android:textColorHint="@color/ink_muted"
+                    android:textSize="12sp" />
+
+                <EditText
+                    android:id="@+id/etAgnesPrompt"
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/edit_text_bg"
+                    android:gravity="top|start"
+                    android:hint="Inpainting prompt"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:lineSpacingExtra="3dp"
+                    android:minHeight="120dp"
+                    android:padding="12dp"
+                    android:textColor="@color/ps_text_bright"
+                    android:textColorHint="@color/ink_muted"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAgnesSave"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_weight="1"
+                        android:text="Simpan"
+                        android:textAllCaps="false"
+                        android:textColor="@color/white"
+                        app:cornerRadius="14dp"
+                        app:backgroundTint="@color/ps_accent" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAgnesCancel"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="Batal"
+                        android:textAllCaps="false"
+                        android:textColor="@color/ps_text"
+                        app:cornerRadius="14dp"
+                        app:backgroundTint="@color/ps_toolbar" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

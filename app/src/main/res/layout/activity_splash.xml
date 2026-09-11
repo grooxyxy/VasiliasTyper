@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/splashRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/splash_background"
+    android:clickable="true"
+    android:clipChildren="false"
+    android:contentDescription="Ketuk untuk melanjutkan"
+    android:focusable="true">
+
+    <View
+        android:id="@+id/splashHalo"
+        android:layout_width="360dp"
+        android:layout_height="360dp"
+        android:layout_gravity="center"
+        android:alpha="0"
+        android:background="@drawable/splash_icon_halo" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingStart="28dp"
+        android:paddingTop="40dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="30dp">
+
+        <FrameLayout
+            android:id="@+id/splashArtwork"
+            android:layout_width="216dp"
+            android:layout_height="216dp"
+            android:layout_gravity="center"
+            android:clipChildren="false">
+
+            <View
+                android:id="@+id/splashRing"
+                android:layout_width="178dp"
+                android:layout_height="178dp"
+                android:layout_gravity="center"
+                android:alpha="0"
+                android:background="@drawable/splash_frame" />
+
+            <View
+                android:id="@+id/orbitDot1"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="top|center_horizontal"
+                android:layout_marginTop="13dp"
+                android:alpha="0"
+                android:background="@drawable/splash_orbit_dot" />
+
+            <View
+                android:id="@+id/orbitDot2"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginEnd="10dp"
+                android:alpha="0"
+                android:background="@drawable/splash_orbit_dot" />
+
+            <View
+                android:id="@+id/orbitDot3"
+                android:layout_width="7dp"
+                android:layout_height="7dp"
+                android:layout_gravity="bottom|start"
+                android:layout_marginStart="28dp"
+                android:layout_marginBottom="28dp"
+                android:alpha="0"
+                android:background="@drawable/splash_orbit_dot" />
+
+            <ImageView
+                android:id="@+id/splashIcon"
+                android:layout_width="116dp"
+                android:layout_height="116dp"
+                android:layout_gravity="center"
+                android:alpha="0"
+                android:contentDescription="@string/app_name"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_app_logo_foreground" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/splashEyebrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0"
+            android:letterSpacing="0.2"
+            android:text="CREATIVE TYPE STUDIO"
+            android:textColor="#CCBFAFFF"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/splashTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:alpha="0"
+            android:letterSpacing="0.04"
+            android:text="@string/app_name"
+            android:textColor="@color/ps_text_bright"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:translationY="18dp" />
+
+        <TextView
+            android:id="@+id/splashSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:alpha="0"
+            android:gravity="center"
+            android:text="@string/splash_subtitle"
+            android:textColor="#B8B4C7"
+            android:textSize="13sp"
+            android:translationY="14dp" />
+
+        <FrameLayout
+            android:layout_width="176dp"
+            android:layout_height="6dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/splash_progress_track"
+            android:padding="1dp">
+
+            <View
+                android:id="@+id/splashProgress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/splash_progress_fill"
+                android:pivotX="0"
+                android:scaleX="0" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/splashStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="13dp"
+            android:alpha="0"
+            android:gravity="center"
+            android:minWidth="180dp"
+            android:text="Menyiapkan kanvas…"
+            android:textColor="#B3E8E4F2"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/splashSkipHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:alpha="0"
+            android:text="Ketuk untuk melanjutkan"
+            android:textColor="#668F8A9C"
+            android:textSize="10sp" />
+    </LinearLayout>
+</FrameLayout>

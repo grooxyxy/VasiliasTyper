@@ -1,0 +1,1393 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true"
+    android:background="@drawable/system_panel_bg"
+    android:overScrollMode="never"
+    android:paddingBottom="18dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="18dp">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/vt_surface"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/ps_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Text Studio"
+                        android:textColor="@color/white"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTextDialogApplyTop"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:text="Terapkan"
+                        android:textAllCaps="false"
+                        android:textColor="@color/white"
+                        app:backgroundTint="@color/ps_accent"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Atur teks, font, efek, dan transformasi dalam satu panel bawah."
+                    android:textColor="@color/ink_muted"
+                    android:textSize="11sp" />
+
+                <EditText
+                    android:id="@+id/etTextContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/edit_text_bg"
+                    android:gravity="top|start"
+                    android:hint="Tulis teks di sini…"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:lineSpacingExtra="3dp"
+                    android:minHeight="120dp"
+                    android:padding="14dp"
+                    android:textColor="@color/ps_text_bright"
+                    android:textColorHint="@color/ps_border"
+                    android:textSize="16sp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    app:cardBackgroundColor="#1E232B"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/ps_border"
+                    app:strokeWidth="1dp">
+
+                    <TextView
+                        android:id="@+id/tvTextPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="92dp"
+                        android:padding="16dp"
+                        android:text="Preview"
+                        android:textColor="@color/ps_text_bright"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/dialog_section_bg"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="6dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCaseUpper"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="AA
+Upper"
+                        android:textAllCaps="false"
+                        android:textColor="@color/ps_text"
+                        android:textSize="10sp"
+                        app:cornerRadius="14dp"
+                        app:backgroundTint="@color/ps_toolbar" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCaseLower"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="aa
+Lower"
+                        android:textAllCaps="false"
+                        android:textColor="@color/ps_text"
+                        android:textSize="10sp"
+                        app:cornerRadius="14dp"
+                        app:backgroundTint="@color/ps_toolbar" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCaseTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="Aa
+Title"
+                        android:textAllCaps="false"
+                        android:textColor="@color/ps_text"
+                        android:textSize="10sp"
+                        app:cornerRadius="14dp"
+                        app:backgroundTint="@color/ps_toolbar" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPerspective"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1.25"
+                        android:gravity="center"
+                        android:text="Persp"
+                        android:textAllCaps="false"
+                        android:textColor="@color/ps_text"
+                        android:textSize="10sp"
+                        app:icon="@drawable/ic_perspective"
+                        app:iconGravity="top"
+                        app:iconPadding="0dp"
+                        app:iconSize="18dp"
+                        app:iconTint="@null"
+                        app:cornerRadius="14dp"
+                        app:backgroundTint="@color/ps_toolbar" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPolyline"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1.25"
+                        android:gravity="center"
+                        android:text="Mesh"
+                        android:textAllCaps="false"
+                        android:textColor="@color/ps_text"
+                        android:textSize="10sp"
+                        app:icon="@drawable/ic_mesh_form"
+                        app:iconGravity="top"
+                        app:iconPadding="0dp"
+                        app:iconSize="18dp"
+                        app:iconTint="@null"
+                        app:cornerRadius="14dp"
+                        app:backgroundTint="@color/ps_toolbar" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnMultiStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1.35"
+                        android:gravity="center"
+                        android:text="Multi"
+                        android:textAllCaps="false"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        app:icon="@drawable/ic_text_shaper"
+                        app:iconGravity="top"
+                        app:iconPadding="0dp"
+                        app:iconSize="18dp"
+                        app:iconTint="@null"
+                        app:cornerRadius="14dp"
+                        app:backgroundTint="@color/vt_primary_dark" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTabText"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:text="TEXT"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                app:cornerRadius="14dp"
+                app:backgroundTint="@color/ps_accent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTabEffects"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="EFEK"
+                android:textAllCaps="false"
+                android:textColor="@color/ps_text"
+                app:cornerRadius="14dp"
+                app:backgroundTint="@color/ps_toolbar" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/containerText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/vt_surface"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/ps_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Font &amp; Preview"
+                            android:textColor="@color/ps_accent"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSaveStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:text="Save"
+                            android:textAllCaps="false"
+                            android:textColor="@color/ps_text"
+                            android:textSize="10sp"
+                            app:icon="@drawable/ic_editor_save"
+                            app:iconGravity="textStart"
+                            app:iconPadding="4dp"
+                            app:iconSize="16dp"
+                            app:iconTint="@color/ps_text_bright"
+                            app:cornerRadius="12dp"
+                            app:backgroundTint="@color/ps_toolbar" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnLoadStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:layout_marginStart="4dp"
+                            android:text="Load"
+                            android:textAllCaps="false"
+                            android:textColor="@color/ps_text"
+                            android:textSize="10sp"
+                            app:icon="@drawable/ic_editor_load"
+                            app:iconGravity="textStart"
+                            app:iconPadding="4dp"
+                            app:iconSize="16dp"
+                            app:iconTint="@null"
+                            app:cornerRadius="12dp"
+                            app:backgroundTint="@color/ps_toolbar" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnFontBank"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:layout_marginStart="4dp"
+                            android:text="Bank"
+                            android:textAllCaps="false"
+                            android:textColor="@color/ps_text"
+                            android:textSize="11sp"
+                            app:icon="@drawable/ic_editor_font_bank"
+                            app:iconGravity="textStart"
+                            app:iconPadding="4dp"
+                            app:iconSize="16dp"
+                            app:iconTint="@null"
+                            app:cornerRadius="12dp"
+                            app:backgroundTint="@color/ps_toolbar" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <Spinner
+                            android:id="@+id/spinnerFont"
+                            android:layout_width="0dp"
+                            android:layout_height="38dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="@color/ps_border" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnFontAnalyze"
+                            android:layout_width="wrap_content"
+                            android:layout_height="38dp"
+                            android:layout_marginStart="8dp"
+                            android:text="Visual Match"
+                            android:textAllCaps="false"
+                            android:textColor="@color/white"
+                            android:textSize="11sp"
+                            app:icon="@drawable/ic_editor_match"
+                            app:iconGravity="textStart"
+                            app:iconPadding="5dp"
+                            app:iconSize="17dp"
+                            app:iconTint="@null"
+                            app:cornerRadius="12dp"
+                            app:backgroundTint="@color/ps_accent" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Size"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekFontSize"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:progressDrawable="@drawable/slider_bg"
+                            android:max="200" />
+
+                        <TextView
+                            android:id="@+id/tvFontSize"
+                            android:layout_width="44dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="44"
+                            android:textColor="@color/ps_text_bright"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/cbBold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Bold"
+                            android:textColor="@color/ps_text" />
+
+                        <CheckBox
+                            android:id="@+id/cbItalic"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="Italic"
+                            android:textColor="@color/ps_text" />
+
+                        <CheckBox
+                            android:id="@+id/cbExtraOutline"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="Outline"
+                            android:textColor="@color/ps_text" />
+
+                        <CheckBox
+                            android:id="@+id/cbExtraShadow"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="Shadow"
+                            android:textColor="@color/ps_text" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/cbExtraGradient"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Gradient fill"
+                            android:textColor="@color/ps_text" />
+
+                        <CheckBox
+                            android:id="@+id/cbExtraTexture"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="Texture fill"
+                            android:textColor="@color/ps_text" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Outline, shadow, gradient, and texture can be combined freely."
+                        android:textColor="@color/ink_muted"
+                        android:textSize="10sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Align"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAlignLeft"
+                            android:layout_width="0dp"
+                            android:layout_height="34dp"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:contentDescription="Align left"
+                            android:text=""
+                            android:textAllCaps="false"
+                            android:textSize="11sp"
+                            app:icon="@drawable/ic_editor_align_left"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconSize="19dp"
+                            app:iconTint="@null"
+                            app:cornerRadius="11dp"
+                            app:backgroundTint="@color/ps_toolbar" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAlignCenter"
+                            android:layout_width="0dp"
+                            android:layout_height="34dp"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:contentDescription="Align center"
+                            android:text=""
+                            android:textAllCaps="false"
+                            android:textSize="11sp"
+                            app:icon="@drawable/ic_editor_align_center"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconSize="19dp"
+                            app:iconTint="@null"
+                            app:cornerRadius="11dp"
+                            app:backgroundTint="@color/ps_toolbar" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAlignRight"
+                            android:layout_width="0dp"
+                            android:layout_height="34dp"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:contentDescription="Align right"
+                            android:text=""
+                            android:textAllCaps="false"
+                            android:textSize="11sp"
+                            app:icon="@drawable/ic_editor_align_right"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconSize="19dp"
+                            app:iconTint="@null"
+                            app:cornerRadius="11dp"
+                            app:backgroundTint="@color/ps_toolbar" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnJustify"
+                            android:layout_width="0dp"
+                            android:layout_height="34dp"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:contentDescription="Justify text"
+                            android:text=""
+                            android:textAllCaps="false"
+                            android:textSize="11sp"
+                            app:icon="@drawable/ic_editor_justify"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconSize="19dp"
+                            app:iconTint="@null"
+                            app:cornerRadius="11dp"
+                            app:backgroundTint="@color/ps_toolbar" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tracking"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekTracking"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:max="100"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvTracking"
+                            android:layout_width="44dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="0"
+                            android:textColor="@color/ps_text_bright"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Leading"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekLeading"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:max="320"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvLeading"
+                            android:layout_width="44dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="120%"
+                            android:textColor="@color/ps_text_bright"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Opacity"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekTextOpacity"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:max="100"
+                            android:progress="100"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvTextOpacity"
+                            android:layout_width="44dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="100%"
+                            android:textColor="@color/ps_text_bright"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/textColorPatch"
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="@color/ps_border" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_gravity="center_vertical"
+                            android:text="Tap untuk warna teks"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/containerEffects"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/vt_surface"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/ps_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="EFFECT LAB"
+                        android:textColor="@color/ps_accent"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Bangun tampilan teks berlapis"
+                        android:textColor="@color/ps_text_bright"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Outline, shadow, gradient, texture, dan blur dapat dipadukan. Preview di atas diperbarui langsung."
+                        android:textColor="@color/ink_muted"
+                        android:textSize="10sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/dialog_section_bg"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="PRESET UTAMA"
+                                android:textColor="@color/ps_text"
+                                android:textSize="9sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Pilih fondasi efek"
+                                android:textColor="@color/ink_muted"
+                                android:textSize="9sp" />
+                        </LinearLayout>
+
+                        <Spinner
+                            android:id="@+id/spinnerTextEffect"
+                            android:layout_width="0dp"
+                            android:layout_height="42dp"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1.2"
+                            android:backgroundTint="@color/ps_border" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/panelOutline"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/dialog_section_bg"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <CheckBox
+                            android:id="@+id/cbEnableOutlineEffect"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Aktifkan Outline"
+                            android:textColor="@color/ps_text"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/outlineColorPatch"
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
+                                app:cardCornerRadius="12dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="1dp"
+                                app:strokeColor="@color/ps_border" />
+
+                            <SeekBar
+                                android:id="@+id/seekOutlineWidth"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:max="22"
+                                android:progressDrawable="@drawable/slider_bg" />
+
+                            <TextView
+                                android:id="@+id/tvOutlineWidth"
+                                android:layout_width="44dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:text="1"
+                                android:textColor="@color/ps_text_bright"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <CheckBox
+                            android:id="@+id/cbOutlineGradient"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Gradient Outline"
+                            android:textColor="@color/ps_text"
+                            android:textSize="11sp" />
+
+                        <LinearLayout
+                            android:id="@+id/rowOutlineGradientColors"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/outlineGradientStartPatch"
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
+                                android:contentDescription="Warna awal gradient outline"
+                                app:cardCornerRadius="12dp"
+                                app:cardElevation="0dp"
+                                app:strokeColor="@color/ps_border"
+                                app:strokeWidth="1dp" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="10dp"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:text="Awal  →  Akhir"
+                                android:textColor="@color/ink_muted"
+                                android:textSize="10sp" />
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/outlineGradientEndPatch"
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
+                                android:contentDescription="Warna akhir gradient outline"
+                                app:cardCornerRadius="12dp"
+                                app:cardElevation="0dp"
+                                app:strokeColor="@color/ps_border"
+                                app:strokeWidth="1dp" />
+                        </LinearLayout>
+
+                        <SeekBar
+                            android:id="@+id/seekOutlineOpacity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:max="100"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvOutlineOpacity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Opacity"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/panelShadow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/dialog_section_bg"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <CheckBox
+                            android:id="@+id/cbEnableShadowEffect"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Aktifkan Shadow"
+                            android:textColor="@color/ps_text"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/shadowColorPatch"
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
+                                app:cardCornerRadius="12dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="1dp"
+                                app:strokeColor="@color/ps_border" />
+
+                            <SeekBar
+                                android:id="@+id/seekShadowRadius"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:max="60"
+                                android:progressDrawable="@drawable/slider_bg" />
+
+                            <TextView
+                                android:id="@+id/tvShadowRadius"
+                                android:layout_width="44dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:text="0"
+                                android:textColor="@color/ps_text_bright"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <SeekBar
+                            android:id="@+id/seekShadowSpread"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:max="64"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvShadowSpread"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ketebalan 0 px"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekShadowDx"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:max="48"
+                            android:progress="24"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvShadowDx"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Offset X"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekShadowDy"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:max="48"
+                            android:progress="24"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvShadowDy"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Offset Y"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekShadowOpacity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:max="100"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvShadowOpacity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Opacity"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/panelGradient"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/dialog_section_bg"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <CheckBox
+                            android:id="@+id/cbEnableGradientEffect"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Aktifkan Gradient"
+                            android:textColor="@color/ps_text"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/gradientStartPatch"
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
+                                app:cardCornerRadius="12dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="1dp"
+                                app:strokeColor="@color/ps_border" />
+
+                            <ImageButton
+                                android:id="@+id/btnEyedropGradStart"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/tool_btn_bg"
+                                android:contentDescription="Pick gradient start from canvas"
+                                android:src="@drawable/ic_eyedropper"
+                                app:tint="@color/ps_text_bright" />
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/gradientEndPatch"
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
+                                android:layout_marginStart="10dp"
+                                app:cardCornerRadius="12dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="1dp"
+                                app:strokeColor="@color/ps_border" />
+
+                            <ImageButton
+                                android:id="@+id/btnEyedropGradEnd"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/tool_btn_bg"
+                                android:contentDescription="Pick gradient end from canvas"
+                                android:src="@drawable/ic_eyedropper"
+                                app:tint="@color/ps_text_bright" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnAddGradientStop"
+                                android:layout_width="wrap_content"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="8dp"
+                                android:text="+ Stop"
+                                android:textAllCaps="false"
+                                android:textColor="@color/white"
+                                app:cornerRadius="12dp"
+                                app:backgroundTint="@color/vt_primary_dark" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Angle"
+                                android:textColor="@color/ink_muted"
+                                android:textSize="11sp" />
+
+                            <SeekBar
+                                android:id="@+id/seekGradientAngle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:max="360"
+                                android:progressDrawable="@drawable/slider_bg" />
+
+                            <TextView
+                                android:id="@+id/tvGradientAngle"
+                                android:layout_width="44dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:text="0°"
+                                android:textColor="@color/ps_text_bright"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/gradientStopsContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:orientation="vertical" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/panelTexture"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/dialog_section_bg"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <CheckBox
+                            android:id="@+id/cbEnableTextureEffect"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Aktifkan Texture"
+                            android:textColor="@color/ps_text"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/ivTexturePreview"
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
+                                android:background="@drawable/tool_btn_bg"
+                                android:padding="6dp"
+                                android:src="@drawable/ic_image_placeholder" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnTextTexturePick"
+                                android:layout_width="0dp"
+                                android:layout_height="42dp"
+                                android:layout_marginStart="8dp"
+                                android:layout_weight="1"
+                                android:text="Pilih Texture"
+                                android:textAllCaps="false"
+                                android:textColor="@color/white"
+                                app:cornerRadius="12dp"
+                                app:backgroundTint="@color/vt_primary_dark" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnTextTextureClear"
+                                android:layout_width="wrap_content"
+                                android:layout_height="42dp"
+                                android:layout_marginStart="8dp"
+                                android:text="Hapus"
+                                android:textAllCaps="false"
+                                android:textColor="@color/ps_text"
+                                app:cornerRadius="12dp"
+                                app:backgroundTint="@color/ps_toolbar" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/panelTextPath"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/dialog_section_bg"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Bentuk Teks"
+                            android:textColor="@color/ps_text"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <Spinner
+                            android:id="@+id/spinnerTextPathMode"
+                            android:layout_width="match_parent"
+                            android:layout_height="42dp"
+                            android:layout_marginTop="6dp"
+                            android:backgroundTint="@color/ps_border" />
+
+                        <TextView
+                            android:id="@+id/tvTextPathAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Kekuatan 35%"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekTextPathAmount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="200"
+                            android:progress="135"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvTextPathCycles"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Gelombang 1.5×"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekTextPathCycles"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="45"
+                            android:progress="10"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Curve, arch, valley, dan wavy tetap dapat dipadukan dengan outline, shadow, gradient, serta texture."
+                            android:textColor="@color/ink_muted"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/panelWarp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/dialog_section_bg"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <CheckBox
+                            android:id="@+id/cbEnableWarpEffect"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Aktifkan Warp"
+                            android:textColor="@color/ps_text"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Gunakan Perspective atau Mesh di bagian atas untuk membentuk teks."
+                            android:textColor="@color/ink_muted"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/panelBlur"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/dialog_section_bg"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <CheckBox
+                            android:id="@+id/cbEnableBlur"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Aktifkan Blur"
+                            android:textColor="@color/ps_text"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <Spinner
+                            android:id="@+id/spinnerBlurType"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_marginTop="4dp"
+                            android:backgroundTint="@color/ps_border" />
+
+                        <TextView
+                            android:id="@+id/tvBlurRadius"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Radius 0 px"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekBlurRadius"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="80"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <LinearLayout
+                            android:id="@+id/panelMotionBlur"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvBlurDistance"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Jarak gerak 20 px"
+                                android:textColor="@color/ink_muted"
+                                android:textSize="11sp" />
+
+                            <SeekBar
+                                android:id="@+id/seekBlurDistance"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:max="120"
+                                android:progressDrawable="@drawable/slider_bg" />
+
+                            <TextView
+                                android:id="@+id/tvBlurAngle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Arah 0° (kanan)"
+                                android:textColor="@color/ink_muted"
+                                android:textSize="11sp" />
+
+                            <SeekBar
+                                android:id="@+id/seekBlurAngle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:max="359"
+                                android:progressDrawable="@drawable/slider_bg" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:gravity="end"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnTextDialogCancel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:text="Batal"
+                            android:textAllCaps="false"
+                            android:textColor="@color/ps_text"
+                            app:cornerRadius="14dp"
+                            app:backgroundTint="@color/ps_toolbar" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnTextDialogApply"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="8dp"
+                            android:text="Terapkan"
+                            android:textAllCaps="false"
+                            android:textColor="@color/white"
+                            app:cornerRadius="14dp"
+                            app:backgroundTint="@color/ps_accent" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

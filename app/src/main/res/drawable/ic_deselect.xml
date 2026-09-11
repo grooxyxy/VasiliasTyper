@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Dashed selection rectangle (top segment) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/ps_text_bright"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M5,4 L10,4"/>
+    <!-- Dashed selection rectangle (top-right corner) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/ps_text_bright"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M13,4 L19,4 L19,10"/>
+    <!-- Dashed selection rectangle (right segment) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/ps_text_bright"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M19,13 L19,19 L13,19"/>
+    <!-- Dashed selection rectangle (bottom segment) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/ps_text_bright"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M10,19 L5,19 L5,13"/>
+    <!-- Dashed selection rectangle (left segment) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/ps_text_bright"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M5,10 L5,7"/>
+    <!-- X mark - diagonal line 1 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/vt_secondary"
+        android:strokeWidth="2.0"
+        android:strokeLineCap="round"
+        android:pathData="M9,9 L15,15"/>
+    <!-- X mark - diagonal line 2 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/vt_secondary"
+        android:strokeWidth="2.0"
+        android:strokeLineCap="round"
+        android:pathData="M15,9 L9,15"/>
+</vector>

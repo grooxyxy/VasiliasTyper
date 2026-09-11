@@ -1,0 +1,9 @@
+OCR 
+今年继续种春小麦，每亩下种三十斤。
+对于愚昧的人，只能用强硬手段。
+莫尔，你去安排农夫轮流搅拌泥水。
+
+TRANSLATE
+"": Tahun ini kita tetap menanam gandum musim semi. Gunakan sekitar 15 kg benih untuk setiap 667 m² lahan
+(): Orang-orang yang keras kepala hanya bisa dihadapi dengan tindakan tegas.
+"": Moore, atur para petani agar bergantian mengaduk lumpur itu.

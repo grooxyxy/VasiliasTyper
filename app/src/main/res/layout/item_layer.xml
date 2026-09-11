@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="62dp"
+    android:layout_marginBottom="2dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/layer_item_bg"
+    android:paddingStart="6dp"
+    android:paddingEnd="4dp">
+
+    <View
+        android:id="@+id/layerTypeStripe"
+        android:layout_width="3dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="7dp"
+        android:background="@color/vt_secondary" />
+
+    <ImageButton
+        android:id="@+id/btnLayerVisible"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="5dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="9dp"
+        android:src="@drawable/ic_eye"
+        app:tint="@color/ps_text_bright"
+        android:contentDescription="Tampilkan atau sembunyikan layer" />
+
+    <FrameLayout
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/dialog_field_bg"
+        android:padding="2dp">
+
+        <ImageView
+            android:id="@+id/layerThumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/vt_surface_high"
+            android:scaleType="centerCrop"
+            android:contentDescription="Thumbnail layer" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/layerName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/ps_text_bright"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:ellipsize="end"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/layerSubLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textColor="@color/ink_muted"
+            android:textSize="10sp"
+            android:ellipsize="end"
+            android:maxLines="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutMoveOrder"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/btnLayerUp"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="▲" />
+
+        <TextView
+            android:id="@+id/btnLayerDown"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="▼" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btnLayerLock"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="8dp"
+        android:src="@drawable/ic_lock"
+        app:tint="@color/ink_muted"
+        android:contentDescription="Kunci layer" />
+
+    <ImageButton
+        android:id="@+id/btnMergeDown"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:src="@drawable/ic_copy_layer"
+        android:visibility="gone"
+        android:contentDescription="Gabungkan layer ke bawah" />
+
+    <TextView
+        android:id="@+id/dragHandle"
+        android:layout_width="36dp"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="⋮"
+        android:textColor="@color/ps_text_bright"
+        android:textSize="20sp"
+        android:contentDescription="Tahan dan geser untuk mengurutkan" />
+</LinearLayout>

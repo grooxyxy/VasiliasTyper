@@ -1,0 +1,279 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
+}
+
+def signingPropertiesFile = rootProject.file('app/signing.properties')
+// signing.properties + keystore release JANGAN di-commit ke GitHub publik.
+// Bila file tidak ada (mis. di GitHub Actions), build memakai keystore debug
+// bawaan AGP agar CI tetap bisa merakit APK tanpa secret.
+def signingProperties = new Properties()
+def hasSigningProperties = signingPropertiesFile.exists()
+if (hasSigningProperties) {
+    signingPropertiesFile.withInputStream { signingProperties.load(it) }
+}
+
+android {
+    namespace = 'com.vasiliastyper'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.vasiliastyper"
+        minSdk 26
+        targetSdk 34
+        versionCode 13
+        versionName "1.0.0 Octopus"
+
+        ndk {
+            // Keep release packaging focused on the ABIs that matter for real devices.
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
+    }
+
+    signingConfigs {
+        if (hasSigningProperties) {
+            debug {
+                storeFile file(signingProperties['debugStoreFile'])
+                storePassword signingProperties['debugStorePassword']
+                keyAlias signingProperties['debugKeyAlias']
+                keyPassword signingProperties['debugKeyPassword']
+            }
+            release {
+                storeFile file(signingProperties['releaseStoreFile'])
+                storePassword signingProperties['releaseStorePassword']
+                keyAlias signingProperties['releaseKeyAlias']
+                keyPassword signingProperties['releaseKeyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            if (hasSigningProperties) {
+                signingConfig = signingConfigs.debug
+            }
+        }
+        release {
+            if (hasSigningProperties) {
+                signingConfig = signingConfigs.release
+            }
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    buildFeatures {
+        viewBinding = true
+        compose = true
+    }
+
+    // ONNX models (including LaMa Manga) must not be compressed — loaded via file path,
+    // not readBytes(), to avoid heap spikes on low-end devices.
+    // Keep other binary model extensions uncompressed too so model loading stays stable.
+    androidResources {
+        noCompress += ['onnx', 'bin', 'tflite', 'pb']
+    }
+
+    packaging {
+        resources {
+            // Avoid duplicate META-INF entries from multiple JARs / AARs.
+            excludes += [
+                    'META-INF/LICENSE',
+                    'META-INF/LICENSE.txt',
+                    'META-INF/LICENSE*',
+                    'META-INF/LICENSE.md',
+                    'META-INF/NOTICE*',
+                    'META-INF/NOTICE.md',
+                    'META-INF/DEPENDENCIES',
+                    'META-INF/AL2.0',
+                    'META-INF/LGPL2.1',
+                    'META-INF/*.kotlin_module',
+                    'META-INF/*.SF',
+                    'META-INF/*.RSA',
+                    'META-INF/*.DSA',
+                    'META-INF/INDEX.LIST',
+                    'META-INF/gradle/incremental.annotation.processors',
+                    'META-INF/proguard/**',
+                    'META-INF/versions/**'
+            ]
+        }
+        jniLibs {
+            // ONNX Runtime + OpenCV often ship overlapping native C++ runtime libs.
+            // Keep the native packaging deterministic and narrow the duplicate surface
+            // by picking the common shared objects that these dependencies frequently reuse.
+            pickFirsts += [
+                    '**/libc++_shared.so',
+                    '**/libonnxruntime.so',
+                    '**/libonnxruntime4j_jni.so',
+                    '**/libonnxruntime_providers_shared.so',
+                    '**/libopencv_java4.so',
+                    '**/libprotobuf-lite.so',
+                    '**/libprotobuf-javalite.so',
+                    '**/libtensorflowlite_jni.so'
+            ]
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+    implementation 'androidx.documentfile:documentfile:1.0.1'
+
+    // Jetpack Compose editor chrome. The existing high-performance CanvasView remains
+    // hosted below Compose while floating layer/brush controls are migrated safely.
+    implementation 'androidx.activity:activity-compose:1.10.1'
+    implementation 'androidx.compose.ui:ui:1.8.3'
+    implementation 'androidx.compose.ui:ui-tooling-preview:1.8.3'
+    implementation 'androidx.compose.foundation:foundation:1.8.3'
+    implementation 'androidx.compose.material3:material3:1.3.2'
+    debugImplementation 'androidx.compose.ui:ui-tooling:1.8.3'
+
+    // Kotlin coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    // AndroidX Activity / Fragment
+    implementation 'androidx.activity:activity-ktx:1.8.2'
+    implementation 'androidx.fragment:fragment-ktx:1.6.2'
+
+    // ── ONNX Runtime (LaMa Manga FP32 dynamic inpainting, opset 18) ────────
+    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.19.2'
+
+    implementation 'com.google.mlkit:text-recognition:16.0.0'
+    implementation 'com.google.mlkit:text-recognition-chinese:16.0.0'
+    implementation 'com.google.mlkit:text-recognition-korean:16.0.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // ── OpenCV Android (WebtoonContextEnhancer + MaskRefiner webtoon optimisation) ────
+    // Sourced from Maven Central (com.quickbirdstudios:opencv) — confirmed 200.
+    // v4.5.3.0 bundles native .so for all ABIs; no OpenCV Manager app required.
+    // API-compatible with org.opencv.* imports used throughout the codebase.
+    implementation 'com.quickbirdstudios:opencv:4.5.3.0'
+
+    // JVM unit tests under app/src/test.
+    testImplementation 'junit:junit:4.13.2'
+}
+
+// ── Bubble YOLOv8m bundle (Drive milik user, model lain tetap Hugging Face) ──
+// Task bundleBubbleModel menyediakan comic-speech-bubble-detector.onnx (~99MB)
+// di assets/models/bubble_yolov8m/v1/ SEBELUM build, dari salah satu sumber
+// (prioritas: file lokal > URL > default Drive):
+//  -PBUBBLE_MODEL_PATH=/lokal/comic-speech-bubble-detector.onnx (atau env)
+//  -PBUBBLE_MODEL_URL=https://.../bubble.onnx (atau env/secret BUBBLE_MODEL_URL)
+//  - default: Google Drive user (publik "Anyone with the link"), ID:
+//      13B42NV0mPPBzUUVsIvD4SvE3QXEaLOlv
+// Unduhan Drive memakai confirm-token + cookie (file ~99MB selalu kena halaman
+// peringatan virus-scan bila direct-download polos). Hasil divalidasi >50MB.
+// File hasil TIDAK di-commit (*.onnx di .gitignore). Model lain (LaMa/PP-OCR/
+// ComicTextDetector) TIDAK dibundle — unduh manual dari Hugging Face sesuai
+// README tiap folder assets/models.
+def bubbleDriveDefaultUrl = "https://drive.google.com/uc?export=download&id=13B42NV0mPPBzUUVsIvD4SvE3QXEaLOlv"
+def bubbleModelPath = project.findProperty("BUBBLE_MODEL_PATH") ?: System.getenv("BUBBLE_MODEL_PATH") ?: ""
+def bubbleModelUrl = project.findProperty("BUBBLE_MODEL_URL") ?: System.getenv("BUBBLE_MODEL_URL") ?: bubbleDriveDefaultUrl
+def bubbleAsset = file("src/main/assets/models/bubble_yolov8m/v1/comic-speech-bubble-detector.onnx")
+
+tasks.register("bundleBubbleModel") {
+    description = "Sediakan bubble YOLOv8m .onnx di assets (path lokal, URL, atau Drive default)."
+    onlyIf { !bubbleAsset.exists() || bubbleAsset.length() == 0L }
+    doLast {
+        bubbleAsset.parentFile?.mkdirs()
+        if (bubbleModelPath?.toString()?.trim()) {
+            def src = new File(bubbleModelPath.toString())
+            if (!src.exists() || src.length() <= 0) {
+                throw new GradleException("BUBBLE_MODEL_PATH tidak ditemukan: $bubbleModelPath")
+            }
+            src.withInputStream { ins -> bubbleAsset.withOutputStream { outs -> outs << ins } }
+            println("bundleBubbleModel: disalin dari $bubbleModelPath")
+        } else {
+            println("bundleBubbleModel: mengunduh model bubble (~99MB, sekali per mesin CI) ...")
+            downloadDriveAware(bubbleModelUrl.toString(), bubbleAsset)
+            def sz = bubbleAsset.length()
+            if (sz <= 50L * 1024 * 1024) {
+                bubbleAsset.delete()
+                throw new GradleException("Unduhan mencurigakan (${sz} byte). " +
+                    "Pastikan link Drive publik 'Anyone with the link' dan ID benar.")
+            }
+            println("bundleBubbleModel: OK ${sz / 1024 / 1024}MB -> bundled ke APK")
+        }
+    }
+}
+tasks.findByName("preBuild")?.dependsOn("bundleBubbleModel")
+
+// Unduh file model dengan dukungan Google Drive besar (>25MB selalu kena halaman
+// confirm virus-scan): ikuti redirect manual + cookie, lalu bila respons HTML cari
+// token confirm dan ulangi dengan token tersebut. Murni java.net — tanpa dep baru.
+void downloadDriveAware(String urlStr, File dest) {
+    String url = urlStr
+    Map<String, String> cookies = new LinkedHashMap<>()
+    int attempt = 0
+    while (true) {
+        attempt++
+        if (attempt > 6) throw new GradleException("Terlalu banyak redirect/confirm saat mengunduh model")
+        HttpURLConnection conn = new URI(url).toURL().openConnection() as HttpURLConnection
+        conn.instanceFollowRedirects = false
+        conn.connectTimeout = 30000
+        conn.readTimeout = 300000
+        conn.setRequestProperty("User-Agent",
+            "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Mobile Safari/537.36")
+        if (!cookies.isEmpty()) {
+            conn.setRequestProperty("Cookie", cookies.collect { k, v -> "$k=$v" }.join("; "))
+        }
+        int code = conn.responseCode
+        List<String> setCookies = conn.headerFields["Set-Cookie"]
+        if (setCookies != null) {
+            for (String sc : setCookies) {
+                String kv = sc.split(";")[0]
+                if (kv.contains("=")) cookies[kv.split("=")[0]] = kv.substring(kv.indexOf("=") + 1)
+            }
+        }
+        if (code >= 300 && code <= 399) {
+            String loc = conn.getHeaderField("Location")
+            conn.disconnect()
+            if (loc == null) throw new GradleException("Redirect tanpa Location dari $url")
+            url = loc.startsWith("http") ? loc : new URI(url).resolve(loc).toString()
+            continue
+        }
+        if (code != HttpURLConnection.HTTP_OK) {
+            conn.disconnect()
+            throw new GradleException("HTTP $code saat mengunduh model dari $url")
+        }
+        String ctype = (conn.contentType ?: "").toLowerCase()
+        if (ctype.contains("text/html")) {
+            String html = conn.inputStream.getText("UTF-8")
+            conn.disconnect()
+            def m = (html =~ /[?&]confirm=([0-9A-Za-z_-]+)/)
+            String token = m.find() ? m.group(1) : null
+            if (token != null && !url.contains("confirm=")) {
+                url = url + (url.contains("?") ? "&" : "?") + "confirm=$token"
+                continue
+            }
+            throw new GradleException("Drive mengembalikan halaman HTML, bukan file. " +
+                "Pastikan link publik 'Anyone with the link' dan ID file benar.")
+        }
+        dest.withOutputStream { outs ->
+            conn.inputStream.withStream { ins ->
+                byte[] buf = new byte[256 * 1024]
+                int n
+                while ((n = ins.read(buf)) >= 0) outs.write(buf, 0, n)
+            }
+        }
+        conn.disconnect()
+        return
+    }
+}

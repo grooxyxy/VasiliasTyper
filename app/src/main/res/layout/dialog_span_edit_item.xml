@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/system_panel_bg"
+    android:fillViewport="true"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="STYLE INSPECTOR"
+            android:textColor="@color/ps_accent"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSpanRangeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Bagian [0 – 0]"
+            android:textColor="@color/ps_text_bright"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:text="Aktifkan hanya properti yang ingin menggantikan gaya utama."
+            android:textColor="@color/ink_muted"
+            android:textSize="10sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/vt_surface"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/ps_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="TIPOGRAFI"
+                    android:textColor="@color/ps_text"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/cbSpanFont"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="@color/ps_accent"
+                        android:text="Font"
+                        android:textColor="@color/ps_text"
+                        android:textSize="11sp" />
+
+                    <Spinner
+                        android:id="@+id/spinnerSpanFont"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/ps_border"
+                        android:popupBackground="@color/ps_panel" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/cbSpanSize"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="@color/ps_accent"
+                        android:text="Size"
+                        android:textColor="@color/ps_text"
+                        android:textSize="11sp" />
+
+                    <SeekBar
+                        android:id="@+id/seekSpanSize"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:max="196"
+                        android:progress="40"
+                        android:progressDrawable="@drawable/slider_bg" />
+
+                    <TextView
+                        android:id="@+id/tvSpanSize"
+                        android:layout_width="54dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:text="44 px"
+                        android:textColor="@color/ps_text_bright"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/cbSpanBold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="@color/ps_accent"
+                        android:text="Bold"
+                        android:textColor="@color/ps_text"
+                        android:textStyle="bold" />
+
+                    <CheckBox
+                        android:id="@+id/cbSpanItalic"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:buttonTint="@color/ps_accent"
+                        android:text="Italic"
+                        android:textColor="@color/ps_text"
+                        android:textStyle="italic" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="@color/vt_surface"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/ps_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/cbSpanColor"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/ps_accent"
+                        android:text="WARNA BAGIAN"
+                        android:textColor="@color/ps_text"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvSpanColorHex"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="#FFFFFF"
+                        android:textColor="@color/ink_muted"
+                        android:textSize="10sp" />
+
+                    <View
+                        android:id="@+id/spanColorPatch"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:layout_marginStart="8dp"
+                        android:background="#FFFFFF" />
+                </LinearLayout>
+
+                <com.vasiliastyper.view.ColorWheelView
+                    android:id="@+id/spanColorWheel"
+                    android:layout_width="220dp"
+                    android:layout_height="220dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Geser cincin untuk hue, lalu pilih saturasi dan terang."
+                    android:textColor="@color/ink_muted"
+                    android:textSize="9sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="@color/vt_surface"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/ps_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/cbSpanEffect"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="@color/ps_accent"
+                        android:text="EFEK"
+                        android:textColor="@color/ps_text"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <Spinner
+                        android:id="@+id/spinnerSpanEffect"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/ps_border"
+                        android:popupBackground="@color/ps_panel" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/panelSpanOutline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/dialog_section_bg"
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="OUTLINE"
+                        android:textColor="@color/ps_accent"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="48dp"
+                            android:layout_height="wrap_content"
+                            android:text="Width"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="10sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekSpanOutlineW"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:max="30"
+                            android:progress="4"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvSpanOutlineW"
+                            android:layout_width="34dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="4"
+                            android:textColor="@color/ps_text_bright"
+                            android:textSize="10sp" />
+
+                        <View
+                            android:id="@+id/spanOutlineColorPatch"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginStart="8dp"
+                            android:background="#000000" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/panelSpanShadow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/dialog_section_bg"
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="SHADOW"
+                        android:textColor="@color/ps_accent"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="48dp"
+                            android:layout_height="wrap_content"
+                            android:text="Radius"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="10sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekSpanShadowR"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:max="40"
+                            android:progress="6"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvSpanShadowR"
+                            android:layout_width="34dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="6"
+                            android:textColor="@color/ps_text_bright"
+                            android:textSize="10sp" />
+
+                        <View
+                            android:id="@+id/spanShadowColorPatch"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginStart="8dp"
+                            android:background="#000000" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSpanItemDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:text="Hapus"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/ps_danger"
+                app:cornerRadius="13dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSpanItemCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:layout_marginStart="8dp"
+                android:text="Batal"
+                android:textAllCaps="false"
+                android:textColor="@color/ps_text"
+                app:backgroundTint="@color/ps_toolbar"
+                app:cornerRadius="13dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSpanItemOk"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:layout_marginStart="8dp"
+                android:text="Simpan"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                app:backgroundTint="@color/ps_accent"
+                app:cornerRadius="13dp" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- API keys (Gemini/Agnes/AI chat) tidak boleh ikut backup/transfer. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="gemini_settings" />
+        <exclude domain="sharedpref" path="agnes_image_ai" />
+        <exclude domain="sharedpref" path="ai_chat_settings" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="gemini_settings" />
+        <exclude domain="sharedpref" path="agnes_image_ai" />
+        <exclude domain="sharedpref" path="ai_chat_settings" />
+    </device-transfer>
+</data-extraction-rules>
