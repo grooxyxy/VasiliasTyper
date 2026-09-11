@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -52,13 +53,18 @@ jobs:
         # RELEASE_KEYSTORE_BASE64 (base64 dari .jks), RELEASE_STORE_PASSWORD,
         # RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD. Bila kosong, release tetap
         # dirakit unsigned (app-release-unsigned.apk) — tetap bisa di-sign manual.
-        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' }}
+        # NOTE: tanpa `if: secrets...` agar workflow tidak invalid (0 jobs).
+        # Cek secret di dalam bash saja.
         env:
           RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
           RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
+          if [ -z "$RELEASE_KEYSTORE_BASE64" ]; then
+            echo "No RELEASE_KEYSTORE_BASE64 secret — lewati signing, build unsigned release."
+            exit 0
+          fi
           echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > app/ci-release.jks
           printf 'releaseStoreFile=%s\nreleaseStorePassword=%s\nreleaseKeyAlias=%s\nreleaseKeyPassword=%s\n' \
             "ci-release.jks" "$RELEASE_STORE_PASSWORD" "$RELEASE_KEY_ALIAS" "$RELEASE_KEY_PASSWORD" \
