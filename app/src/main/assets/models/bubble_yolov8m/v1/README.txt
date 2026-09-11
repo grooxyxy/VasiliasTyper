@@ -18,7 +18,12 @@ Cara menyediakan model (pilih satu):
 Kontrak ONNX:
   input   float32 [1,3,640,640], RGB 0..1 (letterbox pad 114)
   output  float32 [1,6,8400] = cx,cy,w,h + 2 skor (mentah, tanpa sigmoid)
-  conf 0.30, NMS IoU 0.45, tiling strip 1200/overlap 300 + NMS global.
+  conf 0.30, NMS IoU 0.45.
+
+Gambar tinggi (720x16000 bahkan lebih): diproses per tile grid 1200px dengan
+overlap 300px + NMS global, sehingga bubble kecil tidak hancur dan memori
+tetap kecil (satu tile langsung di-recycle). Gambar super-tinggi hanya
+menambah jumlah tile (±18 tile untuk 16000px), bukan memori.
 
 Model lain (LaMa Manga, PP-OCR, ComicTextDetector) tetap dari Hugging Face
 sesuai README tiap folder assets/models — tidak dibundle ke APK.

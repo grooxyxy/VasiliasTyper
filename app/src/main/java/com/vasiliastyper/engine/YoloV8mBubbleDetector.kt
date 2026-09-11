@@ -29,7 +29,13 @@ import kotlin.math.roundToInt
  *  - input `[1,3,640,640]` RGB 0..1 (letterbox pad abu 114);
  *  - output `[1,6,8400]` = cx,cy,w,h + 2 skor (single-class langsung,
  *    multi-class argmax, skor MENTAH tanpa sigmoid).
- * Aturan: conf 0.30, NMS IoU 0.45, tiling strip 1200/overlap 300 + NMS global.
+ * Aturan: conf 0.30, NMS IoU 0.45.
+ *
+ * Gambar tinggi (720x16000 bahkan lebih) diproses per tile grid 1200px dengan
+ * overlap 300px + NMS global, sehingga:
+ *  - konten tidak digepeng ke input 640 sekaligus (bubble kecil tidak hancur);
+ *  - memori tetap kecil (satu tile ±5MB, langsung di-recycle);
+ *  - gambar super-tinggi hanya menambah jumlah tile, bukan memori.
  * Model hilang/rusak = daftar kosong; pemanggil memakai fallback OpenCV/ML Kit.
  */
 object YoloV8mBubbleDetector {
@@ -189,26 +195,46 @@ object YoloV8mBubbleDetector {
 
     private data class ScoredBox(val rect: RectF, val score: Float)
 
+    /** Satu tile grid: (x0,y0) inklusif — (x1,y1) eksklusif dalam koordinat bitmap. */
+    private data class Tile(val x0: Int, val y0: Int, val x1: Int, val y1: Int)
+
+    /** Grid 2D dari splitter 1D: kolom × baris, tiap tile ≤TILE_SIZE + overlap. */
+    internal fun splitGrid(width: Int, height: Int): List<Tile> {
+        val xs = splitTiles(width, TILE_SIZE, TILE_OVERLAP)
+        val ys = splitTiles(height, TILE_SIZE, TILE_OVERLAP)
+        val tiles = ArrayList<Tile>(xs.size * ys.size)
+        for ((x0, x1) in xs) {
+            for ((y0, y1) in ys) {
+                if (x1 > x0 && y1 > y0) tiles += Tile(x0, y0, x1, y1)
+            }
+        }
+        return tiles
+    }
+
     private fun detectTiled(
         env: OrtEnvironment,
         activeSession: OrtSession,
         bitmap: Bitmap,
     ): List<Detection> {
         val inName = activeSession.inputNames.firstOrNull() ?: return emptyList()
-        val tiles = splitTiles(bitmap.height, TILE_SIZE, TILE_OVERLAP)
+        val tiles = splitGrid(bitmap.width, bitmap.height)
         val all = mutableListOf<ScoredBox>()
-        for ((y0, y1) in tiles) {
-            val th = y1 - y0
-            if (th <= 0) continue
+        for (t in tiles) {
+            val tw = t.x1 - t.x0
+            val th = t.y1 - t.y0
+            if (tw <= 0 || th <= 0) continue
             val tile = try {
-                Bitmap.createBitmap(bitmap, 0, y0, bitmap.width, th)
+                Bitmap.createBitmap(bitmap, t.x0, t.y0, tw, th)
             } catch (_: Throwable) {
                 continue
             }
             try {
                 detectTile(env, activeSession, inName, tile).forEach { b ->
                     all += ScoredBox(
-                        RectF(b.rect.left, b.rect.top + y0, b.rect.right, b.rect.bottom + y0),
+                        RectF(
+                            b.rect.left + t.x0, b.rect.top + t.y0,
+                            b.rect.right + t.x0, b.rect.bottom + t.y0
+                        ),
                         b.score,
                     )
                 }

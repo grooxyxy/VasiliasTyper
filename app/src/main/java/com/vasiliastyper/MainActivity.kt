@@ -740,24 +740,76 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val fontPickerLauncher = registerForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? ->
-        uri ?: return@registerForActivityResult
-        lifecycleScope.launch {
-            val valid = CustomFontManager.isFontFile(this@MainActivity, uri)
-            if (!valid) {
-                AlertDialog.Builder(this@MainActivity)
-                    .setTitle("Format Font Tidak Dikenali")
-                    .setMessage("Signature file bukan TTF, OTF, atau TTC standar. Tetap coba import? File yang tidak dapat dibaca Android akan ditolak dengan aman.")
-                    .setPositiveButton("Import Anyway") { _, _ ->
-                        lifecycleScope.launch { doImportFont(uri) }
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
-            } else {
-                doImportFont(uri)
+        ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris: List<Uri> ->
+        if (uris.isEmpty()) return@registerForActivityResult
+        // Satu file = alur lama (dialog rename bila duplikat).
+        // Banyak file = batch: duplikat otomatis disimpan dengan nama bernomor.
+        if (uris.size == 1) {
+            val uri = uris.first()
+            lifecycleScope.launch {
+                val valid = CustomFontManager.isFontFile(this@MainActivity, uri)
+                if (!valid) {
+                    AlertDialog.Builder(this@MainActivity)
+                        .setTitle("Format Font Tidak Dikenali")
+                        .setMessage("Signature file bukan TTF, OTF, atau TTC standar. Tetap coba import? File yang tidak dapat dibaca Android akan ditolak dengan aman.")
+                        .setPositiveButton("Import Anyway") { _, _ ->
+                            lifecycleScope.launch { doImportFont(uri) }
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                } else {
+                    doImportFont(uri)
+                }
+            }
+        } else {
+            lifecycleScope.launch { doImportFonts(uris) }
+        }
+    }
+
+    /**
+     * Import banyak font sekaligus: tiap file divalidasi signature, duplikat
+     * otomatis diberi nama bernomor ("Nama (2)", "Nama (3)", ...), lalu satu
+     * ringkasan Toast di akhir (tanpa dialog per file).
+     */
+    private suspend fun doImportFonts(uris: List<Uri>) {
+        var ok = 0
+        var renamed = 0
+        var failed = 0
+        for (uri in uris) {
+            var result = CustomFontManager.importFont(this, uri)
+            var autoRenamed = false
+            if (result is CustomFontManager.ImportResult.Duplicate) {
+                var n = 2
+                while (n < 100) {
+                    val dupName = (result as? CustomFontManager.ImportResult.Duplicate)
+                        ?.existingDisplayName ?: break
+                    result = CustomFontManager.importFont(
+                        this, uri,
+                        forcedName = "$dupName ($n)",
+                        override = false
+                    )
+                    if (result !is CustomFontManager.ImportResult.Duplicate) break
+                    n++
+                }
+                autoRenamed = result is CustomFontManager.ImportResult.Success
+            }
+            when {
+                result is CustomFontManager.ImportResult.Success && autoRenamed -> renamed++
+                result is CustomFontManager.ImportResult.Success -> ok++
+                else -> failed++
             }
         }
+        invalidateFontCache()
+        val parts = mutableListOf<String>()
+        if (ok > 0) parts += "$ok font diimport"
+        if (renamed > 0) parts += "$renamed duplikat disimpan dengan nama baru"
+        if (failed > 0) parts += "$failed gagal"
+        Toast.makeText(
+            this,
+            if (parts.isEmpty()) "Tidak ada font diimport" else parts.joinToString(", "),
+            Toast.LENGTH_LONG
+        ).show()
     }
 
     /**
@@ -3405,9 +3457,11 @@ class MainActivity : AppCompatActivity() {
         fallbackSourceTexts: List<String> = emptyList()
     ): List<ScriptOcrMatcher.OcrRegion> {
         val ocr = detectScriptRegionsWithMlKit(bitmap)
-        // Bubble utama: YOLOv8m (Drive user, dibundle saat build). Bila model
-        // tidak ada/gagal/timeout, fallback ke OpenCV lokal tanpa crash.
-        val bubbles: List<RectF> = withTimeoutOrNull(60_000L) {
+        // Bubble utama: YOLOv8m (Drive user, dibundle saat build). Grid tiling
+        // 1200/300 membuat 720x16000+ hanya menambah jumlah tile (±18 tile
+        // untuk 16000px) sehingga timeout 120 dtk aman untuk HP low-end.
+        // Bila model tidak ada/gagal/timeout, fallback ke OpenCV lokal.
+        val bubbles: List<RectF> = withTimeoutOrNull(120_000L) {
             withContext(Dispatchers.Default) {
                 runCatching {
                     YoloV8mBubbleDetector.detect(this@MainActivity, bitmap).map { it.rect }
@@ -9506,7 +9560,7 @@ class MainActivity : AppCompatActivity() {
 
         val dialog = AlertDialog.Builder(this).setTitle("Font Bank")
             .setView(view)
-            .setNeutralButton("Import Font…") { _, _ ->
+            .setNeutralButton("Import Fonts…") { _, _ ->
                 fontPickerLauncher.launch(
                     arrayOf("font/ttf", "font/otf", "application/x-font-ttf", "application/x-font-opentype", "application/octet-stream")
                 )

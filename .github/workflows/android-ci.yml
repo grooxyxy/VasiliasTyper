@@ -41,8 +41,35 @@ jobs:
           ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
           ./gradlew :app:assembleDebug --no-daemon --stacktrace
 
-      - name: Upload APK
+      - name: Upload APK (debug)
         uses: actions/upload-artifact@v4
         with:
           name: vasiliastyper-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+
+      - name: Siapkan signing release (bila secret ada)
+        # Release signed bila 4 secret ini diisi di Settings → Secrets → Actions:
+        # RELEASE_KEYSTORE_BASE64 (base64 dari .jks), RELEASE_STORE_PASSWORD,
+        # RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD. Bila kosong, release tetap
+        # dirakit unsigned (app-release-unsigned.apk) — tetap bisa di-sign manual.
+        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' }}
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > app/ci-release.jks
+          printf 'releaseStoreFile=%s\nreleaseStorePassword=%s\nreleaseKeyAlias=%s\nreleaseKeyPassword=%s\n' \
+            "ci-release.jks" "$RELEASE_STORE_PASSWORD" "$RELEASE_KEY_ALIAS" "$RELEASE_KEY_PASSWORD" \
+            > app/signing.properties
+
+      - name: Assemble release
+        run: |
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Upload APK (release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: vasiliastyper-release-apk
+          path: app/build/outputs/apk/release/*.apk

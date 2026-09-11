@@ -13,6 +13,10 @@ def hasSigningProperties = signingPropertiesFile.exists()
 if (hasSigningProperties) {
     signingPropertiesFile.withInputStream { signingProperties.load(it) }
 }
+// Blok debug/release independen: CI hanya menulis entri release (dari secret),
+// tanpa wajib menyertakan keystore debug lokal.
+def hasDebugSigning = hasSigningProperties && signingProperties['debugStoreFile']
+def hasReleaseSigning = hasSigningProperties && signingProperties['releaseStoreFile']
 
 android {
     namespace = 'com.vasiliastyper'
@@ -32,13 +36,15 @@ android {
     }
 
     signingConfigs {
-        if (hasSigningProperties) {
+        if (hasDebugSigning) {
             debug {
                 storeFile file(signingProperties['debugStoreFile'])
                 storePassword signingProperties['debugStorePassword']
                 keyAlias signingProperties['debugKeyAlias']
                 keyPassword signingProperties['debugKeyPassword']
             }
+        }
+        if (hasReleaseSigning) {
             release {
                 storeFile file(signingProperties['releaseStoreFile'])
                 storePassword signingProperties['releaseStorePassword']
@@ -50,12 +56,12 @@ android {
 
     buildTypes {
         debug {
-            if (hasSigningProperties) {
+            if (hasDebugSigning) {
                 signingConfig = signingConfigs.debug
             }
         }
         release {
-            if (hasSigningProperties) {
+            if (hasReleaseSigning) {
                 signingConfig = signingConfigs.release
             }
             minifyEnabled false
