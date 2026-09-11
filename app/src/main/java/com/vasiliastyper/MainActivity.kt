@@ -7284,6 +7284,10 @@ class MainActivity : AppCompatActivity() {
         // v5.1 — floating quick-edit toolbar wiring
         binding.canvasView.onTextSelected = { el -> updateTextQuickToolbar(el) }
         binding.canvasView.onImageSelected = { el -> updateImageQuickToolbar(el) }
+        // Ukuran px realtime saat resize manual lewat handle.
+        binding.canvasView.onTextSizePreview = { px ->
+            binding.statusInfo.text = "${px.roundToInt()} px"
+        }
         setupTextQuickToolbar()
         setupImageQuickToolbar()
         binding.canvasView.onStatusUpdate = { zoom, x, y ->
@@ -11768,6 +11772,10 @@ class MainActivity : AppCompatActivity() {
     // Engine pilihan user untuk deteksi teks di panel Mask
     private val maskEngineCodes = arrayOf("ppocr_small", "mlkit_v2")
 
+    // Metode bentuk mask: "box" = kotak penuh (saat ini),
+    // "glyph" = dikencangkan mengikuti bentuk teks/font.
+    private val maskMethodCodes = arrayOf("box", "glyph")
+
     // Kode bahasa untuk engine mask yang mendukung pilihan bahasa (termasuk ML Kit v2).
     private val maskLangCodes = arrayOf("auto", "en", "zh", "ko")
 
@@ -12396,6 +12404,13 @@ class MainActivity : AppCompatActivity() {
             arrayOf("Auto (semua)", "English", "中文", "한국어")
         )
 
+        // Spinner metode bentuk mask
+        binding.spinnerMaskMethod.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            arrayOf("Kotak (penuh)", "Ikuti bentuk teks")
+        )
+
         // The Mask panel intentionally exposes only the two requested engines.
         binding.spinnerMaskOpenCvMode.visibility = View.GONE
 
@@ -12646,6 +12661,7 @@ class MainActivity : AppCompatActivity() {
 
         val engine = maskEngineCodes.getOrNull(binding.spinnerMaskEngine.selectedItemPosition) ?: "ppocr_small"
         val lang = maskLangCodes.getOrNull(binding.spinnerMaskLang.selectedItemPosition) ?: "auto"
+        val method = maskMethodCodes.getOrNull(binding.spinnerMaskMethod.selectedItemPosition) ?: "box"
         val engineLabel = when (engine) {
             "ppocr_small" -> "PP-OCRv6 Small"
             "mlkit_v2" -> "ML Kit v2"
@@ -12690,19 +12706,26 @@ class MainActivity : AppCompatActivity() {
 
                 val filtered = postProcessMaskRegions(source, outcome.regions, engine, supportRects)
 
+                // Metode "Ikuti bentuk teks": kencangkan tiap kotak ke piksel
+                // glyph aktual (proyeksi baris/kolom), bukan kotak penuh.
+                val shaped = if (method == "glyph") {
+                    TextGlyphMasker.tighten(source, filtered)
+                } else filtered
+
                 textDetectedRegions.clear()
-                textDetectedRegions.addAll(filtered)
-                binding.canvasView.geminiDetectOverlay = filtered
+                textDetectedRegions.addAll(shaped)
+                binding.canvasView.geminiDetectOverlay = shaped
                 binding.canvasView.geminiOverlayDeleteMode = false
                 binding.canvasView.invalidate()
                 refreshMaskRegionList()
-                setMaskActionsEnabled(filtered.isNotEmpty())
+                setMaskActionsEnabled(shaped.isNotEmpty())
 
-                if (filtered.isEmpty()) {
+                if (shaped.isEmpty()) {
                     binding.tvMaskStatus.text = "Tidak ada teks terdeteksi"
                     Toast.makeText(this@MainActivity, "Tidak ada teks terdeteksi", Toast.LENGTH_SHORT).show()
                 } else {
-                    val msg = "${filtered.size} kotak baris terdeteksi; mask menutup seluruh region"
+                    val how = if (method == "glyph") "mask mengikuti bentuk teks" else "mask menutup seluruh region"
+                    val msg = "${shaped.size} kotak baris terdeteksi; $how"
                     binding.tvMaskStatus.text = msg
                     Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
                 }

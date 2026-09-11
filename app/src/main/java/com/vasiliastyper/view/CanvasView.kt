@@ -45,6 +45,8 @@ class CanvasView @JvmOverloads constructor(
      * empty canvas, signalling the floating quick-toolbar should be hidden.
      */
     var onTextSelected: ((element: TextElement?) -> Unit)? = null
+    /** Ukuran font (px) realtime saat teks di-resize manual lewat handle. */
+    var onTextSizePreview: ((sizePx: Float) -> Unit)? = null
     /** Fired when an ImageElement is selected directly on the canvas. */
     var onImageSelected: ((element: ImageElement?) -> Unit)? = null
     var onStatusUpdate: ((String, Float, Float) -> Unit)? = null
@@ -2255,9 +2257,10 @@ class CanvasView @JvmOverloads constructor(
                             "br" -> { val oldH=el.height; el.width=snapToGrid((unrot.x-el.x).coerceAtLeast(40f)); el.height=snapToGrid((unrot.y-el.y).coerceAtLeast(20f)); if(oldH>0f)el.fontSize=(el.fontSize*(el.height/oldH)).coerceIn(4f,512f) }
                             "ml" -> { val right=el.x+el.width; el.x=snapToGrid(unrot.x.coerceAtMost(right-40f)); el.width=snapToGrid((right-el.x).coerceAtLeast(40f)) }
                             "mr" -> { el.width=snapToGrid((unrot.x-el.x).coerceAtLeast(40f)) }
-                            "mt" -> { val bottom=el.y+el.height; el.y=snapToGrid(unrot.y.coerceAtMost(bottom-20f)); el.height=snapToGrid((bottom-el.y).coerceAtLeast(20f)); el.fontSize=TextRenderer.autoFitFontSize(el.text,el.width,el.height,el.typeface) }
-                            "mb" -> { el.height=snapToGrid((unrot.y-el.y).coerceAtLeast(20f)); el.fontSize=TextRenderer.autoFitFontSize(el.text,el.width,el.height,el.typeface) }
+                            "mt" -> { val bottom=el.y+el.height; el.y=snapToGrid(unrot.y.coerceAtMost(bottom-20f)); el.height=snapToGrid((bottom-el.y).coerceAtLeast(20f)); el.fontSize=TextRenderer.autoFitFontSize(el.text,el.width,el.height,el.typeface); onTextSizePreview?.invoke(el.fontSize) }
+                            "mb" -> { el.height=snapToGrid((unrot.y-el.y).coerceAtLeast(20f)); el.fontSize=TextRenderer.autoFitFontSize(el.text,el.width,el.height,el.typeface); onTextSizePreview?.invoke(el.fontSize) }
                         }
+                        if (handle in setOf("tl", "tr", "bl", "br")) onTextSizePreview?.invoke(el.fontSize)
                         invalidate()
                     }
                 }
@@ -2285,7 +2288,7 @@ class CanvasView @JvmOverloads constructor(
                             val cx = el.x + el.width / 2f; val cy = el.y + el.height / 2f
                             val fingerAngle = atan2(pt.y - cy, pt.x - cx) * 180f / PI.toFloat()
                             val raw = rotStartAngle + (fingerAngle - rotStartFingerAngle)
-                            el.rotation = smoothAngle(el.rotation, raw)
+                            el.rotation = snapRotationToCardinal(smoothAngle(el.rotation, raw))
                         }
                         invalidate()
                     }
@@ -3663,6 +3666,20 @@ class CanvasView @JvmOverloads constructor(
     private fun smoothAngle(current: Float, target: Float, factor: Float = 0.35f): Float {
         val delta = ((target - current + 540f) % 360f) - 180f
         return current + delta * factor
+    }
+
+    /**
+     * Force sudut ke 0/90/180/270 bila sudah dekat (≤4°) agar user mudah
+     * meluruskan teks tanpa presisi jari.
+     */
+    private fun snapRotationToCardinal(deg: Float): Float {
+        val n = ((deg % 360f) + 360f) % 360f
+        for (snap in floatArrayOf(0f, 90f, 180f, 270f)) {
+            var d = kotlin.math.abs(n - snap)
+            if (d > 180f) d = 360f - d
+            if (d <= 4f) return snap
+        }
+        return deg
     }
 
     // ── Transform math helpers ────────────────────────────────────────────────
