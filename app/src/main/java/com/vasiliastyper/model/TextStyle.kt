@@ -40,6 +40,8 @@ data class TextStyle(
     var tracking: Float = 0f,
     var leading: Float = 120f,
     var justify: Boolean = false,
+    /** Jarak antar paragraf ala ibispaint, px. -50 … +50. */
+    var paragraphSpacing: Float = 0f,
     var textPathMode: String = "NONE",
     var textPathAmount: Float = 35f,
     var textPathCycles: Float = 1.5f,
@@ -97,6 +99,7 @@ data class TextStyle(
             align = align.uppercase().takeIf { it in setOf("LEFT", "CENTER", "RIGHT") } ?: "CENTER",
             tracking = tracking.finiteOr(0f).coerceIn(-128f, 512f),
             leading = leading.finiteOr(120f).coerceIn(-50f, 1000f),
+            paragraphSpacing = paragraphSpacing.finiteOr(0f).coerceIn(-50f, 50f),
             textPathMode = textPathMode.uppercase().takeIf {
                 it in setOf("NONE", "CURVE_UP", "CURVE_DOWN", "WAVE", "ARCH", "VALLEY")
             } ?: "NONE",

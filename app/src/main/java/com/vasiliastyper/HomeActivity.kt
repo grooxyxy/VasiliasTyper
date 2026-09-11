@@ -15,6 +15,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -31,6 +32,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vasiliastyper.adapter.RecentProjectAdapter
 import com.vasiliastyper.engine.BitmapSafety
+import com.vasiliastyper.engine.ModelDownloader
+import com.vasiliastyper.engine.YoloV8mBubbleDetector
 import com.vasiliastyper.engine.AgnesAiSettings
 import com.vasiliastyper.engine.AiChatSettings
 import com.vasiliastyper.engine.GeminiSettings
@@ -720,6 +723,43 @@ class HomeActivity : AppCompatActivity() {
         geminiInput.setText(GeminiSettings.getApiKey(this).orEmpty())
         agnesKeyInput.setText(agnes.apiKey)
         promptInput.setText(agnes.prompt)
+
+        // ── Model AI lokal: status + unduh ──────────────────────────────
+        val modelStatus = view.findViewById<TextView>(R.id.tvModelStatus)
+        val btnDownload = view.findViewById<Button>(R.id.btnDownloadLama)
+        val btnCheck = view.findViewById<Button>(R.id.btnCheckModels)
+        fun refreshModelStatus() {
+            val lama = ModelDownloader.isLamaMangaReady(this)
+            val yolo = YoloV8mBubbleDetector.isAvailable(this)
+            modelStatus?.text =
+                "LaMa Manga: ${if (lama) "tersedia" else "belum ada"}\n" +
+                "Bubble YOLOv8m: ${if (yolo) "siap" else "belum ada (dibundle saat build)"}"
+            btnDownload?.isEnabled = !lama
+            btnDownload?.text = if (lama) "Model LaMa Sudah Tersedia" else "Unduh Model LaMa (~197 MB)"
+        }
+        refreshModelStatus()
+        btnCheck?.setOnClickListener { refreshModelStatus() }
+        btnDownload?.setOnClickListener {
+            btnDownload.isEnabled = false
+            btnDownload.text = "Mengunduh… 0%"
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    ModelDownloader.downloadLamaManga(this@HomeActivity) { downloaded, total ->
+                        val pct = if (total > 0) (downloaded * 100 / total).toInt() else 0
+                        runOnUiThread { btnDownload.text = "Mengunduh… $pct%" }
+                    }
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@HomeActivity, "Model LaMa berhasil diunduh", Toast.LENGTH_LONG).show()
+                        refreshModelStatus()
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@HomeActivity, "Unduh gagal: ${e.message}", Toast.LENGTH_LONG).show()
+                        refreshModelStatus()
+                    }
+                }
+            }
+        }
 
         val dialog = AlertDialog.Builder(this)
             .setView(view)

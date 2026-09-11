@@ -8066,9 +8066,12 @@ class MainActivity : AppCompatActivity() {
         var outlineGradientEnabled = existingElement?.enableOutlineGradient ?: false
         var outlineGradientStart = existingElement?.outlineGradStartColor ?: outlineColor
         var outlineGradientEnd = existingElement?.outlineGradEndColor ?: Color.GRAY
-        var size = existingElement?.fontSize ?: 44f
+        var size = existingElement?.fontSize
+            ?: getSharedPreferences("vasilia_editor", MODE_PRIVATE).getFloat("last_font_size", 44f)
         var tracking = existingElement?.tracking?.roundToInt() ?: 0
         var leading = (existingElement?.leading ?: 120f) / 100f
+        // Jarak paragraph ala ibispaint: -50 … +50 px antar paragraf.
+        var paragraph = existingElement?.paragraphSpacing ?: 0f
 
         var align = existingElement?.align ?: TextAlign.CENTER
         var gradientAngle = existingElement?.gradientAngle ?: 90f
@@ -8450,6 +8453,14 @@ class MainActivity : AppCompatActivity() {
             db.tvFontSize.text = size.roundToInt().toString()
             db.tvTextPreview.textSize = size
         })
+        db.tvFontSize.setOnClickListener {
+            askNumberInput("Ukuran font (px)", size, 4f, 512f) {
+                size = it
+                db.seekFontSize.progress = (size - 8f).roundToInt().coerceIn(0, db.seekFontSize.max)
+                db.tvFontSize.text = size.roundToInt().toString()
+                db.tvTextPreview.textSize = size
+            }
+        }
         db.seekTracking.progress = (tracking + 50).coerceIn(0, db.seekTracking.max)
         db.tvTracking.text = tracking.toString()
         db.seekTracking.setOnSeekBarChangeListener(seekListener { progress ->
@@ -8457,12 +8468,61 @@ class MainActivity : AppCompatActivity() {
             db.tvTracking.text = tracking.toString()
             db.tvTextPreview.letterSpacing = tracking / 100f
         })
+        db.tvTracking.setOnClickListener {
+            askNumberInput("Tracking (px)", tracking.toFloat(), -50f, 100f) {
+                tracking = it.roundToInt()
+                db.seekTracking.progress = (tracking + 50).coerceIn(0, db.seekTracking.max)
+                db.tvTracking.text = tracking.toString()
+                db.tvTextPreview.letterSpacing = tracking / 100f
+            }
+        }
         db.seekLeading.progress = ((leading * 100f).roundToInt() + 50).coerceIn(0, db.seekLeading.max)
         db.tvLeading.text = "${(leading * 100f).roundToInt()}%"
         db.seekLeading.setOnSeekBarChangeListener(seekListener { progress ->
             leading = (progress - 50) / 100f
             db.tvLeading.text = "${(leading * 100).roundToInt()}%"
         })
+        db.tvLeading.setOnClickListener {
+            askNumberInput("Leading (%)", leading * 100f, -50f, 270f) {
+                leading = it / 100f
+                db.seekLeading.progress = ((leading * 100f).roundToInt() + 50).coerceIn(0, db.seekLeading.max)
+                db.tvLeading.text = "${(leading * 100).roundToInt()}%"
+            }
+        }
+        // Paragraph -50 … +50 px (ibispaint).
+        db.seekParagraph.progress = (paragraph.roundToInt() + 50).coerceIn(0, db.seekParagraph.max)
+        db.tvParagraph.text = paragraph.roundToInt().toString()
+        db.seekParagraph.setOnSeekBarChangeListener(seekListener { progress ->
+            paragraph = (progress - 50).toFloat()
+            db.tvParagraph.text = paragraph.roundToInt().toString()
+        })
+        db.tvParagraph.setOnClickListener {
+            askNumberInput("Jarak paragraph (px)", paragraph, -50f, 50f) {
+                paragraph = it
+                db.seekParagraph.progress = (paragraph.roundToInt() + 50).coerceIn(0, db.seekParagraph.max)
+                db.tvParagraph.text = paragraph.roundToInt().toString()
+            }
+        }
+        // Toggle force/snap — tersimpan agar tidak reset tiap buka dialog.
+        val snapPrefs = getSharedPreferences("vasilia_editor", MODE_PRIVATE)
+        db.cbSnapCenter.isChecked = snapPrefs.getBoolean("snap_center", true)
+        db.cbForceInside.isChecked = snapPrefs.getBoolean("force_inside", true)
+        db.cbSnapGrid.isChecked = snapPrefs.getBoolean("snap_grid", true)
+        binding.canvasView.snapToCenterEnabled = db.cbSnapCenter.isChecked
+        binding.canvasView.clampToCanvasEnabled = db.cbForceInside.isChecked
+        binding.canvasView.snapGridEnabled = db.cbSnapGrid.isChecked
+        db.cbSnapCenter.setOnCheckedChangeListener { _, checked ->
+            binding.canvasView.snapToCenterEnabled = checked
+            snapPrefs.edit().putBoolean("snap_center", checked).apply()
+        }
+        db.cbForceInside.setOnCheckedChangeListener { _, checked ->
+            binding.canvasView.clampToCanvasEnabled = checked
+            snapPrefs.edit().putBoolean("force_inside", checked).apply()
+        }
+        db.cbSnapGrid.setOnCheckedChangeListener { _, checked ->
+            binding.canvasView.snapGridEnabled = checked
+            snapPrefs.edit().putBoolean("snap_grid", checked).apply()
+        }
         db.seekTextOpacity.progress = opacity.coerceIn(0, 100)
         db.tvTextOpacity.text = "${db.seekTextOpacity.progress}%"
         db.tvTextPreview.alpha = db.seekTextOpacity.progress / 100f
@@ -8471,6 +8531,14 @@ class MainActivity : AppCompatActivity() {
             db.tvTextOpacity.text = "$opacity%"
             db.tvTextPreview.alpha = opacity / 100f
         })
+        db.tvTextOpacity.setOnClickListener {
+            askNumberInput("Opacity teks (%)", opacity.toFloat(), 0f, 100f) {
+                opacity = it.roundToInt()
+                db.seekTextOpacity.progress = opacity
+                db.tvTextOpacity.text = "$opacity%"
+                db.tvTextPreview.alpha = opacity / 100f
+            }
+        }
 
         db.btnAlignLeft.setOnClickListener {
             align = TextAlign.LEFT
@@ -8552,9 +8620,22 @@ class MainActivity : AppCompatActivity() {
             outlineWidth = it
             db.tvOutlineWidth.text = it.toString()
         })
+        db.tvOutlineWidth.setOnClickListener {
+            askNumberInput("Lebar outline (px)", outlineWidth.toFloat(), 0f, db.seekOutlineWidth.max.toFloat()) {
+                outlineWidth = it.roundToInt()
+                db.seekOutlineWidth.progress = outlineWidth
+                db.tvOutlineWidth.text = outlineWidth.toString()
+            }
+        }
         db.seekOutlineOpacity.setOnSeekBarChangeListener(seekListener {
             db.tvOutlineOpacity.text = "$it%"
         })
+        db.tvOutlineOpacity.setOnClickListener {
+            askNumberInput("Opacity outline (%)", db.seekOutlineOpacity.progress.toFloat(), 0f, 100f) {
+                db.seekOutlineOpacity.progress = it.roundToInt()
+                db.tvOutlineOpacity.text = "${it.roundToInt()}%"
+            }
+        }
         db.seekShadowRadius.progress = shadowRadius.roundToInt().coerceIn(0, db.seekShadowRadius.max)
         db.seekShadowDx.progress = (shadowDx + 24f).roundToInt().coerceIn(0, db.seekShadowDx.max)
         db.seekShadowDy.progress = (shadowDy + 24f).roundToInt().coerceIn(0, db.seekShadowDy.max)
@@ -8562,13 +8643,47 @@ class MainActivity : AppCompatActivity() {
         db.seekShadowSpread.progress = shadowSpread.roundToInt().coerceIn(0, db.seekShadowSpread.max)
         db.tvShadowSpread.text = "Ketebalan ${db.seekShadowSpread.progress} px"
         db.seekShadowRadius.setOnSeekBarChangeListener(seekListener { shadowRadius = it.toFloat(); db.tvShadowRadius.text = it.toString() })
+        db.tvShadowRadius.setOnClickListener {
+            askNumberInput("Radius shadow (px)", shadowRadius, 0f, db.seekShadowRadius.max.toFloat()) {
+                shadowRadius = it
+                db.seekShadowRadius.progress = it.roundToInt().coerceIn(0, db.seekShadowRadius.max)
+                db.tvShadowRadius.text = it.roundToInt().toString()
+            }
+        }
         db.seekShadowSpread.setOnSeekBarChangeListener(seekListener {
             shadowSpread = it.toFloat()
             db.tvShadowSpread.text = "Ketebalan $it px"
         })
+        db.tvShadowSpread.setOnClickListener {
+            askNumberInput("Ketebalan shadow (px)", shadowSpread, 0f, db.seekShadowSpread.max.toFloat()) {
+                shadowSpread = it
+                db.seekShadowSpread.progress = it.roundToInt().coerceIn(0, db.seekShadowSpread.max)
+                db.tvShadowSpread.text = "Ketebalan ${it.roundToInt()} px"
+            }
+        }
         db.seekShadowDx.setOnSeekBarChangeListener(seekListener { shadowDx = (it - 24).toFloat(); db.tvShadowDx.text = shadowDx.roundToInt().toString() })
         db.seekShadowDy.setOnSeekBarChangeListener(seekListener { shadowDy = (it - 24).toFloat(); db.tvShadowDy.text = shadowDy.roundToInt().toString() })
+        db.tvShadowDx.setOnClickListener {
+            askNumberInput("Shadow X (px)", shadowDx, -24f, 24f) {
+                shadowDx = it
+                db.seekShadowDx.progress = (shadowDx + 24f).roundToInt().coerceIn(0, db.seekShadowDx.max)
+                db.tvShadowDx.text = shadowDx.roundToInt().toString()
+            }
+        }
+        db.tvShadowDy.setOnClickListener {
+            askNumberInput("Shadow Y (px)", shadowDy, -24f, 24f) {
+                shadowDy = it
+                db.seekShadowDy.progress = (shadowDy + 24f).roundToInt().coerceIn(0, db.seekShadowDy.max)
+                db.tvShadowDy.text = shadowDy.roundToInt().toString()
+            }
+        }
         db.seekShadowOpacity.setOnSeekBarChangeListener(seekListener { db.tvShadowOpacity.text = "$it%" })
+        db.tvShadowOpacity.setOnClickListener {
+            askNumberInput("Opacity shadow (%)", db.seekShadowOpacity.progress.toFloat(), 0f, 100f) {
+                db.seekShadowOpacity.progress = it.roundToInt()
+                db.tvShadowOpacity.text = "${it.roundToInt()}%"
+            }
+        }
 
         db.spinnerBlurType.adapter = ArrayAdapter(
             this,
@@ -8649,6 +8764,27 @@ class MainActivity : AppCompatActivity() {
             refreshBlurControls()
         })
         refreshBlurControls()
+        db.tvBlurRadius.setOnClickListener {
+            askNumberInput("Radius blur (px)", pendingBlurRadius, 0f, db.seekBlurRadius.max.toFloat()) {
+                pendingBlurRadius = it
+                db.seekBlurRadius.progress = it.roundToInt().coerceIn(0, db.seekBlurRadius.max)
+                refreshBlurControls()
+            }
+        }
+        db.tvBlurDistance.setOnClickListener {
+            askNumberInput("Jarak motion blur (px)", pendingBlurDistance, 1f, db.seekBlurDistance.max.toFloat()) {
+                pendingBlurDistance = it.coerceAtLeast(1f)
+                db.seekBlurDistance.progress = it.roundToInt().coerceIn(0, db.seekBlurDistance.max)
+                refreshBlurControls()
+            }
+        }
+        db.tvBlurAngle.setOnClickListener {
+            askNumberInput("Arah motion blur (°)", pendingBlurAngle, 0f, 360f) {
+                pendingBlurAngle = it
+                db.seekBlurAngle.progress = it.roundToInt().mod(360).coerceIn(0, db.seekBlurAngle.max)
+                refreshBlurControls()
+            }
+        }
         db.btnTextTexturePick.setOnClickListener {
             pickTexture { uri ->
                 TextRenderer.invalidateTextureCache(pendingTextureUri)
@@ -8783,6 +8919,7 @@ class MainActivity : AppCompatActivity() {
             element.opacity = opacity
             element.leading = leading * 100f
             element.tracking = tracking.toFloat()
+            element.paragraphSpacing = paragraph.coerceIn(-50f, 50f)
             element.justify = pendingJustify
             element.textPathMode = pendingTextPathMode
             element.textPathAmount = pendingTextPathAmount.coerceIn(-100f, 100f)
@@ -8798,6 +8935,9 @@ class MainActivity : AppCompatActivity() {
             element.outlineGradEndColor = outlineGradientEnd
 
             binding.canvasView.activeTextId = element.id
+            // Ingat ukuran terakhir agar dialog baru tidak reset ke 44.
+            getSharedPreferences("vasilia_editor", MODE_PRIVATE).edit()
+                .putFloat("last_font_size", size.coerceIn(4f, 512f)).apply()
             if (pendingPerspective && element.perspCorners == null) binding.canvasView.enablePerspectiveForActiveText()
             if (pendingMesh && element.meshPoints == null) binding.canvasView.enableMeshForActiveText()
             binding.canvasView.clearSelection()
@@ -10472,6 +10612,40 @@ class MainActivity : AppCompatActivity() {
         override fun onStopTrackingTouch(sb: SeekBar) {}
     }
 
+    /**
+     * Ketuk angka (TextView nilai slider) untuk ketik manual. Dipakai semua
+     * slider angka editor teks/image agar presisi tanpa geser.
+     */
+    private fun askNumberInput(
+        title: String,
+        current: Float,
+        min: Float,
+        max: Float,
+        onSet: (Float) -> Unit
+    ) {
+        val input = EditText(this).apply {
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or
+                android.text.InputType.TYPE_NUMBER_FLAG_SIGNED or
+                android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+            setText(if (current % 1f == 0f) current.toInt().toString() else current.toString())
+            setSelection(text.length)
+        }
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage("Rentang $min … $max")
+            .setView(input.apply { setPadding(48, 24, 48, 0) })
+            .setPositiveButton("OK") { _, _ ->
+                val v = input.text.toString().toFloatOrNull()
+                if (v == null) {
+                    Toast.makeText(this, "Angka tidak valid", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                onSet(v.coerceIn(min, max))
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // v5.0 — HELPERS for PSD export, perspective, and texture
     // ══════════════════════════════════════════════════════════════════════════
@@ -10751,6 +10925,10 @@ class MainActivity : AppCompatActivity() {
             updateImageQuickToolbar(null)
             commit()
         }
+        binding.iqtbEdit.setOnClickListener {
+            val image = activeImage() ?: return@setOnClickListener
+            showImageEditDialog(image) { commit() }
+        }
         binding.iqtbClose.setOnClickListener {
             binding.canvasView.activeImageId = null
             updateImageQuickToolbar(null)
@@ -10765,6 +10943,74 @@ class MainActivity : AppCompatActivity() {
         }
         binding.textQuickToolbar.visibility = View.GONE
         binding.imageQuickToolbar.visibility = View.VISIBLE
+    }
+
+    /**
+     * Ubah opacity + ukuran (px) image kapan saja, bukan hanya saat place.
+     * Lebar/tinggi diketik manual; kunci aspek opsional.
+     */
+    private fun showImageEditDialog(image: ImageElement, onDone: () -> Unit) {
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 24, 48, 0)
+        }
+        val opacityLabel = TextView(this).apply {
+            text = "Opacity: ${image.opacity}%"
+            setTextColor(Color.parseColor("#CCCCCC"))
+        }
+        val opacitySeek = SeekBar(this).apply {
+            max = 100
+            progress = image.opacity.coerceIn(0, 100)
+            setOnSeekBarChangeListener(seekListener { opacityLabel.text = "Opacity: $it%" })
+        }
+        val lockAspect = CheckBox(this).apply {
+            text = "Kunci aspek"
+            isChecked = true
+            setTextColor(Color.parseColor("#CCCCCC"))
+        }
+        val etW = EditText(this).apply {
+            hint = "Lebar (px)"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            setText(image.width.roundToInt().toString())
+        }
+        val etH = EditText(this).apply {
+            hint = "Tinggi (px)"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            setText(image.height.roundToInt().toString())
+        }
+        container.addView(opacityLabel)
+        container.addView(opacitySeek)
+        container.addView(lockAspect)
+        container.addView(etW)
+        container.addView(etH)
+        AlertDialog.Builder(this)
+            .setTitle("Edit Gambar")
+            .setView(container)
+            .setPositiveButton("Terapkan") { _, _ ->
+                binding.canvasView.pushImageHistory()
+                image.opacity = opacitySeek.progress.coerceIn(0, 100)
+                var w = etW.text.toString().toIntOrNull()?.coerceIn(10, 10000)
+                var h = etH.text.toString().toIntOrNull()?.coerceIn(10, 10000)
+                if (lockAspect.isChecked && w != null && h == null && image.height > 0f) {
+                    h = (w * image.height / image.width).roundToInt().coerceIn(10, 10000)
+                } else if (lockAspect.isChecked && h != null && w == null && image.width > 0f) {
+                    w = (h * image.width / image.height).roundToInt().coerceIn(10, 10000)
+                }
+                if (lockAspect.isChecked && w != null && h != null && image.width > 0f && image.height > 0f) {
+                    // Jaga rasio dari ukuran saat ini bila hanya satu sisi diubah.
+                    if (etW.text.toString().toIntOrNull() != image.width.roundToInt()) {
+                        h = (w * image.height / image.width).roundToInt().coerceIn(10, 10000)
+                    } else {
+                        w = (h * image.width / image.height).roundToInt().coerceIn(10, 10000)
+                    }
+                }
+                if (w != null && w > 0) image.width = w.toFloat()
+                if (h != null && h > 0) image.height = h.toFloat()
+                onDone()
+                updateImageQuickToolbar(image)
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     /** Show / hide / refresh the floating quick-edit toolbar for [el]. */
@@ -11076,6 +11322,13 @@ class MainActivity : AppCompatActivity() {
         }
         seekSize.setOnSeekBarChangeListener(seekListener { syncSizeUi() })
         cbSize.setOnCheckedChangeListener { _, _ -> syncSizeUi() }
+        tvSize.setOnClickListener {
+            askNumberInput("Ukuran span (px)", (seekSize.progress + 4).toFloat(), 4f, 200f) {
+                seekSize.progress = (it.roundToInt() - 4).coerceIn(0, 196)
+                cbSize.isChecked = true
+                syncSizeUi()
+            }
+        }
         syncSizeUi()
 
         var color = sp.color ?: android.graphics.Color.YELLOW
@@ -11092,7 +11345,7 @@ class MainActivity : AppCompatActivity() {
             cbColor.isChecked = true
         }
         colorP.setOnClickListener {
-            showSimpleColorPicker(color) { selected ->
+            showColorPickerFull("Warna Span", color) { selected ->
                 colorWheel.setColor(selected)
                 syncSpanColorUi(selected)
                 cbColor.isChecked = true
@@ -11120,16 +11373,28 @@ class MainActivity : AppCompatActivity() {
         seekOw.progress = (sp.outlineWidth ?: 4f).toInt().coerceIn(0, 30)
         tvOw.text = seekOw.progress.toString()
         seekOw.setOnSeekBarChangeListener(seekListener { p -> tvOw.text = p.toString() })
+        tvOw.setOnClickListener {
+            askNumberInput("Lebar outline span (px)", tvOw.text.toString().toFloatOrNull() ?: 4f, 0f, 30f) {
+                seekOw.progress = it.roundToInt().coerceIn(0, 30)
+                tvOw.text = seekOw.progress.toString()
+            }
+        }
         var outColor = sp.outlineColor ?: android.graphics.Color.BLACK
         patchO.setBackgroundColor(outColor)
-        patchO.setOnClickListener { showSimpleColorPicker(outColor) { c -> outColor = c; patchO.setBackgroundColor(c) } }
+        patchO.setOnClickListener { showColorPickerFull("Warna Outline Span", outColor) { c -> outColor = c; patchO.setBackgroundColor(c) } }
 
         seekSr.progress = (sp.shadowRadius ?: 6f).toInt().coerceIn(0, 40)
         tvSr.text = seekSr.progress.toString()
         seekSr.setOnSeekBarChangeListener(seekListener { p -> tvSr.text = p.toString() })
+        tvSr.setOnClickListener {
+            askNumberInput("Radius shadow span (px)", tvSr.text.toString().toFloatOrNull() ?: 6f, 0f, 40f) {
+                seekSr.progress = it.roundToInt().coerceIn(0, 40)
+                tvSr.text = seekSr.progress.toString()
+            }
+        }
         var shColor = sp.shadowColor ?: android.graphics.Color.BLACK
         patchS.setBackgroundColor(shColor)
-        patchS.setOnClickListener { showSimpleColorPicker(shColor) { c -> shColor = c; patchS.setBackgroundColor(c) } }
+        patchS.setOnClickListener { showColorPickerFull("Warna Shadow Span", shColor) { c -> shColor = c; patchS.setBackgroundColor(c) } }
 
         var dialog: AlertDialog? = null
         btnDel.setOnClickListener { onDelete(); dialog?.dismiss() }
@@ -12810,7 +13075,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val modeLabel = "RT-DETR v4-s INT8"
+        val modeLabel = "YOLOv8m"
         updateStatus("Mendeteksi bubble ($modeLabel)…")
         binding.toolBubbleDetect.isEnabled = false
         bubbleDetectionJob = lifecycleScope.launch {
@@ -12830,8 +13095,19 @@ class MainActivity : AppCompatActivity() {
                     return@launch
                 }
 
+                // Bubble utama: YOLOv8m murni (Drive user, tiling grid 1200/300 di
+                // dalam detectTiled). Fallback ke OpenCV+ML Kit bila model kosong.
                 val detections = withContext(Dispatchers.Default) {
-                    BubbleDetector.detectHybrid(
+                    val yolo = runCatching {
+                        YoloV8mBubbleDetector.detect(this@MainActivity, source).map {
+                            BubbleDetection(
+                                bounds = RectF(it.rect),
+                                confidence = it.confidence,
+                                source = BubbleDetection.Source.YOLO_V8M
+                            )
+                        }
+                    }.getOrNull()
+                    if (!yolo.isNullOrEmpty()) yolo else BubbleDetector.detectHybrid(
                         source,
                         BubbleDetectionConfig(),
                         "auto"

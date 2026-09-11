@@ -634,6 +634,74 @@ Title"
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:text="Paragraph"
+                            android:textColor="@color/ink_muted"
+                            android:textSize="11sp" />
+
+                        <SeekBar
+                            android:id="@+id/seekParagraph"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:max="100"
+                            android:progress="50"
+                            android:progressDrawable="@drawable/slider_bg" />
+
+                        <TextView
+                            android:id="@+id/tvParagraph"
+                            android:layout_width="44dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="0"
+                            android:textColor="@color/ps_text_bright"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/cbSnapCenter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="Snap"
+                            android:textColor="@color/ps_text" />
+
+                        <CheckBox
+                            android:id="@+id/cbForceInside"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:checked="true"
+                            android:text="Force di kanvas"
+                            android:textColor="@color/ps_text" />
+
+                        <CheckBox
+                            android:id="@+id/cbSnapGrid"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:checked="true"
+                            android:text="Grid 20px"
+                            android:textColor="@color/ps_text" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:text="Opacity"
                             android:textColor="@color/ink_muted"
                             android:textSize="11sp" />

@@ -77,6 +77,8 @@ package com.vasiliastyper.model
       /** Extra spacing between glyphs in canvas pixels. */
       var tracking: Float = 0f,
       var justify: Boolean = false,
+      /** Jarak antar paragraf ala ibispaint, px. -50 … +50. */
+      var paragraphSpacing: Float = 0f,
 
       // Text path deformation. Modes: NONE, CURVE_UP, CURVE_DOWN, WAVE, ARCH, VALLEY.
       // Amount is a signed percentage (-100..100); waveCycles controls repetition.

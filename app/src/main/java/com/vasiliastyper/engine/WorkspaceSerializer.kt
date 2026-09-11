@@ -295,6 +295,7 @@ object WorkspaceSerializer {
         put("leading",           el.leading.toDouble())
         put("tracking",          el.tracking.toDouble())
         put("justify",           el.justify)
+        put("paragraphSpacing",  el.paragraphSpacing.toDouble())
         put("textPathMode",      el.textPathMode)
         put("textPathAmount",    el.textPathAmount.toDouble())
         put("textPathCycles",    el.textPathCycles.toDouble())
@@ -408,6 +409,8 @@ object WorkspaceSerializer {
                 el.leading  = o.optDouble("leading",  120.0).toFloat()
                 el.tracking = o.optDouble("tracking", 0.0).toFloat()
                 el.justify  = o.optBoolean("justify", false)
+                el.paragraphSpacing = o.optDouble("paragraphSpacing", 0.0).toFloat()
+                    .takeIf(Float::isFinite)?.coerceIn(-50f, 50f) ?: 0f
                 el.textPathMode = o.optString("textPathMode", "NONE").uppercase().takeIf {
                     it in setOf("NONE", "CURVE_UP", "CURVE_DOWN", "WAVE", "ARCH", "VALLEY")
                 } ?: "NONE"

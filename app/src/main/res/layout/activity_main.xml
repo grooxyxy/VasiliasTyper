@@ -445,6 +445,7 @@
                             android:gravity="center_vertical">
 
                             <Button android:id="@+id/iqtbDuplicate" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Salin" android:backgroundTint="@color/ps_accent" android:textColor="@color/white"/>
+                            <Button android:id="@+id/iqtbEdit" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Ukuran" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp"/>
                             <Button android:id="@+id/iqtbBringFront" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Depan" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp"/>
                             <Button android:id="@+id/iqtbSendBack" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Blkg" android:backgroundTint="@color/ps_toolbar" android:textColor="@color/ps_text" android:layout_marginStart="2dp"/>
                             <Button android:id="@+id/iqtbDelete" style="@style/HiPaintActionChip" android:layout_width="wrap_content" android:text="Hapus" android:backgroundTint="#B91C1C" android:textColor="@color/white" android:layout_marginStart="2dp"/>

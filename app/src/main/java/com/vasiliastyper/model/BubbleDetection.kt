@@ -21,6 +21,7 @@ data class BubbleDetection(
         CLOSED_OUTLINE,
         ML_KIT,
         RT_DETR,
+        YOLO_V8M,
         HYBRID
     }
 }

@@ -132,6 +132,14 @@ class CanvasView @JvmOverloads constructor(
         isFilterBitmap = true
     }
 
+    // ── Force / snap placement ke kanvas (bisa on/off oleh user) ──────────
+    /** Magnet ke tengah kanvas saat drag teks/image. */
+    var snapToCenterEnabled: Boolean = true
+    /** Paksa teks/image tetap di dalam kanvas (clamp X/Y). */
+    var clampToCanvasEnabled: Boolean = true
+    /** Snap resize ke grid 20px. */
+    var snapGridEnabled: Boolean = true
+
     // ── Before/After split comparison ─────────────────────────────────────────
     private var compareBeforeBitmap: Bitmap? = null
     var compareEnabled: Boolean = false
@@ -634,6 +642,7 @@ class CanvasView @JvmOverloads constructor(
 
     // ── Snap-to-centre helper ─────────────────────────────────────────────────
     private fun applySnapToCenter(x: Float, y: Float, w: Float, h: Float): Pair<Float, Float> {
+        if (!snapToCenterEnabled) { snapToX = false; snapToY = false; return Pair(x, y) }
         val threshold = SNAP_THRESHOLD
         val cx = canvasWidth  / 2f; val cy = canvasHeight / 2f
         val elCx = x + w / 2f; val elCy = y + h / 2f
@@ -905,7 +914,7 @@ class CanvasView @JvmOverloads constructor(
             val showFullHandles = (currentTool == Tool.ADD_IMAGE && !img.isLocked)
             val showMoveHandles = (currentTool == Tool.MOVE && img.id == activeImageId && !img.isLocked)
             if (showFullHandles || showMoveHandles) {
-                val hs = (20f / scaleFactor).coerceAtLeast(20f)
+                val hs = (28f / scaleFactor).coerceAtLeast(28f)
                 imgBoxPaint.strokeWidth = 1.5f / scaleFactor
                 imgCornerStroke.strokeWidth = 1.5f / scaleFactor
 
@@ -920,7 +929,7 @@ class CanvasView @JvmOverloads constructor(
                 }
 
                 if (showFullHandles) {
-                    val hsMid = (14f / scaleFactor).coerceAtLeast(14f)
+                    val hsMid = (20f / scaleFactor).coerceAtLeast(20f)
                     val rotOff = (56f / scaleFactor).coerceAtLeast(30f)
                     rotLinePaint.strokeWidth = 1.5f / scaleFactor
                     rotHandleStroke.strokeWidth = 1.5f / scaleFactor
@@ -987,7 +996,7 @@ class CanvasView @JvmOverloads constructor(
             if (el.isLocked || (currentTool != Tool.TEXT && currentTool != Tool.MESH_FORM)) continue
 
             val isActive = (el.id == activeTextId)
-            val hs    = (20f / scaleFactor).coerceAtLeast(20f)
+            val hs    = (28f / scaleFactor).coerceAtLeast(28f)
 
             val poly = el.meshPoints
             val corners = el.perspCorners
@@ -1180,7 +1189,7 @@ class CanvasView @JvmOverloads constructor(
 
     private fun drawNormalTextHandles(canvas: Canvas, el: TextElement, isActive: Boolean, hs: Float) {
         val cx = el.x + el.width / 2f; val cy = el.y + el.height / 2f
-        val hsMid = (14f / scaleFactor).coerceAtLeast(14f)
+        val hsMid = (20f / scaleFactor).coerceAtLeast(20f)
         val rotOffset = (56f / scaleFactor).coerceAtLeast(30f)
 
         textBoxPaint.strokeWidth     = (if (isActive) 2f else 1.5f) / scaleFactor
@@ -1721,7 +1730,7 @@ class CanvasView @JvmOverloads constructor(
                         if (!img.isVisible || img.isLocked) continue
                         val cx = img.x + img.width / 2f; val cy = img.y + img.height / 2f
                         val unrot = unrotatePoint(pt, cx, cy, img.rotation)
-                        val hs = (20f / scaleFactor).coerceAtLeast(20f)
+                        val hs = (28f / scaleFactor).coerceAtLeast(28f)
                         // Check corner resize handles first (FIX 8)
                         val cornerHit = when {
                             dist(unrot.x, unrot.y, img.x,             img.y             ) < hs * 2f -> "tl"
@@ -1842,8 +1851,8 @@ class CanvasView @JvmOverloads constructor(
                     if (!img.isVisible || img.isLocked) continue
                     val cx = img.x + img.width / 2f; val cy = img.y + img.height / 2f
                     val unrot = unrotatePoint(pt, cx, cy, img.rotation)
-                    val hs = (20f / scaleFactor).coerceAtLeast(20f)
-                    val hsMid = (14f / scaleFactor).coerceAtLeast(14f)
+                    val hs = (28f / scaleFactor).coerceAtLeast(28f)
+                    val hsMid = (20f / scaleFactor).coerceAtLeast(20f)
                     val rotOff = (56f / scaleFactor).coerceAtLeast(30f)
                     val delOff = hs * 1.1f
 
@@ -1964,7 +1973,7 @@ class CanvasView @JvmOverloads constructor(
 
                 for (el in textElements.reversed()) {
                     if (!el.isVisible || el.isLocked) continue
-                    val hs    = (20f / scaleFactor).coerceAtLeast(20f)
+                    val hs    = (28f / scaleFactor).coerceAtLeast(28f)
                     val rotOff = (56f / scaleFactor).coerceAtLeast(30f)
 
                     // ── Mesh-mode element ────────────────────────────────
@@ -2093,16 +2102,16 @@ class CanvasView @JvmOverloads constructor(
                     // ── Normal (non-perspective) element ──────────────────────
                     val cx    = el.x + el.width  / 2f; val cy = el.y + el.height / 2f
                     val unrot = unrotatePoint(pt, cx, cy, el.rotation)
-                    val hsMid = (14f / scaleFactor).coerceAtLeast(14f)
+                    val hsMid = (20f / scaleFactor).coerceAtLeast(20f)
                     val delOff = hs * 1.1f
 
                     val delX = el.x + el.width + delOff; val delY = el.y - delOff
-                    if (dist(unrot.x, unrot.y, delX, delY) < hs * 2f) {
+                    if (dist(unrot.x, unrot.y, delX, delY) < hs * 2.5f) {
                         pushTextHistory(); textElements.remove(el); invalidate(); handled = true; break
                     }
 
                     val editX = el.x - delOff; val editY = el.y - delOff
-                    if (dist(unrot.x, unrot.y, editX, editY) < hs * 2f) {
+                    if (dist(unrot.x, unrot.y, editX, editY) < hs * 2.5f) {
                         pendingTextEditElement = el
                         activeTextId = el.id
                         handled = true
@@ -2110,7 +2119,7 @@ class CanvasView @JvmOverloads constructor(
                     }
 
                     val rotHy = el.y - rotOff
-                    if (dist(unrot.x, unrot.y, cx, rotHy) < hs * 2f) {
+                    if (dist(unrot.x, unrot.y, cx, rotHy) < hs * 2.5f) {
                         pushTextHistory(); rotatingTextId = el.id; activeTextId = el.id
                         rotStartAngle = el.rotation
                         rotStartFingerAngle = atan2(pt.y - cy, pt.x - cx) * 180f / PI.toFloat()
@@ -2118,10 +2127,10 @@ class CanvasView @JvmOverloads constructor(
                     }
 
                     val cornerHit = when {
-                        dist(unrot.x, unrot.y, el.x,            el.y            ) < hs * 2f -> "tl"
-                        dist(unrot.x, unrot.y, el.x + el.width, el.y            ) < hs * 2f -> "tr"
-                        dist(unrot.x, unrot.y, el.x,            el.y + el.height) < hs * 2f -> "bl"
-                        dist(unrot.x, unrot.y, el.x + el.width, el.y + el.height) < hs * 2f -> "br"
+                        dist(unrot.x, unrot.y, el.x,            el.y            ) < hs * 2.5f -> "tl"
+                        dist(unrot.x, unrot.y, el.x + el.width, el.y            ) < hs * 2.5f -> "tr"
+                        dist(unrot.x, unrot.y, el.x,            el.y + el.height) < hs * 2.5f -> "bl"
+                        dist(unrot.x, unrot.y, el.x + el.width, el.y + el.height) < hs * 2.5f -> "br"
                         else -> null
                     }
                     if (cornerHit != null) {
@@ -2129,10 +2138,10 @@ class CanvasView @JvmOverloads constructor(
                     }
 
                     val midHit = when {
-                        dist(unrot.x, unrot.y, el.x,            cy              ) < hsMid * 2f -> "ml"
-                        dist(unrot.x, unrot.y, el.x + el.width, cy              ) < hsMid * 2f -> "mr"
-                        dist(unrot.x, unrot.y, cx,              el.y            ) < hsMid * 2f -> "mt"
-                        dist(unrot.x, unrot.y, cx,              el.y + el.height) < hsMid * 2f -> "mb"
+                        dist(unrot.x, unrot.y, el.x,            cy              ) < hsMid * 2.5f -> "ml"
+                        dist(unrot.x, unrot.y, el.x + el.width, cy              ) < hsMid * 2.5f -> "mr"
+                        dist(unrot.x, unrot.y, cx,              el.y            ) < hsMid * 2.5f -> "mt"
+                        dist(unrot.x, unrot.y, cx,              el.y + el.height) < hsMid * 2.5f -> "mb"
                         else -> null
                     }
                     if (midHit != null) {
@@ -2240,10 +2249,10 @@ class CanvasView @JvmOverloads constructor(
                         val cx = el.x + el.width / 2f; val cy = el.y + el.height / 2f
                         val unrot = unrotatePoint(pt, cx, cy, el.rotation)
                         when (handle) {
-                            "tl" -> { val oldH=el.height; val brx=el.x+el.width; val bry=el.y+el.height; el.x=snapToGrid(unrot.x.coerceAtMost(brx-40f)); el.y=snapToGrid(unrot.y.coerceAtMost(bry-20f)); el.width=snapToGrid((brx-el.x).coerceAtLeast(40f)); el.height=snapToGrid((bry-el.y).coerceAtLeast(20f)); if(oldH>0f)el.fontSize=(el.fontSize*(el.height/oldH)).coerceIn(8f,300f) }
-                            "tr" -> { val oldH=el.height; val bly=el.y+el.height; el.y=snapToGrid(unrot.y.coerceAtMost(bly-20f)); el.width=snapToGrid((unrot.x-el.x).coerceAtLeast(40f)); el.height=snapToGrid((bly-el.y).coerceAtLeast(20f)); if(oldH>0f)el.fontSize=(el.fontSize*(el.height/oldH)).coerceIn(8f,300f) }
-                            "bl" -> { val oldH=el.height; val trx=el.x+el.width; el.x=snapToGrid(unrot.x.coerceAtMost(trx-40f)); el.width=snapToGrid((trx-el.x).coerceAtLeast(40f)); el.height=snapToGrid((unrot.y-el.y).coerceAtLeast(20f)); if(oldH>0f)el.fontSize=(el.fontSize*(el.height/oldH)).coerceIn(8f,300f) }
-                            "br" -> { val oldH=el.height; el.width=snapToGrid((unrot.x-el.x).coerceAtLeast(40f)); el.height=snapToGrid((unrot.y-el.y).coerceAtLeast(20f)); if(oldH>0f)el.fontSize=(el.fontSize*(el.height/oldH)).coerceIn(8f,300f) }
+                            "tl" -> { val oldH=el.height; val brx=el.x+el.width; val bry=el.y+el.height; el.x=snapToGrid(unrot.x.coerceAtMost(brx-40f)); el.y=snapToGrid(unrot.y.coerceAtMost(bry-20f)); el.width=snapToGrid((brx-el.x).coerceAtLeast(40f)); el.height=snapToGrid((bry-el.y).coerceAtLeast(20f)); if(oldH>0f)el.fontSize=(el.fontSize*(el.height/oldH)).coerceIn(4f,512f) }
+                            "tr" -> { val oldH=el.height; val bly=el.y+el.height; el.y=snapToGrid(unrot.y.coerceAtMost(bly-20f)); el.width=snapToGrid((unrot.x-el.x).coerceAtLeast(40f)); el.height=snapToGrid((bly-el.y).coerceAtLeast(20f)); if(oldH>0f)el.fontSize=(el.fontSize*(el.height/oldH)).coerceIn(4f,512f) }
+                            "bl" -> { val oldH=el.height; val trx=el.x+el.width; el.x=snapToGrid(unrot.x.coerceAtMost(trx-40f)); el.width=snapToGrid((trx-el.x).coerceAtLeast(40f)); el.height=snapToGrid((unrot.y-el.y).coerceAtLeast(20f)); if(oldH>0f)el.fontSize=(el.fontSize*(el.height/oldH)).coerceIn(4f,512f) }
+                            "br" -> { val oldH=el.height; el.width=snapToGrid((unrot.x-el.x).coerceAtLeast(40f)); el.height=snapToGrid((unrot.y-el.y).coerceAtLeast(20f)); if(oldH>0f)el.fontSize=(el.fontSize*(el.height/oldH)).coerceIn(4f,512f) }
                             "ml" -> { val right=el.x+el.width; el.x=snapToGrid(unrot.x.coerceAtMost(right-40f)); el.width=snapToGrid((right-el.x).coerceAtLeast(40f)) }
                             "mr" -> { el.width=snapToGrid((unrot.x-el.x).coerceAtLeast(40f)) }
                             "mt" -> { val bottom=el.y+el.height; el.y=snapToGrid(unrot.y.coerceAtMost(bottom-20f)); el.height=snapToGrid((bottom-el.y).coerceAtLeast(20f)); el.fontSize=TextRenderer.autoFitFontSize(el.text,el.width,el.height,el.typeface) }
@@ -3636,6 +3645,7 @@ class CanvasView @JvmOverloads constructor(
     }
 
     private fun clampTextElementToCanvas(el: TextElement) {
+        if (!clampToCanvasEnabled) return
         el.width = el.width.coerceAtLeast(10f).coerceAtMost(canvasWidth.toFloat())
         el.height = el.height.coerceAtLeast(10f).coerceAtMost(canvasHeight.toFloat())
         el.x = el.x.coerceIn(0f, (canvasWidth - el.width).coerceAtLeast(0f))
@@ -3643,6 +3653,7 @@ class CanvasView @JvmOverloads constructor(
     }
 
     private fun clampImageElementToCanvas(img: ImageElement) {
+        if (!clampToCanvasEnabled) return
         img.width = img.width.coerceAtLeast(10f).coerceAtMost(canvasWidth.toFloat())
         img.height = img.height.coerceAtLeast(10f).coerceAtMost(canvasHeight.toFloat())
         img.x = img.x.coerceIn(0f, (canvasWidth - img.width).coerceAtLeast(0f))
@@ -3657,6 +3668,7 @@ class CanvasView @JvmOverloads constructor(
     // ── Transform math helpers ────────────────────────────────────────────────
 
     private fun snapToGrid(value: Float): Float {
+        if (!snapGridEnabled) return value
         val GRID = 20f; return (value / GRID).roundToInt() * GRID
     }
 
@@ -3776,7 +3788,10 @@ class CanvasView @JvmOverloads constructor(
         val el = textElements.find { it.id == activeTextId } ?: return
         pushTextHistory()
         el.fontSize = TextRenderer.autoFitFontSize(el.text, el.width, el.height, el.typeface)
-        val fittedH = TextRenderer.computeWrappedHeight(el.text, el.fontSize, el.width, el.typeface)
+        val fittedH = TextRenderer.computeWrappedHeight(
+            el.text, el.fontSize, el.width, el.typeface,
+            leading = el.leading, paragraphSpacing = el.paragraphSpacing
+        )
         el.height   = fittedH.coerceAtLeast(el.fontSize * 1.3f)
         onTextHistoryPush?.invoke(); invalidate()
     }

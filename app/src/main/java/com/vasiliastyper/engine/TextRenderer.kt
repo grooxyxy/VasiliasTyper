@@ -534,12 +534,20 @@ private fun toTitleCase(text: String): String {
         return result.ifEmpty { listOf("") }
     }
 
+    /** Extra px antar paragraf ala ibispaint (-50 … +50). Dihitung per baris
+     * kosong (pemisah paragraf) agar minus merapatkan dan plus merenggang. */
+    private fun paragraphGap(element: TextElement): Float =
+        element.paragraphSpacing.takeIf(Float::isFinite)?.coerceIn(-50f, 50f) ?: 0f
+
+    private fun paragraphExtra(lines: List<String>, gap: Float): Float =
+        if (gap == 0f) 0f else lines.count { it.isBlank() } * gap
     fun computeWrappedHeight(
         text: String,
         fontSize: Float,
         boxWidth: Float,
         typeface: Typeface? = null,
-        leading: Float = 120f
+        leading: Float = 120f,
+        paragraphSpacing: Float = 0f
     ): Float {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             textSize      = fontSize
@@ -548,7 +556,8 @@ private fun toTitleCase(text: String): String {
         val lines = wrapLines(text, paint, boxWidth)
         // Leading boleh -50% (rapat); jangan kembalikan tinggi negatif/nol.
         val glyph = (paint.fontMetrics.descent - paint.fontMetrics.ascent).coerceAtLeast(1f)
-        return (lines.size * fontSize * (leading / 100f)).coerceAtLeast(glyph)
+        val gap = paragraphSpacing.takeIf(Float::isFinite)?.coerceIn(-50f, 50f) ?: 0f
+        return (lines.size * fontSize * (leading / 100f) + paragraphExtra(lines, gap)).coerceAtLeast(glyph)
     }
 
     // ── Justify helper ────────────────────────────────────────────────────────
@@ -721,14 +730,16 @@ private fun toTitleCase(text: String): String {
         val lines       = wrapLines(element.text, paint, element.width, element.tracking)
         // Leading -50% = sangat rapat; clamp agar baris tidak terbalik/hilang.
         val lineHeight  = (element.fontSize * (element.leading / 100f)).coerceAtLeast(1f)
-        val totalHeight = (lines.size * lineHeight).coerceAtLeast(1f)
+        val paraGap     = paragraphGap(element)
+        val totalHeight = (lines.size * lineHeight + paragraphExtra(lines, paraGap)).coerceAtLeast(1f)
         val amplitude   = element.fontSize * 0.15f
         val frequency   = PI / (element.fontSize * 2)
         val startY      = element.y + (element.height - totalHeight) / 2f + element.fontSize
         var charIndex   = 0
+        var lineY       = startY
 
         for ((lineIdx, line) in lines.withIndex()) {
-            val baseY     = startY + lineIdx * lineHeight
+            val baseY     = lineY
             val lineWidth = trackedWidth(line, paint, element.tracking)
             val lineStartX = when (element.align) {
                 TextAlign.LEFT   -> element.x
@@ -744,6 +755,8 @@ private fun toTitleCase(text: String): String {
                 charIndex++
             }
             charIndex++
+            lineY += lineHeight
+            if (line.isBlank()) lineY += paraGap
         }
     }
 
@@ -776,7 +789,9 @@ private fun toTitleCase(text: String): String {
         val fm = paint.fontMetrics
         val lineAdvance = maxOf(element.fontSize * (element.leading / 100f), (fm.descent - fm.ascent) * 1.05f)
         val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
-        val totalHeight = glyphHeight + (lines.size - 1).coerceAtLeast(0) * lineAdvance
+        val paraGap = paragraphGap(element)
+        val totalHeight = glyphHeight + (lines.size - 1).coerceAtLeast(0) * lineAdvance +
+            paragraphExtra(lines, paraGap)
         val firstBaseline = top + ((contentH - totalHeight) / 2f).coerceAtLeast(0f) - fm.ascent
         val amplitude = element.textPathAmount.coerceIn(-100f, 100f) / 100f *
             minOf(element.height * 0.4f, element.fontSize * 2f)
@@ -805,6 +820,9 @@ private fun toTitleCase(text: String): String {
                 TextAlign.RIGHT -> left + contentW - lineWidth
             }
             var xOffset = 0f
+            // Akumulasi gap paragraf dari baris-baris kosong sebelumnya.
+            var paraBefore = 0f
+            for (i in 0 until lineIndex) if (lines[i].isBlank()) paraBefore += paraGap
             line.forEach { ch ->
                 val glyph = ch.toString()
                 val glyphWidth = paint.measureText(glyph)
@@ -815,7 +833,7 @@ private fun toTitleCase(text: String): String {
                     (delta * contentW).coerceAtLeast(0.001f)
                 val rotation = Math.toDegrees(atan2(slope, 1f).toDouble()).toFloat().coerceIn(-70f, 70f)
                 canvas.save()
-                canvas.translate(startX + centerX, firstBaseline + lineIndex * lineAdvance + offsetAt(normalized))
+                canvas.translate(startX + centerX, firstBaseline + lineIndex * lineAdvance + paraBefore + offsetAt(normalized))
                 canvas.rotate(rotation)
                 canvas.drawText(glyph, -glyphWidth / 2f, 0f, paint)
                 canvas.restore()
@@ -846,7 +864,9 @@ private fun toTitleCase(text: String): String {
         val fm = paint.fontMetrics
         val lineAdvance = maxOf(element.fontSize * (element.leading / 100f), (fm.descent - fm.ascent) * 1.05f)
         val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
-        val totalHeight = glyphHeight + (lines.size - 1).coerceAtLeast(0) * lineAdvance
+        val paraGap = paragraphGap(element)
+        val totalHeight = glyphHeight + (lines.size - 1).coerceAtLeast(0) * lineAdvance +
+            paragraphExtra(lines, paraGap)
 
         // Center the actual glyph block, not an extra line advance after the last
         // baseline. This gives equal visual breathing room above and below.
@@ -876,6 +896,7 @@ private fun toTitleCase(text: String): String {
                 }
             }
             y += lineAdvance
+            if (line.isBlank()) y += paraGap
         }
     }
 
@@ -988,7 +1009,9 @@ private fun toTitleCase(text: String): String {
         val fm = layoutPaint.fontMetrics
         val lineAdvance = maxOf(element.fontSize * (element.leading / 100f), (fm.descent - fm.ascent) * 1.05f)
         val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
-        val totalHeight = glyphHeight + (lines.size - 1).coerceAtLeast(0) * lineAdvance
+        val paraGap = paragraphGap(element)
+        val totalHeight = glyphHeight + (lines.size - 1).coerceAtLeast(0) * lineAdvance +
+            paragraphExtra(lines, paraGap)
         var baseY = top + ((contentH - totalHeight) / 2f).coerceAtLeast(0f) - fm.ascent
         var absPos = 0
 
@@ -1105,6 +1128,7 @@ private fun toTitleCase(text: String): String {
                 absPos++
             }
             baseY += lineAdvance
+            if (line.isBlank()) baseY += paraGap
         }
     }
 
