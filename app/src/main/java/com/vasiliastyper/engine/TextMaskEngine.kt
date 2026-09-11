@@ -39,7 +39,9 @@ object TextMaskEngine {
 
     private const val MIN_COMPONENT_AREA  = 18
     private const val MIN_GLYPH_COMPONENT_AREA = 2
-    private const val MAX_GLYPH_COMPONENT_RATIO = 0.20
+    // FIX #2: 0.20 terlalu ketat — glyph besar (judul/SFX) bisa >20% ROI dan
+    // terbuang sehingga mask bentuk teks terlihat gagal. Longgarkan ke 0.38.
+    private const val MAX_GLYPH_COMPONENT_RATIO = 0.38
     private const val EDGE_COMPONENT_SPAN_RATIO = 0.35
     private const val MAX_COMPONENT_SPAN_RATIO = 0.82
     // Threshold dimana tiling digunakan — lebih besar berarti lebih sedikit tile splits

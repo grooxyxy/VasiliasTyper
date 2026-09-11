@@ -18,9 +18,11 @@ import android.graphics.RectF
  */
 object TextGlyphMasker {
 
-    private const val MAX_CROP_SIDE = 600
+    // FIX #2: naikkan crop agar glyph kecil tidak pecah, turunkan ambang kontras
+    // agar teks tipis/terang-gelap tetap ketemu (gagal sebelumnya karena spread<30).
+    private const val MAX_CROP_SIDE = 800
     private const val MAX_BOXES_PER_REGION = 24
-    private const val MIN_BOX_PX = 6
+    private const val MIN_BOX_PX = 5
 
     fun tighten(
         bitmap: Bitmap,
@@ -90,7 +92,9 @@ object TextGlyphMasker {
         }
         border.sort()
         val bg = border[border.size / 2]
-        // Kontras adaptif: butuh selisih cukup agar bukan noise.
+        // FIX #2: Kontras adaptif dua arah (teks gelap di atas terang MAUPUN teks
+        // terang di atas gelap). Ambang lama (spread<30, thresh 28%) gagal untuk
+        // teks tipis/SFX/terang. Turunkan ke 18 & 22% + floor 14 agar glyph tipis lolos.
         var minL = 255
         var maxL = 0
         for (v in lum) {
@@ -98,15 +102,19 @@ object TextGlyphMasker {
             if (v > maxL) maxL = v
         }
         val spread = maxL - minL
-        if (spread < 30) return emptyList()
-        val thresh = maxOf(22, (spread * 0.28f).toInt())
+        if (spread < 18) return emptyList()
+        // Jika background gelap (<110) artinya teks terang: tetap pakai selisih
+        // absolut tapi turunkan ambang agar huruf putih tipis ikut terdeteksi.
+        val darkBgBoost = if (bg < 110) 0.82f else 1f
+        val thresh = maxOf(14, (spread * 0.22f * darkBgBoost).toInt())
 
         val ink = BooleanArray(cw * ch) { i ->
             kotlin.math.abs(lum[i] - bg) >= thresh
         }
         if (!ink.any { it }) return emptyList()
 
-        // Proyeksi baris → lajur teks (toleransi gap 2px).
+        // Proyeksi baris → lajur teks (toleransi gap 3px agar huruf bertitik/
+        // beraksen tidak pecah; dulu 2px sehingga 'i'/'j' terbelah dan gagal).
         val rowHasInk = BooleanArray(ch) { y ->
             var x = 0
             while (x < cw) {
@@ -129,7 +137,7 @@ object TextGlyphMasker {
                     gap = 0
                 } else {
                     gap++
-                    if (gap > 2) break
+                    if (gap > 3) break
                 }
                 y2++
             }
@@ -138,30 +146,44 @@ object TextGlyphMasker {
         }
         if (bands.isEmpty()) return emptyList()
 
+        // FIX #2: tiap lajur dipecah horizontal mengikuti bentuk kata/glyph
+        // (proyeksi kolom, gap > max(6px, 4% lebar) = spasi antar kata). Hasil
+        // bukan satu kotak lebar penuh, melainkan kotak-kotak ketat per kata.
         val boxes = ArrayList<RectF>()
+        val inv = 1f / scale
         for (band in bands) {
-            var x0 = cw
-            var x1 = -1
-            for (yy in band) {
-                var x = 0
-                while (x < cw) {
-                    if (ink[yy * cw + x]) {
-                        if (x < x0) x0 = x
-                        if (x > x1) x1 = x
-                    }
-                    x++
+            val colHasInk = BooleanArray(cw) { x ->
+                var yy = band.first
+                while (yy <= band.last) {
+                    if (ink[yy * cw + x]) return@BooleanArray true
+                    yy++
                 }
+                false
             }
-            if (x1 < x0) continue
-            // Kembali ke koordinat bitmap sumber + padding kecil.
-            val inv = 1f / scale
-            val r = RectF(
-                (left + (x0 * inv - padPx)).coerceAtLeast(0f),
-                (top + (band.first * inv - padPx)).coerceAtLeast(0f),
-                (left + ((x1 + 1) * inv + padPx)).coerceAtMost(bitmap.width.toFloat()),
-                (top + ((band.last + 1) * inv + padPx)).coerceAtMost(bitmap.height.toFloat())
-            )
-            if (r.width() >= MIN_BOX_PX && r.height() >= MIN_BOX_PX) boxes.add(r)
+            val xGapTol = maxOf(6, (cw * 0.04f).toInt())
+            var x = 0
+            while (x < cw) {
+                if (!colHasInk[x]) { x++; continue }
+                var x2 = x
+                var xGap = 0
+                while (x2 < cw) {
+                    if (colHasInk[x2]) xGap = 0 else {
+                        xGap++
+                        if (xGap > xGapTol) break
+                    }
+                    x2++
+                }
+                val segEnd = (x2 - xGap).coerceAtMost(cw - 1)
+                val r = RectF(
+                    (left + (x * inv - padPx)).coerceAtLeast(0f),
+                    (top + (band.first * inv - padPx)).coerceAtLeast(0f),
+                    (left + ((segEnd + 1) * inv + padPx)).coerceAtMost(bitmap.width.toFloat()),
+                    (top + ((band.last + 1) * inv + padPx)).coerceAtMost(bitmap.height.toFloat())
+                )
+                if (r.width() >= MIN_BOX_PX && r.height() >= MIN_BOX_PX) boxes.add(r)
+                if (boxes.size >= MAX_BOXES_PER_REGION) break
+                x = x2 + 1
+            }
             if (boxes.size >= MAX_BOXES_PER_REGION) break
         }
         return boxes

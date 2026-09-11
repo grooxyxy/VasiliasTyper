@@ -534,13 +534,37 @@ private fun toTitleCase(text: String): String {
         return result.ifEmpty { listOf("") }
     }
 
-    /** Extra px antar paragraf ala ibispaint (-50 … +50). Dihitung per baris
-     * kosong (pemisah paragraf) agar minus merapatkan dan plus merenggang. */
+    /** FIX #3: Extra px antar paragraf (-50 … +50). Dihitung per jeda paragraf
+     * (jumlah '\n' pada teks asli) agar "A\nB" langsung renggang — dulu hanya
+     * menghitung baris kosong sehingga paragraf tanpa baris kosong tak berefek. */
     private fun paragraphGap(element: TextElement): Float =
         element.paragraphSpacing.takeIf(Float::isFinite)?.coerceIn(-50f, 50f) ?: 0f
 
+    private fun paragraphBreaks(text: String): Int = text.count { it == '\n' }
+
+    private fun paragraphExtraForText(text: String, gap: Float): Float =
+        if (gap == 0f) 0f else paragraphBreaks(text) * gap
+
     private fun paragraphExtra(lines: List<String>, gap: Float): Float =
         if (gap == 0f) 0f else lines.count { it.isBlank() } * gap
+
+    /** FIX #3: leading langsung dipakai tanpa clamp 1.05× natural-height yang
+     * membuat 60%…120% terlihat sama (tidak berfungsi). Floor 1px agar -50%
+     * benar-benar rapat tapi tidak hilang/terbalik. */
+    private fun lineAdvanceFor(fontSize: Float, leadingPercent: Float): Float {
+        val p = leadingPercent.takeIf(Float::isFinite) ?: 120f
+        return (fontSize * (p / 100f)).coerceAtLeast(1f)
+    }
+
+    /** Pecah teks per paragraf lalu wrap tiap paragraf — dipakai semua renderer
+     * agar gap paragraf jatuh tepat di batas paragraf, bukan di baris kosong saja. */
+    private fun wrapParagraphs(text: String, paint: Paint, maxWidth: Float, tracking: Float = 0f): List<List<String>> {
+        if (maxWidth <= 0f) return text.split("\n").map { listOf(it) }
+        return text.split("\n").map { para ->
+            if (para.isEmpty()) listOf("")
+            else wrapLines(para, paint, maxWidth, tracking).ifEmpty { listOf("") }
+        }
+    }
     fun computeWrappedHeight(
         text: String,
         fontSize: Float,
@@ -554,10 +578,12 @@ private fun toTitleCase(text: String): String {
             this.typeface = typeface ?: Typeface.DEFAULT
         }
         val lines = wrapLines(text, paint, boxWidth)
-        // Leading boleh -50% (rapat); jangan kembalikan tinggi negatif/nol.
+        // FIX #3: pakai leading murni + gap per '\n' agar keduanya berfungsi.
         val glyph = (paint.fontMetrics.descent - paint.fontMetrics.ascent).coerceAtLeast(1f)
         val gap = paragraphSpacing.takeIf(Float::isFinite)?.coerceIn(-50f, 50f) ?: 0f
-        return (lines.size * fontSize * (leading / 100f) + paragraphExtra(lines, gap)).coerceAtLeast(glyph)
+        val adv = lineAdvanceFor(fontSize, leading)
+        val total = glyph + (lines.size - 1).coerceAtLeast(0) * adv + paragraphExtraForText(text, gap)
+        return total.coerceAtLeast(glyph)
     }
 
     // ── Justify helper ────────────────────────────────────────────────────────
@@ -727,36 +753,39 @@ private fun toTitleCase(text: String): String {
     }
 
     private fun renderWarped(canvas: Canvas, element: TextElement, paint: Paint) {
-        val lines       = wrapLines(element.text, paint, element.width, element.tracking)
-        // Leading -50% = sangat rapat; clamp agar baris tidak terbalik/hilang.
-        val lineHeight  = (element.fontSize * (element.leading / 100f)).coerceAtLeast(1f)
+        // FIX #3: pakai leading murni + gap per paragraf.
+        val lineHeight  = lineAdvanceFor(element.fontSize, element.leading)
         val paraGap     = paragraphGap(element)
-        val totalHeight = (lines.size * lineHeight + paragraphExtra(lines, paraGap)).coerceAtLeast(1f)
+        val paras = wrapParagraphs(element.text, paint, element.width, element.tracking)
+        val flatCount = paras.sumOf { it.size }.coerceAtLeast(1)
+        val totalHeight = (flatCount * lineHeight + paragraphExtraForText(element.text, paraGap)).coerceAtLeast(1f)
         val amplitude   = element.fontSize * 0.15f
         val frequency   = PI / (element.fontSize * 2)
         val startY      = element.y + (element.height - totalHeight) / 2f + element.fontSize
         var charIndex   = 0
         var lineY       = startY
 
-        for ((lineIdx, line) in lines.withIndex()) {
-            val baseY     = lineY
-            val lineWidth = trackedWidth(line, paint, element.tracking)
-            val lineStartX = when (element.align) {
-                TextAlign.LEFT   -> element.x
-                TextAlign.CENTER -> element.x + element.width / 2f - lineWidth / 2f
-                TextAlign.RIGHT  -> element.x + element.width - lineWidth
-            }
-            var xOff = 0f
-            for (ch in line.toCharArray()) {
-                val chStr   = ch.toString()
-                val yOffset = (sin(frequency * charIndex) * amplitude).toFloat()
-                canvas.drawText(chStr, lineStartX + xOff, baseY + yOffset, paint)
-                xOff      += paint.measureText(chStr) + element.tracking
+        for ((paraIdx, paraLines) in paras.withIndex()) {
+            for (line in paraLines) {
+                val baseY     = lineY
+                val lineWidth = trackedWidth(line, paint, element.tracking)
+                val lineStartX = when (element.align) {
+                    TextAlign.LEFT   -> element.x
+                    TextAlign.CENTER -> element.x + element.width / 2f - lineWidth / 2f
+                    TextAlign.RIGHT  -> element.x + element.width - lineWidth
+                }
+                var xOff = 0f
+                for (ch in line.toCharArray()) {
+                    val chStr   = ch.toString()
+                    val yOffset = (sin(frequency * charIndex) * amplitude).toFloat()
+                    canvas.drawText(chStr, lineStartX + xOff, baseY + yOffset, paint)
+                    xOff      += paint.measureText(chStr) + element.tracking
+                    charIndex++
+                }
                 charIndex++
+                lineY += lineHeight
             }
-            charIndex++
-            lineY += lineHeight
-            if (line.isBlank()) lineY += paraGap
+            if (paraIdx != paras.lastIndex) lineY += paraGap
         }
     }
 
@@ -785,13 +814,15 @@ private fun toTitleCase(text: String): String {
         val contentW = (element.width - insetX * 2f).coerceAtLeast(1f)
         val top = element.y + insetY
         val contentH = (element.height - insetY * 2f).coerceAtLeast(1f)
-        val lines = wrapLines(text, paint, contentW, element.tracking)
+        // FIX #3: leading murni + gap per '\n' (dulu max() 1.05× membuat leading tak berefek).
         val fm = paint.fontMetrics
-        val lineAdvance = maxOf(element.fontSize * (element.leading / 100f), (fm.descent - fm.ascent) * 1.05f)
+        val lineAdvance = lineAdvanceFor(element.fontSize, element.leading)
         val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
         val paraGap = paragraphGap(element)
-        val totalHeight = glyphHeight + (lines.size - 1).coerceAtLeast(0) * lineAdvance +
-            paragraphExtra(lines, paraGap)
+        val paras = wrapParagraphs(text, paint, contentW, element.tracking)
+        val flatLines = paras.flatten()
+        val totalHeight = glyphHeight + (flatLines.size - 1).coerceAtLeast(0) * lineAdvance +
+            paragraphExtraForText(text, paraGap)
         val firstBaseline = top + ((contentH - totalHeight) / 2f).coerceAtLeast(0f) - fm.ascent
         val amplitude = element.textPathAmount.coerceIn(-100f, 100f) / 100f *
             minOf(element.height * 0.4f, element.fontSize * 2f)
@@ -812,7 +843,18 @@ private fun toTitleCase(text: String): String {
             }
         }
 
-        lines.forEachIndexed { lineIndex, line ->
+        // FIX #3: gap di batas paragraf (bukan baris kosong saja).
+        val isParaEnd = BooleanArray(flatLines.size) { false }
+        run {
+            var cursor = 0
+            for ((pi, para) in paras.withIndex()) {
+                cursor += para.size
+                if (pi != paras.lastIndex && cursor - 1 in isParaEnd.indices) {
+                    isParaEnd[cursor - 1] = true
+                }
+            }
+        }
+        flatLines.forEachIndexed { lineIndex, line ->
             val lineWidth = trackedWidth(line, paint, element.tracking).coerceAtLeast(1f)
             val startX = when (element.align) {
                 TextAlign.LEFT -> left
@@ -820,9 +862,9 @@ private fun toTitleCase(text: String): String {
                 TextAlign.RIGHT -> left + contentW - lineWidth
             }
             var xOffset = 0f
-            // Akumulasi gap paragraf dari baris-baris kosong sebelumnya.
+            // Akumulasi gap paragraf dari batas-batas paragraf sebelumnya.
             var paraBefore = 0f
-            for (i in 0 until lineIndex) if (lines[i].isBlank()) paraBefore += paraGap
+            for (i in 0 until lineIndex) if (isParaEnd[i]) paraBefore += paraGap
             line.forEach { ch ->
                 val glyph = ch.toString()
                 val glyphWidth = paint.measureText(glyph)
@@ -860,13 +902,23 @@ private fun toTitleCase(text: String): String {
         val contentW = (right - left).coerceAtLeast(1f)
         val contentH = (bottom - top).coerceAtLeast(1f)
 
-        val lines = wrapLines(text, paint, contentW, element.tracking)
+        // FIX #3: leading murni + gap per '\n'.
         val fm = paint.fontMetrics
-        val lineAdvance = maxOf(element.fontSize * (element.leading / 100f), (fm.descent - fm.ascent) * 1.05f)
+        val lineAdvance = lineAdvanceFor(element.fontSize, element.leading)
         val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
         val paraGap = paragraphGap(element)
+        val paras = wrapParagraphs(text, paint, contentW, element.tracking)
+        val lines = paras.flatten()
+        val isParaEnd = BooleanArray(lines.size) { false }
+        run {
+            var cursor = 0
+            for ((pi, para) in paras.withIndex()) {
+                cursor += para.size
+                if (pi != paras.lastIndex && cursor - 1 in isParaEnd.indices) isParaEnd[cursor - 1] = true
+            }
+        }
         val totalHeight = glyphHeight + (lines.size - 1).coerceAtLeast(0) * lineAdvance +
-            paragraphExtra(lines, paraGap)
+            paragraphExtraForText(text, paraGap)
 
         // Center the actual glyph block, not an extra line advance after the last
         // baseline. This gives equal visual breathing room above and below.
@@ -896,7 +948,7 @@ private fun toTitleCase(text: String): String {
                 }
             }
             y += lineAdvance
-            if (line.isBlank()) y += paraGap
+            if (isParaEnd[idx]) y += paraGap
         }
     }
 
@@ -1007,11 +1059,12 @@ private fun toTitleCase(text: String): String {
 
         val lines = wrapLines(text, layoutPaint, contentW)
         val fm = layoutPaint.fontMetrics
-        val lineAdvance = maxOf(element.fontSize * (element.leading / 100f), (fm.descent - fm.ascent) * 1.05f)
+        // FIX #3: leading murni + gap per '\n'.
+        val lineAdvance = lineAdvanceFor(element.fontSize, element.leading)
         val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
         val paraGap = paragraphGap(element)
         val totalHeight = glyphHeight + (lines.size - 1).coerceAtLeast(0) * lineAdvance +
-            paragraphExtra(lines, paraGap)
+            paragraphExtraForText(text, paraGap)
         var baseY = top + ((contentH - totalHeight) / 2f).coerceAtLeast(0f) - fm.ascent
         var absPos = 0
 
@@ -1128,7 +1181,19 @@ private fun toTitleCase(text: String): String {
                 absPos++
             }
             baseY += lineAdvance
+            // FIX #3: gap paragraf di batas paragraf. Deteksi sederhana: bila teks
+            // asli punya '\n' dan baris berikutnya diawali setelah '\n', tambah gap.
+            // Pendekatan konservatif: tambah gap setelah baris kosong ATAU bila
+            // jumlah baris < jumlah segmen yang diharapkan — dihitung via sisa '\n'.
+            // Untuk akurasi penuh, hitung posisi paragraf dari teks asli:
             if (line.isBlank()) baseY += paraGap
+            else {
+                // Jika masih ada '\n' yang belum dikonsumsi, baris ini adalah akhir
+                // paragraf → tambah gap. absPos menunjuk setelah baris ini.
+                var tmp = absPos
+                while (tmp < text.length && text[tmp] == ' ') tmp++
+                if (tmp < text.length && text[tmp] == '\n') baseY += paraGap
+            }
         }
     }
 
@@ -1167,7 +1232,8 @@ private fun toTitleCase(text: String): String {
             val fitH = if (roundBubbleMode) roundSafeSide else contentH
             val wrapped = wrapLines(text, paint, fitW)
             val fm = paint.fontMetrics
-            val lineAdvance = maxOf(size * (leading / 100f), (fm.descent - fm.ascent) * 1.05f)
+            // FIX #3: leading murni agar auto-fit menghormati leading/paragraph.
+            val lineAdvance = lineAdvanceFor(size, leading)
             val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
             val totalHeight = glyphHeight + (wrapped.size - 1).coerceAtLeast(0) * lineAdvance
             val maxLineW = wrapped.maxOfOrNull { paint.measureText(it) } ?: 0f
@@ -1186,7 +1252,7 @@ private fun toTitleCase(text: String): String {
             val fitW = if (roundBubbleMode) roundSafeSide else contentW
             val fitH = if (roundBubbleMode) roundSafeSide else contentH
             val fm = paint.fontMetrics
-            val lineAdvance = maxOf(paint.textSize * (leading / 100f), (fm.descent - fm.ascent) * 1.05f)
+            val lineAdvance = lineAdvanceFor(paint.textSize, leading)
             if (paint.measureText(text) <= fitW && lineAdvance <= fitH) {
                 return maxFontSize.coerceIn(minFontSize, maxFontSize)
             }

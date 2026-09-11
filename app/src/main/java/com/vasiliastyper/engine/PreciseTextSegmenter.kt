@@ -19,11 +19,12 @@ import org.opencv.imgproc.Imgproc
 object PreciseTextSegmenter {
 
     private const val MSER_DELTA = 5
-    private const val MSER_MIN_AREA = 20
+    // FIX #2: turunkan ambang agar teks kecil/tipis ikut jadi mask bentuk teks.
+    private const val MSER_MIN_AREA = 12
     private const val MSER_MAX_AREA = 80_000
     private const val MSER_MAX_VARIATION = 0.28
     private const val MSER_MIN_DIVERSITY = 0.18
-    private const val MIN_HEIGHT_PX = 4
+    private const val MIN_HEIGHT_PX = 3
 
     fun extractTextMask(rgb: Mat, fullMask: Mat): Mat {
         val width = rgb.cols()

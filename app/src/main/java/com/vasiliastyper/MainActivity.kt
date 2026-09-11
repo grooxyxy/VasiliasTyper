@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
     private var activeBatchWorkspaceId: String? = null
 
     // ── Bubble Translate tool state ────────────────────────────────────────────
-    // 0 = Fill White, 1 = Fill Black, 2 = Inpainting
+    // FIX #5: 0 = Fill White, 1 = Telea (pengganti Fill Black), 2 = Inpainting
     private var btFillMode: Int = 0
     // null = Auto-match, otherwise the name of the saved TextStyle to use
     private var btSelectedStyleName: String? = null
@@ -3457,16 +3457,37 @@ class MainActivity : AppCompatActivity() {
         fallbackSourceTexts: List<String> = emptyList()
     ): List<ScriptOcrMatcher.OcrRegion> {
         val ocr = detectScriptRegionsWithMlKit(bitmap)
-        // Bubble utama: YOLOv8m (Drive user, dibundle saat build). Grid tiling
-        // 1200/300 membuat 720x16000+ hanya menambah jumlah tile (±18 tile
-        // untuk 16000px) sehingga timeout 120 dtk aman untuk HP low-end.
-        // Bila model tidak ada/gagal/timeout, fallback ke OpenCV lokal.
+        // FIX #1: YOLOv8m tiling 960/320 + fusi OpenCV agar 720x16000 maksimal
+        // (±17 tile untuk 16000px). Timeout 120 dtk aman untuk HP low-end.
         val bubbles: List<RectF> = withTimeoutOrNull(120_000L) {
             withContext(Dispatchers.Default) {
-                runCatching {
+                val yoloRects = runCatching {
                     YoloV8mBubbleDetector.detect(this@MainActivity, bitmap).map { it.rect }
-                }.getOrNull()?.takeIf { it.isNotEmpty() }
-                    ?: BubbleDetector.detect(bitmap).take(160)
+                }.getOrNull().orEmpty()
+                val cvRects = runCatching {
+                    BubbleDetector.detect(bitmap).take(300)
+                }.getOrNull().orEmpty()
+                if (yoloRects.isEmpty()) cvRects
+                else if (cvRects.isEmpty()) yoloRects.take(300)
+                else {
+                    // Fusi ringan: gabung + buang duplikat IoU>=0.35.
+                    val all = (yoloRects + cvRects).sortedByDescending { it.width() * it.height() }
+                    val kept = mutableListOf<RectF>()
+                    for (c in all) {
+                        val dup = kept.any { e ->
+                            val l = maxOf(e.left, c.left); val t = maxOf(e.top, c.top)
+                            val r = minOf(e.right, c.right); val b = minOf(e.bottom, c.bottom)
+                            val inter = maxOf(0f, r - l) * maxOf(0f, b - t)
+                            if (inter <= 0f) false else {
+                                val union = e.width() * e.height() + c.width() * c.height() - inter
+                                (inter / union.coerceAtLeast(1f)) >= 0.35f
+                            }
+                        }
+                        if (!dup) kept += c
+                        if (kept.size >= 300) break
+                    }
+                    kept
+                }
             }
         } ?: emptyList()
 
@@ -6455,13 +6476,18 @@ class MainActivity : AppCompatActivity() {
         binding.btnFillBlack.setOnClickListener {
             val ws2 = vm.activeWorkspace ?: return@setOnClickListener
             vm.pushHistory(ws2)
-            showMaskProgress("Fill hitam…", indeterminate = true)
+            // FIX #5: tombol hitam diganti Telea inpaint (bukan cat hitam).
+            showMaskProgress("Telea inpaint…", indeterminate = false)
             lifecycleScope.launch {
                 val ok = runCatching {
-                    withContext(Dispatchers.IO) { binding.canvasView.fillSelection(Color.BLACK) }
+                    withContext(Dispatchers.IO) {
+                        binding.canvasView.teleaInpaintSelection { p ->
+                            updateMaskProgress(p, "Telea inpaint…")
+                        }
+                    }
                 }.getOrDefault(false)
                 hideMaskProgress()
-                updateStatus(if (ok) "Fill hitam selesai ✓" else "Fill hitam gagal")
+                updateStatus(if (ok) "Telea selesai ✓" else "Telea gagal")
             }
         }
         binding.btnCopySelection.setOnClickListener {
@@ -6610,7 +6636,8 @@ class MainActivity : AppCompatActivity() {
 
     fun setupBubbleTranslateOptionsBar() {
         // Fill type spinner
-        val fillItems = arrayOf("Fill White", "Fill Black", "Inpainting")
+        // FIX #5: "Fill Black" diganti Telea (inpaint, bukan cat hitam).
+        val fillItems = arrayOf("Fill White", "Telea (ganti hitam)", "Inpainting")
         binding.spinnerBtFill.adapter = ArrayAdapter(
             this, android.R.layout.simple_spinner_dropdown_item, fillItems
         )
@@ -6720,11 +6747,49 @@ class MainActivity : AppCompatActivity() {
                 if (translated.isNotEmpty()) {
                     val strictRect = Rect(x, y, x + w, y + h)
 
-                    // 1. Hapus teks asli sesuai pilihan fill
+                    // 1. Hapus teks asli sesuai pilihan fill (FIX #5: hitam->Telea)
                     withContext(Dispatchers.IO) {
                         when (btFillMode) {
                             0 -> applyTextMaskOnly(composite, layer.bitmap, strictRect, Color.WHITE, bleedPx = 1)
-                            1 -> applyTextMaskOnly(composite, layer.bitmap, strictRect, Color.BLACK, bleedPx = 1)
+                            1 -> {
+                                // Telea pada mask glyph; fallback putih bila gagal.
+                                val patch = runCatching { detectTextMaskPatch(composite, strictRect, bleedPx = 1) }.getOrNull()
+                                var done = false
+                                if (patch != null) {
+                                    val region = android.graphics.Region()
+                                    val w = patch.rect.width(); val h = patch.rect.height()
+                                    var yy = 0
+                                    while (yy < h) {
+                                        var xx = 0
+                                        while (xx < w) {
+                                            if (patch.pixels[yy * w + xx]) {
+                                                var xx2 = xx
+                                                while (xx2 < w && patch.pixels[yy * w + xx2]) xx2++
+                                                region.union(android.graphics.Rect(patch.rect.left + xx, patch.rect.top + yy, patch.rect.left + xx2, patch.rect.top + yy + 1))
+                                                xx = xx2
+                                            } else xx++
+                                        }
+                                        yy++
+                                    }
+                                    if (!region.isEmpty) {
+                                        done = runCatching {
+                                            com.vasiliastyper.engine.CustomPdeInpainter.inpaint(
+                                                layer.bitmap, region,
+                                                com.vasiliastyper.engine.CustomPdeInpainter.Method.TELEA
+                                            ).success
+                                        }.getOrDefault(false)
+                                    }
+                                }
+                                if (!done) {
+                                    val fb = runCatching {
+                                        com.vasiliastyper.engine.CustomPdeInpainter.inpaint(
+                                            layer.bitmap, android.graphics.Region(strictRect),
+                                            com.vasiliastyper.engine.CustomPdeInpainter.Method.TELEA
+                                        ).success
+                                    }.getOrDefault(false)
+                                    if (!fb) applyTextMaskOnly(composite, layer.bitmap, strictRect, Color.WHITE, bleedPx = 1)
+                                }
+                            }
                             2 -> {
                                 // Inpainting menggunakan region persegi area terpilih
                                 try {
@@ -7283,6 +7348,23 @@ class MainActivity : AppCompatActivity() {
         binding.canvasView.onTextEdit     = { el -> showTextEditorDialogForEdit(el) }
         // v5.1 — floating quick-edit toolbar wiring
         binding.canvasView.onTextSelected = { el -> updateTextQuickToolbar(el) }
+        // FIX #7: tombol X hapus teks — konfirmasi dulu (anti-kepencet).
+        binding.canvasView.onTextDeleteRequest = { el ->
+            AlertDialog.Builder(this)
+                .setTitle("Hapus teks?")
+                .setMessage("Teks \"${el.text.take(40)}\" akan dihapus dari kanvas. Lanjutkan?")
+                .setPositiveButton("🗑 Hapus") { _, _ ->
+                    binding.canvasView.pushTextHistory()
+                    binding.canvasView.textElements.remove(el)
+                    if (binding.canvasView.activeTextId == el.id) binding.canvasView.activeTextId = null
+                    updateTextQuickToolbar(null)
+                    binding.canvasView.invalidate()
+                    triggerAutoSave()
+                    updateStatus("Teks dihapus")
+                }
+                .setNegativeButton("Batal", null)
+                .show()
+        }
         binding.canvasView.onImageSelected = { el -> updateImageQuickToolbar(el) }
         // Ukuran px realtime saat resize manual lewat handle.
         binding.canvasView.onTextSizePreview = { px ->
@@ -10617,8 +10699,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Ketuk angka (TextView nilai slider) untuk ketik manual. Dipakai semua
-     * slider angka editor teks/image agar presisi tanpa geser.
+     * FIX #6: dialog input manual diperbagus — bukan kolom abu biasa.
+     * Kartu rounded + aksen biru, angka besar tebal di tengah, pill rentang,
+     * tombol OK/Batal berwarna. Dipakai semua slider editor teks/image.
      */
     private fun askNumberInput(
         title: String,
@@ -10627,27 +10710,94 @@ class MainActivity : AppCompatActivity() {
         max: Float,
         onSet: (Float) -> Unit
     ) {
+        val accent = Color.parseColor("#3A6FE8")
+        val ink = Color.parseColor("#1A1A2E")
+        fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
+
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(22), dp(18), dp(22), dp(8))
+        }
+        val titleView = TextView(this).apply {
+            text = "✏️  $title"
+            setTextColor(ink)
+            textSize = 18f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        }
+        val rangePill = TextView(this).apply {
+            text = "Rentang $min … $max"
+            setTextColor(accent)
+            textSize = 12f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(dp(12), dp(6), dp(12), dp(6))
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dp(20).toFloat()
+                setColor(Color.parseColor("#EEF2FF"))
+                setStroke(dp(1), Color.parseColor("#C7D6FF"))
+            }
+        }
         val input = EditText(this).apply {
             inputType = android.text.InputType.TYPE_CLASS_NUMBER or
                 android.text.InputType.TYPE_NUMBER_FLAG_SIGNED or
                 android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
             setText(if (current % 1f == 0f) current.toInt().toString() else current.toString())
             setSelection(text.length)
+            setTextColor(ink)
+            textSize = 24f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            gravity = Gravity.CENTER
+            hint = "Ketik angka…"
+            setHintTextColor(Color.parseColor("#9AA3B2"))
+            setPadding(dp(16), dp(14), dp(16), dp(14))
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dp(14).toFloat()
+                setColor(Color.WHITE)
+                setStroke(dp(2), accent)
+            }
         }
-        AlertDialog.Builder(this)
-            .setTitle(title)
-            .setMessage("Rentang $min … $max")
-            .setView(input.apply { setPadding(48, 24, 48, 0) })
-            .setPositiveButton("OK") { _, _ ->
-                val v = input.text.toString().toFloatOrNull()
+        val hintView = TextView(this).apply {
+            text = "Nilai otomatis dibatasi ke rentang di atas."
+            setTextColor(Color.parseColor("#6B7280"))
+            textSize = 11f
+            gravity = Gravity.CENTER
+        }
+        container.addView(titleView)
+        container.addView(Space(this).apply { layoutParams = LinearLayout.LayoutParams(1, dp(8)) })
+        container.addView(rangePill)
+        container.addView(Space(this).apply { layoutParams = LinearLayout.LayoutParams(1, dp(12)) })
+        container.addView(input, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+        container.addView(Space(this).apply { layoutParams = LinearLayout.LayoutParams(1, dp(8)) })
+        container.addView(hintView)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(container)
+            .setPositiveButton("✓ OK", null)
+            .setNegativeButton("Batal", null)
+            .create()
+        dialog.show()
+        // Tombol berwarna aksen agar jelas (bukan abu).
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
+            setTextColor(accent); setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setOnClickListener {
+                val v = input.text.toString().trim().toFloatOrNull()
                 if (v == null) {
-                    Toast.makeText(this, "Angka tidak valid", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
+                    input.error = "Angka tidak valid"
+                    return@setOnClickListener
                 }
                 onSet(v.coerceIn(min, max))
+                dialog.dismiss()
             }
-            .setNegativeButton("Batal", null)
-            .show()
+        }
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(Color.parseColor("#6B7280"))
+        dialog.window?.setBackgroundDrawable(GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = dp(20).toFloat()
+            setColor(Color.parseColor("#F8FAFF"))
+        })
+        input.requestFocus()
+        dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -10778,10 +10928,18 @@ class MainActivity : AppCompatActivity() {
         }
         qtbDelete.setOnClickListener {
             val el = activeEl() ?: return@setOnClickListener
-            binding.canvasView.pushTextHistory()
-            binding.canvasView.textElements.remove(el)
-            binding.canvasView.activeTextId = null
-            updateTextQuickToolbar(null); commit()
+            // FIX #7: konfirmasi hapus (toolbar juga).
+            AlertDialog.Builder(this)
+                .setTitle("Hapus teks?")
+                .setMessage("Teks \"${el.text.take(40)}\" akan dihapus dari kanvas. Lanjutkan?")
+                .setPositiveButton("🗑 Hapus") { _, _ ->
+                    binding.canvasView.pushTextHistory()
+                    binding.canvasView.textElements.remove(el)
+                    binding.canvasView.activeTextId = null
+                    updateTextQuickToolbar(null); commit()
+                }
+                .setNegativeButton("Batal", null)
+                .show()
         }
         qtbClose.setOnClickListener {
             binding.canvasView.activeTextId = null
@@ -12455,7 +12613,8 @@ class MainActivity : AppCompatActivity() {
         binding.btnMaskSelectAll.isEnabled = true
         binding.btnMaskSelectAll.setOnClickListener { runMaskAutoDetect() }
         binding.btnMaskFillWhite.text = "Isi putih"
-        binding.btnMaskFillBlack.text = "Isi hitam"
+        // FIX #5: hitam diganti Telea inpaint.
+        binding.btnMaskFillBlack.text = "Isi Telea"
         binding.btnMaskInpaint.text = "RemovR region"
 
         binding.tvMaskStatus.text = "Pilih model dan bahasa, lalu mulai deteksi. Setiap hasil dapat ditinjau sebelum diterapkan."
@@ -13118,8 +13277,9 @@ class MainActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                // Bubble utama: YOLOv8m murni (Drive user, tiling grid 1200/300 di
-                // dalam detectTiled). Fallback ke OpenCV+ML Kit bila model kosong.
+                // FIX #1 (720x16000 maksimal): YOLOv8m tiling grid 960/320 +
+                // fusi OpenCV agar potensi maksimal (YOLO + OpenCV digabung, bukan
+                // fallback). Halaman super-tinggi hanya menambah tile, bukan memori.
                 val detections = withContext(Dispatchers.Default) {
                     val yolo = runCatching {
                         YoloV8mBubbleDetector.detect(this@MainActivity, source).map {
@@ -13129,12 +13289,15 @@ class MainActivity : AppCompatActivity() {
                                 source = BubbleDetection.Source.YOLO_V8M
                             )
                         }
-                    }.getOrNull()
-                    if (!yolo.isNullOrEmpty()) yolo else BubbleDetector.detectHybrid(
-                        source,
-                        BubbleDetectionConfig(),
-                        "auto"
-                    )
+                    }.getOrNull().orEmpty()
+                    val hybrid = runCatching {
+                        BubbleDetector.detectHybrid(
+                            source,
+                            BubbleDetectionConfig(),
+                            "auto"
+                        )
+                    }.getOrNull().orEmpty()
+                    fuseBubbleDetections(yolo, hybrid)
                 }
                 val regions = detections.map { it.bounds }
 
@@ -13190,6 +13353,50 @@ class MainActivity : AppCompatActivity() {
 
     private fun Double.toIntPercent(): Int =
         if (isNaN()) 0 else (this * 100.0).toInt().coerceIn(0, 100)
+
+    /**
+     * FIX #1: gabung YOLOv8m + OpenCV/Hybrid agar potensi maksimal di 720x16000.
+     * YOLO unggul di bubble ber-outline, OpenCV unggul di bubble borderless/putih.
+     * Duplikat (IoU>=0.35 atau saling mencakup>=0.70) dilebur dengan skor max.
+     */
+    private fun fuseBubbleDetections(
+        yolo: List<BubbleDetection>,
+        hybrid: List<BubbleDetection>
+    ): List<BubbleDetection> {
+        if (yolo.isEmpty()) return hybrid.take(300)
+        if (hybrid.isEmpty()) return yolo.take(300)
+        val all = (yolo + hybrid).sortedByDescending { it.confidence }
+        val kept = mutableListOf<BubbleDetection>()
+        fun iou(a: RectF, b: RectF): Float {
+            val l = maxOf(a.left, b.left); val t = maxOf(a.top, b.top)
+            val r = minOf(a.right, b.right); val b2 = minOf(a.bottom, b.bottom)
+            val inter = maxOf(0f, r - l) * maxOf(0f, b2 - t)
+            if (inter <= 0f) return 0f
+            val union = a.width() * a.height() + b.width() * b.height() - inter
+            return if (union <= 0f) 0f else inter / union
+        }
+        fun cover(a: RectF, b: RectF): Float {
+            val l = maxOf(a.left, b.left); val t = maxOf(a.top, b.top)
+            val r = minOf(a.right, b.right); val b2 = minOf(a.bottom, b.bottom)
+            val inter = maxOf(0f, r - l) * maxOf(0f, b2 - t)
+            val smaller = minOf(a.width() * a.height(), b.width() * b.height()).coerceAtLeast(1f)
+            return inter / smaller
+        }
+        for (c in all) {
+            val idx = kept.indexOfFirst { e -> iou(e.bounds, c.bounds) >= 0.35f || cover(e.bounds, c.bounds) >= 0.70f }
+            if (idx < 0) {
+                kept += c
+            } else {
+                val e = kept[idx]
+                val best = if (c.confidence >= e.confidence) c else e
+                // Ambil box terbesar agar bubble utuh (hindari setengah bubble).
+                val bigger = if (e.bounds.width() * e.bounds.height() >= c.bounds.width() * c.bounds.height()) e.bounds else c.bounds
+                kept[idx] = BubbleDetection(RectF(bigger), maxOf(e.confidence, c.confidence), best.source, e.textPreview.ifEmpty { c.textPreview })
+            }
+            if (kept.size >= 300) break
+        }
+        return kept.sortedWith(compareBy<BubbleDetection> { it.bounds.top }.thenBy { it.bounds.left })
+    }
 
     /**
      * Isi hanya piksel glyph di dalam ROI detector. Kotak detector tidak pernah
@@ -13432,8 +13639,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Fill White/Black untuk panel Mask. Setiap hasil deteksi adalah satu kotak baris
-     * yang sudah diberi padding kecil; seluruh kotak diisi, bukan hanya piksel glyph.
+     * FIX #2: Fill mengikuti bentuk teks (glyph), bukan kotak penuh.
+     * Tiap region dicoba mask glyph dulu (fast path lalu OpenCV); hanya yang
+     * gagal yang jatuh ke box-fill. Background & outline balon tetap utuh.
+     * FIX #5: bila fillColor==BLACK, jalankan Telea inpaint (CustomPdeInpainter)
+     * pada mask glyph — bukan cat hitam.
      */
     private fun runMaskSolidFill(fillColor: Int) {
         if (textDetectedRegions.isEmpty()) return
@@ -13445,7 +13655,8 @@ class MainActivity : AppCompatActivity() {
 
         val regions = textDetectedRegions.map { RectF(it.rect) }
         if (regions.isEmpty()) return
-        val label = if (fillColor == Color.WHITE) "Isi Putih" else "Isi Hitam"
+        val isTelea = fillColor == Color.BLACK
+        val label = if (!isTelea) "Isi Putih" else "Isi Telea"
 
         vm.pushHistory(ws)
         setMaskActionsEnabled(false)
@@ -13454,18 +13665,104 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val result = withContext(Dispatchers.Default) {
-                    BoxMaskWhiteFiller.fill(
-                        targetBitmap = layer.bitmap,
-                        regions = regions,
-                        fillColor = fillColor,
-                        paddingPx = 0,
-                        dilationPx = 0
-                    )
+                var glyphFilled = 0
+                var glyphPixels = 0
+                var boxFilled = 0
+                var boxPixels = 0
+                var teleaOk = 0
+                var teleaFail = 0
+                withContext(Dispatchers.Default) {
+                    val snapshot = runCatching {
+                        layer.bitmap.copy(Bitmap.Config.ARGB_8888, false)
+                    }.getOrNull()
+                    val fallbackBoxes = mutableListOf<RectF>()
+                    for (rf in regions) {
+                        val rect = android.graphics.Rect(
+                            kotlin.math.floor(rf.left.toDouble()).toInt().coerceIn(0, layer.bitmap.width),
+                            kotlin.math.floor(rf.top.toDouble()).toInt().coerceIn(0, layer.bitmap.height),
+                            kotlin.math.ceil(rf.right.toDouble()).toInt().coerceIn(0, layer.bitmap.width),
+                            kotlin.math.ceil(rf.bottom.toDouble()).toInt().coerceIn(0, layer.bitmap.height)
+                        )
+                        if (rect.isEmpty) continue
+                        val src = snapshot ?: layer.bitmap
+                        // Coba mask glyph presisi dulu.
+                        val patch = runCatching { detectTextMaskPatch(src, rect, bleedPx = 1) }.getOrNull()
+                        if (patch != null && !isTelea) {
+                            val ok = runCatching { applyTextMaskPatch(layer.bitmap, patch, Color.WHITE) }.getOrDefault(false)
+                            if (ok) {
+                                glyphFilled++
+                                glyphPixels += patch.pixels.count { it }
+                                continue
+                            }
+                        }
+                        if (patch != null && isTelea) {
+                            // Telea: bangun Region dari mask glyph lalu inpaint.
+                            val region = android.graphics.Region()
+                            val w = patch.rect.width(); val h = patch.rect.height()
+                            var y = 0
+                            while (y < h) {
+                                var x = 0
+                                while (x < w) {
+                                    if (patch.pixels[y * w + x]) {
+                                        var x2 = x
+                                        while (x2 < w && patch.pixels[y * w + x2]) x2++
+                                        region.union(android.graphics.Rect(patch.rect.left + x, patch.rect.top + y, patch.rect.left + x2, patch.rect.top + y + 1))
+                                        x = x2
+                                    } else x++
+                                }
+                                y++
+                            }
+                            if (!region.isEmpty) {
+                                val res = runCatching {
+                                    com.vasiliastyper.engine.CustomPdeInpainter.inpaint(
+                                        layer.bitmap, region,
+                                        com.vasiliastyper.engine.CustomPdeInpainter.Method.TELEA
+                                    )
+                                }.getOrNull()
+                                if (res?.success == true) { teleaOk++; glyphFilled++; glyphPixels += res.processedPixels; continue }
+                                else teleaFail++
+                            }
+                        }
+                        fallbackBoxes += rf
+                    }
+                    snapshot?.takeUnless { it.isRecycled }?.recycle()
+                    if (fallbackBoxes.isNotEmpty() && !isTelea) {
+                        val r = BoxMaskWhiteFiller.fill(
+                            targetBitmap = layer.bitmap,
+                            regions = fallbackBoxes,
+                            fillColor = Color.WHITE,
+                            paddingPx = 0,
+                            dilationPx = 0
+                        )
+                        boxFilled = r.validRegions; boxPixels = r.changedPixels
+                    } else if (fallbackBoxes.isNotEmpty() && isTelea) {
+                        // Fallback Telea per-box bila glyph gagal: inpaint kotak penuh.
+                        for (rf in fallbackBoxes) {
+                            val rect = android.graphics.Rect(
+                                kotlin.math.floor(rf.left.toDouble()).toInt().coerceIn(0, layer.bitmap.width),
+                                kotlin.math.floor(rf.top.toDouble()).toInt().coerceIn(0, layer.bitmap.height),
+                                kotlin.math.ceil(rf.right.toDouble()).toInt().coerceIn(0, layer.bitmap.width),
+                                kotlin.math.ceil(rf.bottom.toDouble()).toInt().coerceIn(0, layer.bitmap.height)
+                            )
+                            if (rect.isEmpty) continue
+                            val res = runCatching {
+                                com.vasiliastyper.engine.CustomPdeInpainter.inpaint(
+                                    layer.bitmap, android.graphics.Region(rect),
+                                    com.vasiliastyper.engine.CustomPdeInpainter.Method.TELEA
+                                )
+                            }.getOrNull()
+                            if (res?.success == true) { teleaOk++; boxPixels += res.processedPixels }
+                            else teleaFail++
+                        }
+                        boxFilled = teleaOk
+                    }
                 }
                 binding.canvasView.invalidate()
-                val msg = "$label selesai: ${result.validRegions}/${regions.size} kotak baris, " +
-                    "${result.changedPixels} piksel diisi"
+                val msg = if (!isTelea) {
+                    "$label selesai: $glyphFilled glyph + $boxFilled box/${regions.size}, ${glyphPixels + boxPixels} px"
+                } else {
+                    "$label selesai: $teleaOk/${regions.size} region, ${glyphPixels + boxPixels} px (Telea, gagal $teleaFail)"
+                }
                 updateStatus(msg)
                 binding.tvMaskStatus.text = msg
             } catch (t: Throwable) {

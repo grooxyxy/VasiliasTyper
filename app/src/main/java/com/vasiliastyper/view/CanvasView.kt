@@ -45,6 +45,8 @@ class CanvasView @JvmOverloads constructor(
      * empty canvas, signalling the floating quick-toolbar should be hidden.
      */
     var onTextSelected: ((element: TextElement?) -> Unit)? = null
+    /** FIX #7: konfirmasi hapus teks (tombol X) — host menampilkan dialog. */
+    var onTextDeleteRequest: ((element: TextElement) -> Unit)? = null
     /** Ukuran font (px) realtime saat teks di-resize manual lewat handle. */
     var onTextSizePreview: ((sizePx: Float) -> Unit)? = null
     /** Fired when an ImageElement is selected directly on the canvas. */
@@ -916,7 +918,7 @@ class CanvasView @JvmOverloads constructor(
             val showFullHandles = (currentTool == Tool.ADD_IMAGE && !img.isLocked)
             val showMoveHandles = (currentTool == Tool.MOVE && img.id == activeImageId && !img.isLocked)
             if (showFullHandles || showMoveHandles) {
-                val hs = (28f / scaleFactor).coerceAtLeast(28f)
+                val hs = (28f / scaleFactor).coerceAtLeast(2.5f)
                 imgBoxPaint.strokeWidth = 1.5f / scaleFactor
                 imgCornerStroke.strokeWidth = 1.5f / scaleFactor
 
@@ -931,8 +933,8 @@ class CanvasView @JvmOverloads constructor(
                 }
 
                 if (showFullHandles) {
-                    val hsMid = (20f / scaleFactor).coerceAtLeast(20f)
-                    val rotOff = (56f / scaleFactor).coerceAtLeast(30f)
+                    val hsMid = (20f / scaleFactor).coerceAtLeast(2f)
+                    val rotOff = (56f / scaleFactor).coerceAtLeast(4f)
                     rotLinePaint.strokeWidth = 1.5f / scaleFactor
                     rotHandleStroke.strokeWidth = 1.5f / scaleFactor
 
@@ -955,7 +957,7 @@ class CanvasView @JvmOverloads constructor(
                         canvas.drawCircle(hx, hy, hsMid, midEdgeStroke)
                     }
 
-                    val delOff = hs * 1.1f
+                    val delOff = hs * 2.6f // FIX #7: geser jauhan anti-kepencet
                     val delX = img.x + img.width + delOff; val delY = img.y - delOff
                     val delPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#E05252"); style = Paint.Style.FILL }
                     canvas.drawCircle(delX, delY, hs, delPaint)
@@ -998,7 +1000,7 @@ class CanvasView @JvmOverloads constructor(
             if (el.isLocked || (currentTool != Tool.TEXT && currentTool != Tool.MESH_FORM)) continue
 
             val isActive = (el.id == activeTextId)
-            val hs    = (28f / scaleFactor).coerceAtLeast(28f)
+            val hs    = (28f / scaleFactor).coerceAtLeast(2.5f)
 
             val poly = el.meshPoints
             val corners = el.perspCorners
@@ -1039,7 +1041,7 @@ class CanvasView @JvmOverloads constructor(
         }
 
         // Rotation handle above midpoint of TL-TR edge
-        val rotOff = (56f / scaleFactor).coerceAtLeast(30f)
+        val rotOff = (56f / scaleFactor).coerceAtLeast(4f)
         val midTopX = (corners[0] + corners[2]) / 2f
         val midTopY = (corners[1] + corners[3]) / 2f
         // Direction perpendicular to top edge, pointing "up"
@@ -1053,7 +1055,7 @@ class CanvasView @JvmOverloads constructor(
         canvas.drawCircle(rotHx, rotHy, hs, rotHandleStroke)
 
         // Delete badge (top-right corner area)
-        val delOff = hs * 1.1f
+        val delOff = hs * 2.6f // FIX #7: geser jauhan anti-kepencet
         val delX = corners[2] + perpX * delOff + edgeDx / edgeLen * delOff
         val delY = corners[3] + perpY * delOff + edgeDy / edgeLen * delOff
         val delPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#E05252"); style = Paint.Style.FILL }
@@ -1138,7 +1140,7 @@ class CanvasView @JvmOverloads constructor(
         val topRight = rotatePoint(PointF(el.x + pts[idx((cols + 1) / 2, 0)], el.y + pts[idx((cols + 1) / 2, 0) + 1]), cx, cy, el.rotation)
         val topMidX = (topLeft.x + topRight.x) / 2f
         val topMidY = (topLeft.y + topRight.y) / 2f
-        val rotOff = (56f / scaleFactor).coerceAtLeast(30f)
+        val rotOff = (56f / scaleFactor).coerceAtLeast(4f)
         val edgeDx = topRight.x - topLeft.x
         val edgeDy = topRight.y - topLeft.y
         val edgeLen = sqrt(edgeDx * edgeDx + edgeDy * edgeDy).coerceAtLeast(0.001f)
@@ -1191,8 +1193,8 @@ class CanvasView @JvmOverloads constructor(
 
     private fun drawNormalTextHandles(canvas: Canvas, el: TextElement, isActive: Boolean, hs: Float) {
         val cx = el.x + el.width / 2f; val cy = el.y + el.height / 2f
-        val hsMid = (20f / scaleFactor).coerceAtLeast(20f)
-        val rotOffset = (56f / scaleFactor).coerceAtLeast(30f)
+        val hsMid = (20f / scaleFactor).coerceAtLeast(2f)
+        val rotOffset = (56f / scaleFactor).coerceAtLeast(4f)
 
         textBoxPaint.strokeWidth     = (if (isActive) 2f else 1.5f) / scaleFactor
         textCornerStroke.strokeWidth = 1.5f / scaleFactor
@@ -1225,7 +1227,7 @@ class CanvasView @JvmOverloads constructor(
             canvas.drawCircle(hx, hy, hsMid, midEdgeStroke)
         }
 
-        val delOff = hs * 1.1f
+        val delOff = hs * 2.6f // FIX #7: geser jauhan anti-kepencet
         val delX = el.x + el.width + delOff; val delY = el.y - delOff
         val delPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#E05252"); style = Paint.Style.FILL }
         canvas.drawCircle(delX, delY, hs, delPaint)
@@ -1246,7 +1248,7 @@ class CanvasView @JvmOverloads constructor(
         canvas.drawCircle(editX, editY, hs, editStroke)
 
         if (isActive) {
-            val rotOff2 = (56f / scaleFactor).coerceAtLeast(30f) * 1.4f
+            val rotOff2 = (56f / scaleFactor).coerceAtLeast(4f) * 1.4f
             val refPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = Color.argb(100, 220, 220, 255); style = Paint.Style.STROKE
                 strokeWidth = 1.5f / scaleFactor
@@ -1379,7 +1381,7 @@ class CanvasView @JvmOverloads constructor(
 
     private fun drawUnwatermarkTransformHandles(canvas: Canvas, bounds: RectF) {
         if (bounds.isEmpty) return
-        val radius = (12f / scaleFactor).coerceAtLeast(7f)
+        val radius = (12f / scaleFactor).coerceAtLeast(2.5f)
         unwatermarkHandleStrokePaint.strokeWidth = 2f / scaleFactor
         unwatermarkHandleLabelPaint.textSize = 9f / scaleFactor
         val handles = listOf(
@@ -1420,7 +1422,7 @@ class CanvasView @JvmOverloads constructor(
         ) return false
         val bounds = selection.getBounds()
         if (bounds.isEmpty) return false
-        val hitRadius = (28f / scaleFactor).coerceAtLeast(16f)
+        val hitRadius = (28f / scaleFactor).coerceAtLeast(4f)
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
@@ -1732,7 +1734,7 @@ class CanvasView @JvmOverloads constructor(
                         if (!img.isVisible || img.isLocked) continue
                         val cx = img.x + img.width / 2f; val cy = img.y + img.height / 2f
                         val unrot = unrotatePoint(pt, cx, cy, img.rotation)
-                        val hs = (28f / scaleFactor).coerceAtLeast(28f)
+                        val hs = (28f / scaleFactor).coerceAtLeast(2.5f)
                         // Check corner resize handles first (FIX 8)
                         val cornerHit = when {
                             dist(unrot.x, unrot.y, img.x,             img.y             ) < hs * 2f -> "tl"
@@ -1853,10 +1855,10 @@ class CanvasView @JvmOverloads constructor(
                     if (!img.isVisible || img.isLocked) continue
                     val cx = img.x + img.width / 2f; val cy = img.y + img.height / 2f
                     val unrot = unrotatePoint(pt, cx, cy, img.rotation)
-                    val hs = (28f / scaleFactor).coerceAtLeast(28f)
-                    val hsMid = (20f / scaleFactor).coerceAtLeast(20f)
-                    val rotOff = (56f / scaleFactor).coerceAtLeast(30f)
-                    val delOff = hs * 1.1f
+                    val hs = (28f / scaleFactor).coerceAtLeast(2.5f)
+                    val hsMid = (20f / scaleFactor).coerceAtLeast(2f)
+                    val rotOff = (56f / scaleFactor).coerceAtLeast(4f)
+                    val delOff = hs * 2.6f // FIX #7: geser jauhan anti-kepencet
 
                     val delX = img.x + img.width + delOff; val delY = img.y - delOff
                     if (dist(unrot.x, unrot.y, delX, delY) < hs * 2f) {
@@ -1975,8 +1977,8 @@ class CanvasView @JvmOverloads constructor(
 
                 for (el in textElements.reversed()) {
                     if (!el.isVisible || el.isLocked) continue
-                    val hs    = (28f / scaleFactor).coerceAtLeast(28f)
-                    val rotOff = (56f / scaleFactor).coerceAtLeast(30f)
+                    val hs    = (28f / scaleFactor).coerceAtLeast(2.5f)
+                    val rotOff = (56f / scaleFactor).coerceAtLeast(4f)
 
                     // ── Mesh-mode element ────────────────────────────────
                     val poly = el.meshPoints
@@ -2023,8 +2025,11 @@ class CanvasView @JvmOverloads constructor(
                         val delX = if (candDownY >= candUpY) candDownX else candUpX
                         val delY = if (candDownY >= candUpY) candDownY else candUpY
                         if (dist(pt.x, pt.y, delX, delY) < hs * 2f) {
-                            pushTextHistory()
-                            textElements.remove(el); invalidate(); handled = true; break
+                            // FIX #7: minta konfirmasi via host; fallback hapus langsung bila callback null.
+                            activeTextId = el.id
+                            val cb = onTextDeleteRequest
+                            if (cb != null) { cb(el) } else { pushTextHistory(); textElements.remove(el) }
+                            invalidate(); handled = true; break
                         }
 
                         for (r in 0..rows) for (c in 0..cols) {
@@ -2071,11 +2076,15 @@ class CanvasView @JvmOverloads constructor(
                         }
 
                         // Delete badge
-                        val delOff = hs * 1.1f
+                        val delOff = hs * 2.6f // FIX #7: geser jauhan anti-kepencet
                         val delX = corners[2] + perpX * delOff + edgeDx / edgeLen * delOff
                         val delY = corners[3] + perpY * delOff + edgeDy / edgeLen * delOff
                         if (dist(pt.x, pt.y, delX, delY) < hs * 2f) {
-                            pushTextHistory(); textElements.remove(el); invalidate(); handled = true; break
+                            // FIX #7: minta konfirmasi via host; fallback hapus langsung bila callback null.
+                            activeTextId = el.id
+                            val cb = onTextDeleteRequest
+                            if (cb != null) { cb(el) } else { pushTextHistory(); textElements.remove(el) }
+                            invalidate(); handled = true; break
                         }
 
                         // Individual perspective corners (0-3)
@@ -2104,12 +2113,16 @@ class CanvasView @JvmOverloads constructor(
                     // ── Normal (non-perspective) element ──────────────────────
                     val cx    = el.x + el.width  / 2f; val cy = el.y + el.height / 2f
                     val unrot = unrotatePoint(pt, cx, cy, el.rotation)
-                    val hsMid = (20f / scaleFactor).coerceAtLeast(20f)
-                    val delOff = hs * 1.1f
+                    val hsMid = (20f / scaleFactor).coerceAtLeast(2f)
+                    val delOff = hs * 2.6f // FIX #7: geser jauhan anti-kepencet
 
                     val delX = el.x + el.width + delOff; val delY = el.y - delOff
-                    if (dist(unrot.x, unrot.y, delX, delY) < hs * 2.5f) {
-                        pushTextHistory(); textElements.remove(el); invalidate(); handled = true; break
+                    if (dist(unrot.x, unrot.y, delX, delY) < hs * 2.0f) {
+                        // FIX #7: konfirmasi + hit sedikit diperketat anti-kepencet.
+                        activeTextId = el.id
+                        val cb = onTextDeleteRequest
+                        if (cb != null) { cb(el) } else { pushTextHistory(); textElements.remove(el) }
+                        invalidate(); handled = true; break
                     }
 
                     val editX = el.x - delOff; val editY = el.y - delOff
@@ -2810,7 +2823,7 @@ class CanvasView @JvmOverloads constructor(
     private fun drawGeminiOverlay(canvas: Canvas) {
         val sw = (3f / scaleFactor).coerceAtLeast(1f)
         val ts = (24f / scaleFactor).coerceAtLeast(8f)
-        val badgeRadius = (14f / scaleFactor).coerceAtLeast(7f)
+        val badgeRadius = (14f / scaleFactor).coerceAtLeast(2f)
         val badgeFill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.argb(245, 190, 34, 34)
             style = Paint.Style.FILL
@@ -2845,7 +2858,7 @@ class CanvasView @JvmOverloads constructor(
     }
 
     private fun hitGeminiOverlayCloseIndex(x: Float, y: Float): Int {
-        val hitRadius = (24f / scaleFactor).coerceAtLeast(12f)
+        val hitRadius = (24f / scaleFactor).coerceAtLeast(4f)
         for (i in geminiDetectOverlay.lastIndex downTo 0) {
             val rect = geminiDetectOverlay[i].rect
             if (dist(x, y, rect.right, rect.top) <= hitRadius) return i
@@ -3915,6 +3928,35 @@ class CanvasView @JvmOverloads constructor(
             }
             if (didFill) postInvalidate()
             didFill
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            false
+        }
+    }
+
+    /**
+     * FIX #5: pengganti "Fill Hitam" — Telea inpaint (Fast Marching, pure-Kotlin,
+     * tanpa download model). Mengisi seleksi dengan tekstur sekitar, bukan cat hitam.
+     * Panggil dari background thread.
+     */
+    fun teleaInpaintSelection(onProgress: ((Float) -> Unit)? = null): Boolean {
+        val layer = layers.getOrNull(activeLayerIndex) ?: return false
+        if (layer.bitmap.isRecycled || !selection.isActive) return false
+        if (layer.isLocked) return false
+        if (!layer.bitmap.isMutable) {
+            layer.bitmap = layer.bitmap.copy(Bitmap.Config.ARGB_8888, true)
+        }
+        return try {
+            val region = buildSelectionRegion(layer.bitmap.width, layer.bitmap.height)
+                ?: return false
+            if (region.isEmpty) return false
+            val res = com.vasiliastyper.engine.CustomPdeInpainter.inpaint(
+                layer.bitmap, region,
+                com.vasiliastyper.engine.CustomPdeInpainter.Method.TELEA,
+                onProgress = onProgress
+            )
+            if (res.success) postInvalidate()
+            res.success
         } catch (t: Throwable) {
             t.printStackTrace()
             false

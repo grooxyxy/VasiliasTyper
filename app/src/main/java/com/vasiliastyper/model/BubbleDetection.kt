@@ -28,15 +28,18 @@ data class BubbleDetection(
 
 /** Tunable, device-independent parameters for bubble detection. */
 data class BubbleDetectionConfig(
-    val minimumConfidence: Float = 0.60f,
+    // FIX #1: turunkan ambang + tambah overlap agar 720x16000 tidak kehilangan
+    // bubble kecil; stripe lebih pendek (1200) agar tiap stripe dapat resolusi
+    // penuh tanpa downscale agresif; max deteksi 200 untuk halaman super-tinggi.
+    val minimumConfidence: Float = 0.50f,
     val minimumWidthPx: Int = 32,
     val minimumHeightPx: Int = 20,
     val maximumAspectRatio: Float = 5.5f,
-    val stripeHeightPx: Int = 1800,
-    val stripeOverlapPx: Int = 192,
+    val stripeHeightPx: Int = 1200,
+    val stripeOverlapPx: Int = 320,
     val maximumProcessingWidthPx: Int = 1200,
     val mlKitBubblePaddingRatio: Float = 0.38f,
-    val maximumDetections: Int = 120
+    val maximumDetections: Int = 200
 ) {
     init {
         require(minimumConfidence in 0f..1f)

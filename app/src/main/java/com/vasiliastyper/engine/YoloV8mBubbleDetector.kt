@@ -55,11 +55,16 @@ object YoloV8mBubbleDetector {
 
     const val INPUT = 640
     const val PAD = 114
-    const val CONF_TH = 0.30f
-    const val IOU_TH = 0.45f
-    const val TILE_SIZE = 1200
-    const val TILE_OVERLAP = 300
-    const val MAX_RESULTS = 400
+    // FIX #1 (720x16000 maksimal): turunkan ambang agar recall naik di tile kecil,
+    // longgarkan NMS agar bubble berhimpit tidak saling menghapus, perkecil tile
+    // 1200->960 agar skala letterbox lebih besar (detail bubble kecil terjaga),
+    // overlap 300->320 agar bubble di perbatasan tile selalu utuh di satu tile,
+    // MAX 400->800 agar halaman super-tinggi tidak terpotong.
+    const val CONF_TH = 0.20f
+    const val IOU_TH = 0.50f
+    const val TILE_SIZE = 960
+    const val TILE_OVERLAP = 320
+    const val MAX_RESULTS = 800
 
     data class Detection(val rect: RectF, val confidence: Float)
 
