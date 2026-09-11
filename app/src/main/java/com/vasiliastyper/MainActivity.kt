@@ -786,8 +786,8 @@ class MainActivity : AppCompatActivity() {
                         ?.existingDisplayName ?: break
                     result = CustomFontManager.importFont(
                         this, uri,
-                        forcedName = "$dupName ($n)",
-                        override = false
+                        desiredDisplayName = "$dupName ($n)",
+                        overrideExisting = false
                     )
                     if (result !is CustomFontManager.ImportResult.Duplicate) break
                     n++

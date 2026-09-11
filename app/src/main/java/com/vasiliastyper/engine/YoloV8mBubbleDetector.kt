@@ -196,7 +196,7 @@ object YoloV8mBubbleDetector {
     private data class ScoredBox(val rect: RectF, val score: Float)
 
     /** Satu tile grid: (x0,y0) inklusif — (x1,y1) eksklusif dalam koordinat bitmap. */
-    private data class Tile(val x0: Int, val y0: Int, val x1: Int, val y1: Int)
+    internal data class Tile(val x0: Int, val y0: Int, val x1: Int, val y1: Int)
 
     /** Grid 2D dari splitter 1D: kolom × baris, tiap tile ≤TILE_SIZE + overlap. */
     internal fun splitGrid(width: Int, height: Int): List<Tile> {
