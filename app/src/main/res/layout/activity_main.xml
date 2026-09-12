@@ -12,136 +12,95 @@
     android:orientation="vertical"
     android:background="@color/ps_bg">
 
-    <!-- Compact project command strip; detailed tools live in the thumb dock. -->
+    <!-- Modern clean top bar -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@drawable/editor_topbar_bg"
+        android:layout_height="52dp"
+        android:background="#13171C"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="8dp"
         android:paddingEnd="8dp">
 
-        <HorizontalScrollView
+        <ImageButton
+            android:id="@+id/btnHeaderBackHome"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/ps_text_bright"
+            android:contentDescription="Kembali ke Beranda"/>
+
+        <TextView
+            android:id="@+id/tvProjectHeaderTitle"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:scrollbars="none"
-            android:fillViewport="false"
-            android:overScrollMode="never">
+            android:layout_marginStart="8dp"
+            android:text="VasiliasTyper Studio"
+            android:textColor="@color/ps_text_bright"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:ellipsize="end"
+            android:singleLine="true"/>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+        <!-- Menu Action Shortcuts -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-                <!-- File -->
-                <LinearLayout android:id="@+id/menuFile"
-                    android:layout_width="42dp" android:layout_height="42dp"
-                    android:orientation="horizontal" android:gravity="center"
-                    android:background="@drawable/editor_menu_pill"
-                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
-                    android:clickable="true" android:focusable="true"
-                    android:contentDescription="File">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
-                        android:src="@drawable/ic_menu_project" android:scaleType="fitCenter"
-                        app:tint="@color/ps_text_bright" android:contentDescription="Proyek"/>
-                    <TextView android:layout_width="0dp" android:layout_height="0dp"
-                        android:text="File" android:visibility="gone"/>
-                </LinearLayout>
+            <ImageButton
+                android:id="@+id/btnHeaderMenuFile"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_menu_project"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/ps_text_bright"
+                android:contentDescription="Proyek / File"/>
 
-                <!-- Edit (Undo/Redo inside) -->
-                <LinearLayout android:id="@+id/menuEdit"
-                    android:layout_width="42dp" android:layout_height="42dp"
-                    android:orientation="horizontal" android:gravity="center"
-                    android:background="@drawable/editor_menu_pill"
-                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
-                    android:clickable="true" android:focusable="true"
-                    android:contentDescription="Edit">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
-                        android:src="@drawable/ic_menu_history" android:scaleType="fitCenter"
-                        app:tint="@color/ps_text_bright"/>
-                    <TextView android:layout_width="0dp" android:layout_height="0dp"
-                        android:text="Edit" android:visibility="gone"/>
-                </LinearLayout>
+            <ImageButton
+                android:id="@+id/btnHeaderMenuCanvas"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_menu_canvas"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/ps_text_bright"
+                android:contentDescription="Kanvas"/>
 
-                <!-- Kanvas -->
-                <LinearLayout android:id="@+id/menuImage"
-                    android:layout_width="42dp" android:layout_height="42dp"
-                    android:orientation="horizontal" android:gravity="center"
-                    android:background="@drawable/editor_menu_pill"
-                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
-                    android:clickable="true" android:focusable="true"
-                    android:contentDescription="Kanvas">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
-                        android:src="@drawable/ic_menu_canvas" android:scaleType="fitCenter"
-                        app:tint="@color/ps_text_bright"/>
-                    <TextView android:layout_width="0dp" android:layout_height="0dp"
-                        android:text="Kanvas" android:visibility="gone"/>
-                </LinearLayout>
+            <ImageButton
+                android:id="@+id/btnHeaderMenuEffect"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_menu_effect"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/ps_text_bright"
+                android:contentDescription="Efek"/>
 
-                <!-- Layer -->
-                <LinearLayout android:id="@+id/menuLayer"
-                    android:layout_width="42dp" android:layout_height="42dp"
-                    android:orientation="horizontal" android:gravity="center"
-                    android:background="@drawable/editor_menu_pill"
-                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
-                    android:clickable="true" android:focusable="true"
-                    android:contentDescription="Layer">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
-                        android:src="@drawable/ic_menu_layer" android:scaleType="fitCenter"
-                        app:tint="@color/ps_text_bright"/>
-                    <TextView android:layout_width="0dp" android:layout_height="0dp"
-                        android:text="Layer" android:visibility="gone"/>
-                </LinearLayout>
+            <ImageButton
+                android:id="@+id/btnHeaderMenuMore"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_menu_more"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/ps_text_bright"
+                android:contentDescription="Menu Lainnya"/>
+        </LinearLayout>
 
-                <!-- Efek -->
-                <LinearLayout android:id="@+id/menuFilter"
-                    android:layout_width="42dp" android:layout_height="42dp"
-                    android:orientation="horizontal" android:gravity="center"
-                    android:background="@drawable/editor_menu_pill"
-                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
-                    android:clickable="true" android:focusable="true"
-                    android:contentDescription="Efek">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
-                        android:src="@drawable/ic_menu_effect" android:scaleType="fitCenter"
-                        app:tint="@color/ps_text_bright"/>
-                    <TextView android:layout_width="0dp" android:layout_height="0dp"
-                        android:text="Efek" android:visibility="gone"/>
-                </LinearLayout>
-
-                <!-- View -->
-                <LinearLayout android:id="@+id/menuView"
-                    android:layout_width="42dp" android:layout_height="42dp"
-                    android:orientation="horizontal" android:gravity="center"
-                    android:background="@drawable/editor_menu_pill"
-                    android:paddingHorizontal="9dp" android:layout_marginEnd="4dp"
-                    android:clickable="true" android:focusable="true"
-                    android:contentDescription="View">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
-                        android:src="@drawable/ic_menu_view" android:scaleType="fitCenter"
-                        app:tint="@color/ps_text_bright"/>
-                    <TextView android:layout_width="0dp" android:layout_height="0dp"
-                        android:text="View" android:visibility="gone"/>
-                </LinearLayout>
-
-                <!-- More -->
-                <LinearLayout android:id="@+id/menuWindow"
-                    android:layout_width="42dp" android:layout_height="42dp"
-                    android:orientation="horizontal" android:gravity="center"
-                    android:background="@drawable/editor_menu_pill"
-                    android:clickable="true" android:focusable="true"
-                    android:contentDescription="More">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp"
-                        android:src="@drawable/ic_menu_more" android:scaleType="fitCenter"
-                        app:tint="@color/ps_text_bright"/>
-                </LinearLayout>
-            </LinearLayout>
-        </HorizontalScrollView>
-
-        <!-- Compact zoom peek on top-right (statusZoom still exists in status bar too — wait, IDs must be unique!)
-             Keep zoom only in status bar. Top bar stays menus only. -->
+        <!-- Hidden legacy menu bindings container -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone">
+            <LinearLayout android:id="@+id/menuFile" android:layout_width="0dp" android:layout_height="0dp"/>
+            <LinearLayout android:id="@+id/menuEdit" android:layout_width="0dp" android:layout_height="0dp"/>
+            <LinearLayout android:id="@+id/menuImage" android:layout_width="0dp" android:layout_height="0dp"/>
+            <LinearLayout android:id="@+id/menuLayer" android:layout_width="0dp" android:layout_height="0dp"/>
+            <LinearLayout android:id="@+id/menuFilter" android:layout_width="0dp" android:layout_height="0dp"/>
+            <LinearLayout android:id="@+id/menuView" android:layout_width="0dp" android:layout_height="0dp"/>
+            <LinearLayout android:id="@+id/menuWindow" android:layout_width="0dp" android:layout_height="0dp"/>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Swipeable page card strip. -->
@@ -213,24 +172,18 @@
                 android:layout_weight="1"
                 android:orientation="horizontal">
 
-                <!-- Photoshop-style primary rail: vertical, persistent, and scrollable. -->
+                <!-- Hidden tool references container for binding compatibility -->
                 <ScrollView
                     android:id="@+id/leftToolSidebar"
-                    android:layout_width="58dp"
-                    android:layout_height="match_parent"
-                    android:scrollbars="none"
-                    android:fillViewport="false"
-                    android:overScrollMode="never"
-                    android:background="@drawable/hipaint_rail_bg">
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:id="@+id/toolBar"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center_horizontal"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp">
+                        android:orientation="vertical">
 
                         <ImageButton android:id="@+id/toolMove" style="@style/PSToolButton"
                             android:src="@drawable/ic_pan" android:contentDescription="Pan Canvas" app:tint="@color/ps_text_bright"/>
@@ -243,16 +196,12 @@
                         <ImageButton android:id="@+id/toolMagicWand" style="@style/PSToolButton"
                             android:src="@drawable/ic_magic_wand" android:contentDescription="Magic Wand" app:tint="@color/ps_text_bright"/>
 
-                        <View android:layout_width="22dp" android:layout_height="1dp" android:background="@color/ps_border" android:layout_marginVertical="3dp"/>
-
                         <ImageButton android:id="@+id/toolBubbleClean" style="@style/PSToolButton"
                             android:src="@drawable/ic_bubble_clean" android:contentDescription="Auto Clean Bubble" app:tint="@color/ps_text_bright"/>
                         <ImageButton android:id="@+id/toolBubbleDetect" style="@style/PSToolButton"
                             android:src="@drawable/ic_magic_wand" android:contentDescription="Detect Bubble" app:tint="@color/ink_sun"/>
                         <ImageButton android:id="@+id/toolBubbleTranslate" style="@style/PSToolButton"
                             android:src="@drawable/ic_bubble_translate" android:contentDescription="Bubble Translation" app:tint="@color/ink_mint"/>
-
-                        <View android:layout_width="22dp" android:layout_height="1dp" android:background="@color/ps_border" android:layout_marginVertical="3dp"/>
 
                         <ImageButton android:id="@+id/toolBrush" style="@style/PSToolButton"
                             android:src="@drawable/ic_brush" android:contentDescription="Paint Brush" app:tint="@color/ps_text_bright"/>
@@ -279,41 +228,26 @@
                         <ImageButton android:id="@+id/toolZoom" style="@style/PSToolButton"
                             android:src="@drawable/ic_zoom" android:contentDescription="Zoom / Pan" android:visibility="gone" app:tint="@color/ps_text_bright"/>
 
-                        <View android:layout_width="22dp" android:layout_height="1dp" android:background="@color/ps_border" android:layout_marginVertical="3dp"/>
-
                         <TextView android:id="@+id/toolOcrPanel" android:layout_width="44dp" android:layout_height="44dp"
-                            android:layout_marginVertical="2dp" android:text="OCR" android:textColor="@color/ps_danger"
-                            android:textSize="9sp" android:textStyle="bold" android:gravity="center"
-                            android:background="@drawable/tool_btn_bg" android:contentDescription="OCR Panel"/>
+                            android:text="OCR" android:contentDescription="OCR Panel"/>
                         <TextView android:id="@+id/toolMask" android:layout_width="44dp" android:layout_height="44dp"
-                            android:layout_marginVertical="2dp" android:text="MSK" android:textColor="@color/vt_secondary"
-                            android:textSize="9sp" android:textStyle="bold" android:gravity="center"
-                            android:background="@drawable/tool_btn_bg" android:contentDescription="Auto Mask Panel"/>
+                            android:text="MSK" android:contentDescription="Auto Mask Panel"/>
                         <TextView android:id="@+id/toolScript" android:layout_width="44dp" android:layout_height="44dp"
-                            android:layout_marginVertical="2dp" android:text="SCR" android:textColor="#A5B4FC"
-                            android:textSize="9sp" android:textStyle="bold" android:gravity="center"
-                            android:background="@drawable/tool_btn_bg" android:contentDescription="Script Panel"/>
+                            android:text="SCR" android:contentDescription="Script Panel"/>
                         <TextView android:id="@+id/toolVasType" android:layout_width="44dp" android:layout_height="44dp"
-                            android:layout_marginVertical="2dp" android:text="VT" android:textColor="#C084FC"
-                            android:textSize="9sp" android:textStyle="bold" android:gravity="center"
-                            android:background="@drawable/tool_btn_bg" android:contentDescription="VasType"/>
+                            android:text="VT" android:contentDescription="VasType"/>
                         <TextView android:id="@+id/toolAiChat" android:layout_width="44dp" android:layout_height="44dp"
-                            android:layout_marginVertical="2dp" android:text="AI" android:textColor="#A78BFA"
-                            android:textSize="10sp" android:textStyle="bold" android:gravity="center"
-                            android:background="@drawable/tool_btn_bg" android:contentDescription="AI Chat dan Canvas Vision"/>
+                            android:text="AI" android:contentDescription="AI Chat dan Canvas Vision"/>
                         <ImageButton android:id="@+id/toolWatermark" style="@style/PSToolButton"
                             android:src="@drawable/ic_watermark" android:contentDescription="Auto Watermark" app:tint="@color/ps_text_bright"/>
                         <ImageButton android:id="@+id/toolUnwatermark" style="@style/PSToolButton"
                             android:src="@drawable/ic_unwatermark" android:contentDescription="Remove Watermark" app:tint="@color/ps_text_bright"/>
 
-                        <View android:layout_width="22dp" android:layout_height="1dp" android:background="@color/ps_border" android:layout_marginVertical="3dp"/>
-
-                        <FrameLayout android:layout_width="44dp" android:layout_height="44dp" android:layout_marginVertical="2dp">
+                        <FrameLayout android:layout_width="44dp" android:layout_height="44dp">
                             <View android:id="@+id/colorBg" android:layout_width="20dp" android:layout_height="20dp"
-                                android:layout_gravity="bottom|end" android:background="#000000" android:foreground="@drawable/hipaint_color_border"/>
+                                android:layout_gravity="bottom|end" android:background="#000000"/>
                             <View android:id="@+id/colorFg" android:layout_width="20dp" android:layout_height="20dp"
-                                android:layout_gravity="top|start" android:background="#FFFFFF" android:elevation="2dp"
-                                android:foreground="@drawable/hipaint_color_border"/>
+                                android:layout_gravity="top|start" android:background="#FFFFFF"/>
                         </FrameLayout>
                     </LinearLayout>
                 </ScrollView>
@@ -455,132 +389,59 @@
                     </HorizontalScrollView>
                 </FrameLayout>
 
-                <!-- Inspector rail: layers, mask, script, compare, and styles. -->
+                <!-- Hidden right feature sidebar references container for binding compatibility -->
                 <ScrollView
                     android:id="@+id/rightFeatureSidebar"
-                    android:layout_width="58dp"
-                    android:layout_height="match_parent"
-                    android:fillViewport="false"
-                    android:scrollbars="none"
-                    android:overScrollMode="never"
-                    android:background="@drawable/hipaint_rail_bg">
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center_horizontal"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp">
+                        android:orientation="vertical">
 
                         <LinearLayout
                             android:id="@+id/rightLayersShortcut"
-                            android:layout_width="match_parent"
-                            android:layout_height="52dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:paddingVertical="3dp"
-                            android:background="?attr/selectableItemBackground"
-                            android:contentDescription="Panel Layers">
-                            <ImageView android:layout_width="36dp" android:layout_height="36dp"
-                                android:src="@drawable/ic_layers" app:tint="@color/ps_accent" android:padding="6dp"
-                                android:background="@drawable/tool_btn_bg"/>
-                        </LinearLayout>
-
-                        <View android:layout_width="22dp" android:layout_height="1dp"
-                            android:layout_marginVertical="3dp" android:background="@color/ps_border"/>
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="Panel Layers"/>
 
                         <LinearLayout
                             android:id="@+id/rightMaskPreset"
-                            android:layout_width="match_parent"
-                            android:layout_height="52dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:paddingVertical="3dp"
-                            android:background="?attr/selectableItemBackground"
-                            android:contentDescription="Preset Auto Mask">
-                            <TextView android:layout_width="36dp" android:layout_height="36dp"
-                                android:text="M" android:textStyle="bold" android:textSize="13sp"
-                                android:textColor="#FBBF24" android:gravity="center"
-                                android:background="@drawable/tool_btn_bg"/>
-                        </LinearLayout>
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="Preset Auto Mask"/>
 
                         <LinearLayout
                             android:id="@+id/rightSelectionPreset"
-                            android:layout_width="match_parent"
-                            android:layout_height="52dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:paddingVertical="3dp"
-                            android:background="?attr/selectableItemBackground"
-                            android:contentDescription="Preset Kotak Seleksi">
-                            <ImageView android:layout_width="36dp" android:layout_height="36dp"
-                                android:src="@drawable/ic_rect_select" app:tint="#60A5FA" android:padding="6dp"
-                                android:background="@drawable/tool_btn_bg"/>
-                        </LinearLayout>
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="Preset Kotak Seleksi"/>
 
                         <LinearLayout
                             android:id="@+id/rightScriptPreset"
-                            android:layout_width="match_parent"
-                            android:layout_height="52dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:paddingVertical="3dp"
-                            android:background="?attr/selectableItemBackground"
-                            android:contentDescription="Preset Script">
-                            <TextView android:layout_width="36dp" android:layout_height="36dp"
-                                android:text="SC" android:textStyle="bold" android:textSize="11sp"
-                                android:textColor="#A5B4FC" android:gravity="center"
-                                android:background="@drawable/tool_btn_bg"/>
-                        </LinearLayout>
-
-                        <View android:layout_width="22dp" android:layout_height="1dp"
-                            android:layout_marginVertical="3dp" android:background="@color/ps_border"/>
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="Preset Script"/>
 
                         <LinearLayout
                             android:id="@+id/rightStyleRulesShortcut"
-                            android:layout_width="match_parent"
-                            android:layout_height="52dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:paddingVertical="3dp"
-                            android:background="?attr/selectableItemBackground"
-                            android:contentDescription="Style Rules">
-                            <TextView android:layout_width="36dp" android:layout_height="36dp"
-                                android:text="R" android:textStyle="bold" android:textSize="13sp"
-                                android:textColor="#FBBF24" android:gravity="center"
-                                android:background="@drawable/tool_btn_bg"/>
-                        </LinearLayout>
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="Style Rules"/>
 
                         <LinearLayout
                             android:id="@+id/rightCompareShortcut"
-                            android:layout_width="match_parent"
-                            android:layout_height="52dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:paddingVertical="3dp"
-                            android:background="?attr/selectableItemBackground"
-                            android:contentDescription="Before After Compare">
-                            <TextView android:layout_width="36dp" android:layout_height="36dp"
-                                android:text="B/A" android:textStyle="bold" android:textSize="9sp"
-                                android:textColor="#60A5FA" android:gravity="center"
-                                android:background="@drawable/tool_btn_bg"/>
-                        </LinearLayout>
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="Before After Compare"/>
 
                         <LinearLayout
                             android:id="@+id/rightStyleManagerShortcut"
-                            android:layout_width="match_parent"
-                            android:layout_height="52dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:paddingVertical="3dp"
-                            android:background="?attr/selectableItemBackground"
-                            android:contentDescription="Style Manager">
-                            <TextView android:layout_width="36dp" android:layout_height="36dp"
-                                android:text="S" android:textStyle="bold" android:textSize="13sp"
-                                android:textColor="#34D399" android:gravity="center"
-                                android:background="@drawable/tool_btn_bg"/>
-                        </LinearLayout>
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="Style Manager"/>
                     </LinearLayout>
                 </ScrollView>
             </LinearLayout>

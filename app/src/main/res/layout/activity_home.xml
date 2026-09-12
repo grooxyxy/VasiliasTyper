@@ -7,68 +7,68 @@
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <!-- Editorial app bar: restrained like a professional mobile creative suite. -->
+    <!-- Modern Sleek App Bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
+        android:background="#13171C"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp">
-
-        <ImageButton
-            android:id="@+id/btnHomeMenu"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Menu"
-            android:padding="11dp"
-            android:src="@drawable/ic_menu"
-            app:tint="@color/ps_text_bright" />
+        android:paddingStart="16dp"
+        android:paddingEnd="12dp">
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
             android:layout_weight="1"
             android:orientation="vertical">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="VASILIAS"
+                android:text="Vasilias Studio"
                 android:textColor="@color/ps_text_bright"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.12" />
+                android:textSize="18sp"
+                android:textStyle="bold" />
             <TextView
                 android:id="@+id/tvHomeGreeting"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:text="Creative workspace"
+                android:text="Pusat Kreasi Komik &amp; Teks"
                 android:textColor="@color/ink_muted"
-                android:textSize="10sp" />
+                android:textSize="11sp" />
         </LinearLayout>
 
         <ImageButton
-            android:id="@+id/btnHomeSearch"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:id="@+id/btnHomeMenu"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Cari proyek"
-            android:padding="11dp"
+            android:contentDescription="Menu Utama"
+            android:padding="9dp"
+            android:src="@drawable/ic_menu"
+            app:tint="@color/ps_text_bright" />
+
+        <ImageButton
+            android:id="@+id/btnHomeSearch"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Cari Proyek"
+            android:padding="9dp"
             android:src="@drawable/ic_search"
-            app:tint="@color/ps_text" />
+            app:tint="@color/ps_text_bright" />
+
         <ImageButton
             android:id="@+id/btnHomeAiSettings"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Pengaturan"
-            android:padding="11dp"
+            android:contentDescription="Pengaturan Studio"
+            android:padding="9dp"
             android:src="@drawable/ic_settings"
-            app:tint="@color/ps_text" />
+            app:tint="@color/ps_text_bright" />
     </LinearLayout>
 
     <ScrollView

@@ -53,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -99,6 +100,18 @@ internal data class BrushUiState(
     val flow: Float = 100f
 )
 
+internal data class ToolItem(
+    val id: String,
+    val label: String,
+    val category: String,
+    val vectorType: VectorToolType
+)
+
+internal enum class VectorToolType {
+    BRUSH, TEXT, TEXT_SHAPER, MOVE_CANVAS, MOVE_ELEMENT, RECT_SELECT, FREE_SELECT, MAGIC_WAND,
+    REMOVR, CLEAN_BUBBLE, TRANSLATE, OCR, MASK, SCRIPT, VASTYPE, AI_CHAT, WATERMARK, UNWATERMARK, DESELECT, MORE
+}
+
 @Composable
 internal fun EditorComposeOverlay(
     layersOpen: Boolean,
@@ -130,7 +143,16 @@ internal fun EditorComposeOverlay(
     onBrushStabilizer: (Float) -> Unit,
     onBrushForceFade: (Float) -> Unit,
     onBrushSpacing: (Float) -> Unit,
-    onBrushFlow: (Float) -> Unit
+    onBrushFlow: (Float) -> Unit,
+    // Bottom Sheet State & Callbacks
+    toolPickerOpen: Boolean = false,
+    selectedToolId: String = "toolBrush",
+    onToggleToolPicker: () -> Unit = {},
+    onSelectToolById: (String) -> Unit = {},
+    // Quick Action Bar Triggers
+    onUndo: () -> Unit = {},
+    onRedo: () -> Unit = {},
+    onClearSelection: () -> Unit = {}
 ) {
     MaterialTheme(
         colorScheme = darkColorScheme(
@@ -167,15 +189,13 @@ internal fun EditorComposeOverlay(
                 )
             }
 
-            // Keep the floating panel inside the actual canvas viewport. The old
-            // fixed 500 dp panel could overflow behind the bottom controls on small
-            // phones, which caused clipping/flicker when the corner button opened it.
+            // Floating Layer Panel Container
             val panelWidth = (maxWidth - 16.dp).coerceAtLeast(220.dp)
             val panelHeight = minOf(520.dp, maxHeight * 0.72f).coerceAtLeast(280.dp)
             Column(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 8.dp, bottom = 66.dp),
                 horizontalAlignment = Alignment.End
             ) {
                 AnimatedVisibility(
@@ -214,6 +234,239 @@ internal fun EditorComposeOverlay(
                     onClick = onToggleLayers
                 )
             }
+
+            // Clean Mobile Bottom Navigation Tool Bar — ALL TOOLS INLINED DIRECTLY
+            val allTools = listOf(
+                ToolItem("toolBrush", "Kuas", "LUKIS", VectorToolType.BRUSH),
+                ToolItem("toolText", "Teks", "LUKIS", VectorToolType.TEXT),
+                ToolItem("toolTextShaper", "Shaper", "LUKIS", VectorToolType.TEXT_SHAPER),
+                ToolItem("toolRectSelect", "Kotak", "SELEKSI", VectorToolType.RECT_SELECT),
+                ToolItem("toolFreeSelect", "Lasso", "SELEKSI", VectorToolType.FREE_SELECT),
+                ToolItem("toolMagicWand", "Wand", "SELEKSI", VectorToolType.MAGIC_WAND),
+                ToolItem("toolRemovR", "RemovR", "CLEANUP", VectorToolType.REMOVR),
+                ToolItem("toolBubbleClean", "Clean", "CLEANUP", VectorToolType.CLEAN_BUBBLE),
+                ToolItem("toolBubbleTranslate", "Terjemah", "MANGA", VectorToolType.TRANSLATE),
+                ToolItem("toolOcrPanel", "OCR", "MANGA", VectorToolType.OCR),
+                ToolItem("toolMask", "Mask", "MANGA", VectorToolType.MASK),
+                ToolItem("toolScript", "Script", "MANGA", VectorToolType.SCRIPT),
+                ToolItem("toolVasType", "VasType", "MANGA", VectorToolType.VASTYPE),
+                ToolItem("toolAiChat", "AI Studio", "AI", VectorToolType.AI_CHAT),
+                ToolItem("toolMove", "Kanvas", "NAVIGASI", VectorToolType.MOVE_CANVAS),
+                ToolItem("toolMoveElement", "Elemen", "NAVIGASI", VectorToolType.MOVE_ELEMENT),
+                ToolItem("toolWatermark", "Watermark", "UTILITY", VectorToolType.WATERMARK),
+                ToolItem("toolUnwatermark", "Unwatermark", "UTILITY", VectorToolType.UNWATERMARK)
+            )
+
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(60.dp),
+                color = Color(0xFF13171C),
+                tonalElevation = 12.dp,
+                shadowElevation = 16.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Scrollable Tool Buttons (Includes ALL tools)
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        allTools.forEach { tool ->
+                            val isSelected = tool.id == selectedToolId
+                            val iconColor = if (isSelected) Color(0xFF4FD6B8) else Color(0xFFEBF1F4)
+                            Surface(
+                                modifier = Modifier
+                                    .height(44.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable { onSelectToolById(tool.id) }
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) Color(0xFF4FD6B8) else Color.Transparent,
+                                        RoundedCornerShape(10.dp)
+                                    ),
+                                color = if (isSelected) Color(0xFF1E3A34) else Color(0xFF1A2129)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    CustomToolIcon(
+                                        type = tool.vectorType,
+                                        tint = iconColor,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Text(
+                                        text = tool.label,
+                                        color = if (isSelected) Color(0xFF4FD6B8) else Color(0xFFEBF1F4),
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.width(6.dp))
+
+                    // Action Triggers: Batal Mask (Deselect), Undo, & Redo
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Batal Mask / Deselect Button
+                        Surface(
+                            modifier = Modifier
+                                .height(38.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable(onClick = onClearSelection)
+                                .border(1.dp, Color(0xFFE57373), RoundedCornerShape(8.dp)),
+                            color = Color(0xFF2C1E21)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                CustomToolIcon(
+                                    type = VectorToolType.DESELECT,
+                                    tint = Color(0xFFEF5350),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = "Batal Mask",
+                                    color = Color(0xFFEF5350),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        // Undo
+                        IconButton(onClick = onUndo, modifier = Modifier.size(36.dp)) {
+                            LayerGlyph(LayerGlyphType.MOVE_DOWN, Color(0xFFEBF1F4), Modifier.size(18.dp))
+                        }
+                        // Redo
+                        IconButton(onClick = onRedo, modifier = Modifier.size(36.dp)) {
+                            LayerGlyph(LayerGlyphType.MOVE_UP, Color(0xFFEBF1F4), Modifier.size(18.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CustomToolIcon(
+    type: VectorToolType,
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val stroke = (minOf(w, h) * 0.1f).coerceAtLeast(1.8f)
+        fun line(a: Offset, b: Offset) = drawLine(tint, a, b, stroke, StrokeCap.Round)
+
+        when (type) {
+            VectorToolType.BRUSH -> {
+                line(Offset(w * 0.2f, h * 0.8f), Offset(w * 0.7f, h * 0.3f))
+                line(Offset(w * 0.7f, h * 0.3f), Offset(w * 0.85f, h * 0.15f))
+                drawCircle(tint, radius = stroke * 1.2f, center = Offset(w * 0.18f, h * 0.82f))
+            }
+            VectorToolType.TEXT -> {
+                line(Offset(w * 0.2f, h * 0.2f), Offset(w * 0.8f, h * 0.2f))
+                line(Offset(w * 0.5f, h * 0.2f), Offset(w * 0.5f, h * 0.85f))
+                line(Offset(w * 0.35f, h * 0.85f), Offset(w * 0.65f, h * 0.85f))
+            }
+            VectorToolType.TEXT_SHAPER -> {
+                line(Offset(w * 0.2f, h * 0.25f), Offset(w * 0.8f, h * 0.25f))
+                line(Offset(w * 0.5f, h * 0.25f), Offset(w * 0.5f, h * 0.8f))
+                drawCircle(tint, radius = stroke * 1.1f, center = Offset(w * 0.82f, h * 0.18f))
+            }
+            VectorToolType.MOVE_CANVAS -> {
+                line(Offset(w * 0.2f, h * 0.5f), Offset(w * 0.8f, h * 0.5f))
+                line(Offset(w * 0.5f, h * 0.2f), Offset(w * 0.5f, h * 0.8f))
+            }
+            VectorToolType.MOVE_ELEMENT -> {
+                drawCircle(tint, radius = w * 0.25f, center = Offset(w / 2f, h / 2f), style = Stroke(stroke))
+                drawCircle(tint, radius = stroke * 0.8f, center = Offset(w / 2f, h / 2f))
+            }
+            VectorToolType.RECT_SELECT -> {
+                drawRoundRect(tint, Offset(w * 0.18f, h * 0.18f), Size(w * 0.64f, h * 0.64f), androidx.compose.ui.geometry.CornerRadius(w * 0.08f), style = Stroke(stroke))
+            }
+            VectorToolType.FREE_SELECT -> {
+                line(Offset(w * 0.2f, h * 0.3f), Offset(w * 0.5f, h * 0.15f))
+                line(Offset(w * 0.5f, h * 0.15f), Offset(w * 0.8f, h * 0.4f))
+                line(Offset(w * 0.8f, h * 0.4f), Offset(w * 0.6f, h * 0.85f))
+                line(Offset(w * 0.6f, h * 0.85f), Offset(w * 0.2f, h * 0.3f))
+            }
+            VectorToolType.MAGIC_WAND -> {
+                line(Offset(w * 0.2f, h * 0.8f), Offset(w * 0.65f, h * 0.35f))
+                drawCircle(tint, radius = stroke * 1.2f, center = Offset(w * 0.8f, h * 0.2f))
+            }
+            VectorToolType.REMOVR -> {
+                line(Offset(w * 0.2f, h * 0.7f), Offset(w * 0.7f, h * 0.2f))
+                drawRect(tint, Offset(w * 0.15f, h * 0.65f), Size(w * 0.3f, h * 0.2f), style = Stroke(stroke))
+            }
+            VectorToolType.CLEAN_BUBBLE -> {
+                drawCircle(tint, radius = w * 0.32f, center = Offset(w * 0.45f, h * 0.45f), style = Stroke(stroke))
+                drawCircle(tint, radius = w * 0.12f, center = Offset(w * 0.72f, h * 0.28f), style = Stroke(stroke))
+            }
+            VectorToolType.TRANSLATE -> {
+                drawCircle(tint, radius = w * 0.36f, center = Offset(w / 2f, h / 2f), style = Stroke(stroke))
+                line(Offset(w * 0.14f, h * 0.5f), Offset(w * 0.86f, h * 0.5f))
+            }
+            VectorToolType.OCR -> {
+                drawRoundRect(tint, Offset(w * 0.15f, h * 0.15f), Size(w * 0.7f, h * 0.7f), androidx.compose.ui.geometry.CornerRadius(w * 0.08f), style = Stroke(stroke))
+                line(Offset(w * 0.3f, h * 0.4f), Offset(w * 0.7f, h * 0.4f))
+                line(Offset(w * 0.3f, h * 0.6f), Offset(w * 0.6f, h * 0.6f))
+            }
+            VectorToolType.MASK -> {
+                drawRoundRect(tint, Offset(w * 0.2f, h * 0.25f), Size(w * 0.6f, h * 0.5f), androidx.compose.ui.geometry.CornerRadius(w * 0.25f), style = Stroke(stroke))
+            }
+            VectorToolType.SCRIPT -> {
+                line(Offset(w * 0.25f, h * 0.2f), Offset(w * 0.75f, h * 0.2f))
+                line(Offset(w * 0.25f, h * 0.5f), Offset(w * 0.75f, h * 0.5f))
+                line(Offset(w * 0.25f, h * 0.8f), Offset(w * 0.55f, h * 0.8f))
+            }
+            VectorToolType.VASTYPE -> {
+                line(Offset(w * 0.2f, h * 0.8f), Offset(w * 0.5f, h * 0.2f))
+                line(Offset(w * 0.5f, h * 0.2f), Offset(w * 0.8f, h * 0.8f))
+                line(Offset(w * 0.32f, h * 0.6f), Offset(w * 0.68f, h * 0.6f))
+            }
+            VectorToolType.AI_CHAT -> {
+                drawRoundRect(tint, Offset(w * 0.15f, h * 0.2f), Size(w * 0.7f, h * 0.5f), androidx.compose.ui.geometry.CornerRadius(w * 0.12f), style = Stroke(stroke))
+                line(Offset(w * 0.3f, h * 0.7f), Offset(w * 0.2f, h * 0.88f))
+            }
+            VectorToolType.WATERMARK -> {
+                drawCircle(tint, radius = w * 0.28f, center = Offset(w / 2f, h * 0.55f), style = Stroke(stroke))
+                line(Offset(w / 2f, h * 0.15f), Offset(w / 2f, h * 0.27f))
+            }
+            VectorToolType.UNWATERMARK -> {
+                drawCircle(tint, radius = w * 0.28f, center = Offset(w / 2f, h * 0.55f), style = Stroke(stroke))
+                line(Offset(w * 0.2f, h * 0.2f), Offset(w * 0.8f, h * 0.8f))
+            }
+            VectorToolType.DESELECT -> {
+                line(Offset(w * 0.22f, h * 0.22f), Offset(w * 0.78f, h * 0.78f))
+                line(Offset(w * 0.78f, h * 0.22f), Offset(w * 0.22f, h * 0.78f))
+            }
+            VectorToolType.MORE -> {
+                listOf(0.25f, 0.5f, 0.75f).forEach { y ->
+                    drawCircle(tint, radius = stroke * 0.75f, center = Offset(w / 2f, h * y))
+                }
+            }
         }
     }
 }
@@ -225,8 +478,8 @@ private fun LayerToggleButton(
 ) {
     Surface(
         modifier = Modifier
-            .height(48.dp)
-            .widthIn(min = 102.dp)
+            .height(44.dp)
+            .widthIn(min = 96.dp)
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
             .border(
@@ -240,32 +493,25 @@ private fun LayerToggleButton(
         shadowElevation = 10.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 13.dp),
+            modifier = Modifier.padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(9.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             LayerGlyph(
                 glyph = LayerGlyphType.LAYERS,
                 tint = Color.White,
-                modifier = Modifier.size(21.dp)
+                modifier = Modifier.size(18.dp)
             )
-            Column(modifier = Modifier.weight(1f, fill = false)) {
-                Text(
-                    text = "Layer",
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = if (expanded) "Tutup panel" else "Buka panel",
-                    color = if (expanded) Color(0xFFD7FFF6) else Color(0xFFA6ABB4),
-                    fontSize = 9.sp
-                )
-            }
+            Text(
+                text = "Layer",
+                color = Color.White,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
             LayerGlyph(
                 glyph = if (expanded) LayerGlyphType.CHEVRON_DOWN else LayerGlyphType.CHEVRON_UP,
                 tint = Color.White,
-                modifier = Modifier.size(15.dp)
+                modifier = Modifier.size(14.dp)
             )
         }
     }
@@ -732,8 +978,6 @@ private fun BrushSettingsBar(
     onSpacing: (Float) -> Unit,
     onFlow: (Float) -> Unit
 ) {
-    // Compose Slider and roundToInt both reject NaN/Infinity. Sanitizing here
-    // keeps the panel safe even when an old/corrupt preference contains bad data.
     val size = safeBrushValue(state.size, 1f..201f, 20f)
     val opacity = safeBrushValue(state.opacity, 0f..100f, 100f)
     val hardness = safeBrushValue(state.hardness, 0f..100f, 90f)

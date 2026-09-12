@@ -215,6 +215,8 @@ class MainActivity : AppCompatActivity() {
     private val composeLayersOpen = mutableStateOf(false)
     private val composeLayerItems = mutableStateOf<List<ComposeLayerItem>>(emptyList())
     private val composeBrushState = mutableStateOf(BrushUiState())
+    private val composeToolPickerOpen = mutableStateOf(false)
+    private val composeSelectedToolId = mutableStateOf("toolBrush")
     // v5.3 — ItemTouchHelper attached to the layers panel for Ibis-style drag-reorder.
     // Held as a field so the LayerAdapter's onStartDrag lambda can call startDrag() on it.
     private var layersTouchHelper: ItemTouchHelper? = null
@@ -1671,6 +1673,12 @@ class MainActivity : AppCompatActivity() {
     // ══════════════════════════════════════════════════════════════════════════
 
     private fun setupMenuBar() {
+        binding.btnHeaderBackHome.setOnClickListener { finish() }
+        binding.btnHeaderMenuFile.setOnClickListener { showFileMenu(it) }
+        binding.btnHeaderMenuCanvas.setOnClickListener { showImageMenu(it) }
+        binding.btnHeaderMenuEffect.setOnClickListener { showFilterMenu(it) }
+        binding.btnHeaderMenuMore.setOnClickListener { showWindowMenu(it) }
+
         binding.menuFile.setOnClickListener   { showFileMenu(it) }
         binding.menuEdit.setOnClickListener   { showEditMenu(it) }
         binding.menuLayer.setOnClickListener  { showLayersPopup() }
@@ -5059,6 +5067,37 @@ class MainActivity : AppCompatActivity() {
                 layersOpen = composeLayersOpen.value,
                 layerItems = composeLayerItems.value,
                 brush = composeBrushState.value,
+                toolPickerOpen = composeToolPickerOpen.value,
+                selectedToolId = composeSelectedToolId.value,
+                onToggleToolPicker = { composeToolPickerOpen.value = !composeToolPickerOpen.value },
+                onSelectToolById = { toolId ->
+                    composeSelectedToolId.value = toolId
+                    binding.editorComposeOverlay.post {
+                        when (toolId) {
+                            "toolMove" -> binding.toolMove.performClick()
+                            "toolMoveElement" -> binding.toolMoveElement.performClick()
+                            "toolRectSelect" -> binding.toolRectSelect.performClick()
+                            "toolFreeSelect" -> binding.toolFreeSelect.performClick()
+                            "toolMagicWand" -> binding.toolMagicWand.performClick()
+                            "toolBubbleClean" -> binding.toolBubbleClean.performClick()
+                            "toolBubbleTranslate" -> binding.toolBubbleTranslate.performClick()
+                            "toolBrush" -> binding.toolBrush.performClick()
+                            "toolRemovR" -> binding.toolRemovR.performClick()
+                            "toolText" -> binding.toolText.performClick()
+                            "toolTextShaper" -> binding.toolTextShaper.performClick()
+                            "toolOcrPanel" -> binding.toolOcrPanel.performClick()
+                            "toolMask" -> binding.toolMask.performClick()
+                            "toolScript" -> binding.toolScript.performClick()
+                            "toolVasType" -> binding.toolVasType.performClick()
+                            "toolAiChat" -> binding.toolAiChat.performClick()
+                            "toolWatermark" -> binding.toolWatermark.performClick()
+                            "toolUnwatermark" -> binding.toolUnwatermark.performClick()
+                        }
+                    }
+                },
+                onUndo = { doUndo() },
+                onRedo = { doRedo() },
+                onClearSelection = { binding.canvasView.clearSelection() },
                 onToggleLayers = { showLayersPopup() },
                 onAddLayer = {
                     vm.activeWorkspace?.let { workspace ->
