@@ -182,15 +182,13 @@ internal fun EditorComposeOverlay(
                 )
             }
 
-            // Keep the floating panel inside the actual canvas viewport. The old
-            // fixed 500 dp panel could overflow behind the bottom controls on small
-            // phones, which caused clipping/flicker when the corner button opened it.
+            // Floating Layer Panel Container
             val panelWidth = (maxWidth - 16.dp).coerceAtLeast(220.dp)
             val panelHeight = minOf(520.dp, maxHeight * 0.72f).coerceAtLeast(280.dp)
             Column(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 8.dp, bottom = 66.dp),
                 horizontalAlignment = Alignment.End
             ) {
                 AnimatedVisibility(
@@ -230,12 +228,24 @@ internal fun EditorComposeOverlay(
                 )
             }
 
-            // Clean IbisPaint-Style Bottom Navigation Bar
+            // Clean Mobile Bottom Navigation Tool Bar
+            val quickTools = listOf(
+                ToolItem("toolBrush", "Kuas", "LUKIS", "🖌️"),
+                ToolItem("toolText", "Teks", "LUKIS", "📝"),
+                ToolItem("toolFreeSelect", "Lasso", "SELEKSI", "✏️"),
+                ToolItem("toolMagicWand", "Wand", "SELEKSI", "🪄"),
+                ToolItem("toolRemovR", "RemovR", "CLEANUP", "🧹"),
+                ToolItem("toolBubbleClean", "Clean", "CLEANUP", "🫧"),
+                ToolItem("toolBubbleTranslate", "Terjemah", "MANGA", "🌐"),
+                ToolItem("toolOcrPanel", "OCR", "MANGA", "🔍"),
+                ToolItem("toolAiChat", "AI Studio", "AI", "🤖")
+            )
+
             Surface(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .height(58.dp),
+                    .height(60.dp),
                 color = Color(0xFF13171C),
                 tonalElevation = 12.dp,
                 shadowElevation = 16.dp
@@ -243,52 +253,96 @@ internal fun EditorComposeOverlay(
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Tool Picker Button (IbisPaint Style)
-                    Surface(
+                    // Scrollable Quick Tool Buttons
+                    Row(
                         modifier = Modifier
-                            .height(42.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable(onClick = onToggleToolPicker)
-                            .border(1.dp, Color(0xFF35444D), RoundedCornerShape(12.dp)),
-                        color = Color(0xFF1A2129)
+                            .weight(1f)
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        quickTools.forEach { tool ->
+                            val isSelected = tool.id == selectedToolId
+                            Surface(
+                                modifier = Modifier
+                                    .height(44.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable { onSelectToolById(tool.id) }
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) Color(0xFF4FD6B8) else Color.Transparent,
+                                        RoundedCornerShape(10.dp)
+                                    ),
+                                color = if (isSelected) Color(0xFF1E3A34) else Color(0xFF1A2129)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(tool.iconGlyph, fontSize = 16.sp)
+                                    Text(
+                                        text = tool.label,
+                                        color = if (isSelected) Color(0xFF4FD6B8) else Color(0xFFEBF1F4),
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+
+                        // "Lainnya..." Button for full tool grid sheet
+                        Surface(
+                            modifier = Modifier
+                                .height(44.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable(onClick = onToggleToolPicker)
+                                .border(1.dp, Color(0xFF35444D), RoundedCornerShape(10.dp)),
+                            color = Color(0xFF222B35)
                         ) {
-                            LayerGlyph(LayerGlyphType.MORE, Color(0xFF4FD6B8), Modifier.size(18.dp))
-                            Text(
-                                text = "ALAT",
-                                color = Color.White,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                LayerGlyph(LayerGlyphType.MORE, Color(0xFF4FD6B8), Modifier.size(16.dp))
+                                Text(
+                                    text = "Lainnya",
+                                    color = Color.White,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
 
+                    Spacer(Modifier.width(6.dp))
+
                     // Undo & Redo Quick Triggers
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        IconButton(onClick = onUndo, modifier = Modifier.size(40.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = onUndo, modifier = Modifier.size(38.dp)) {
                             LayerGlyph(LayerGlyphType.MOVE_DOWN, Color(0xFFEBF1F4), Modifier.size(18.dp))
                         }
-                        IconButton(onClick = onRedo, modifier = Modifier.size(40.dp)) {
+                        IconButton(onClick = onRedo, modifier = Modifier.size(38.dp)) {
                             LayerGlyph(LayerGlyphType.MOVE_UP, Color(0xFFEBF1F4), Modifier.size(18.dp))
                         }
                     }
                 }
             }
 
-            // IbisPaint Tool Picker Bottom Sheet Dialog Grid
+            // IbisPaint Tool Picker Bottom Sheet Dialog Grid (for additional tools)
             if (toolPickerOpen) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = 58.dp),
+                        .padding(bottom = 60.dp),
                     contentAlignment = Alignment.BottomCenter
                 ) {
                     IbisToolPickerSheet(
@@ -431,8 +485,8 @@ private fun LayerToggleButton(
 ) {
     Surface(
         modifier = Modifier
-            .height(48.dp)
-            .widthIn(min = 102.dp)
+            .height(44.dp)
+            .widthIn(min = 96.dp)
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
             .border(
@@ -446,32 +500,25 @@ private fun LayerToggleButton(
         shadowElevation = 10.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 13.dp),
+            modifier = Modifier.padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(9.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             LayerGlyph(
                 glyph = LayerGlyphType.LAYERS,
                 tint = Color.White,
-                modifier = Modifier.size(21.dp)
+                modifier = Modifier.size(18.dp)
             )
-            Column(modifier = Modifier.weight(1f, fill = false)) {
-                Text(
-                    text = "Layer",
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = if (expanded) "Tutup panel" else "Buka panel",
-                    color = if (expanded) Color(0xFFD7FFF6) else Color(0xFFA6ABB4),
-                    fontSize = 9.sp
-                )
-            }
+            Text(
+                text = "Layer",
+                color = Color.White,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
             LayerGlyph(
                 glyph = if (expanded) LayerGlyphType.CHEVRON_DOWN else LayerGlyphType.CHEVRON_UP,
                 tint = Color.White,
-                modifier = Modifier.size(15.dp)
+                modifier = Modifier.size(14.dp)
             )
         }
     }
@@ -938,8 +985,6 @@ private fun BrushSettingsBar(
     onSpacing: (Float) -> Unit,
     onFlow: (Float) -> Unit
 ) {
-    // Compose Slider and roundToInt both reject NaN/Infinity. Sanitizing here
-    // keeps the panel safe even when an old/corrupt preference contains bad data.
     val size = safeBrushValue(state.size, 1f..201f, 20f)
     val opacity = safeBrushValue(state.opacity, 0f..100f, 100f)
     val hardness = safeBrushValue(state.hardness, 0f..100f, 90f)
