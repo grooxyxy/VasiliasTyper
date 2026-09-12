@@ -1673,6 +1673,12 @@ class MainActivity : AppCompatActivity() {
     // ══════════════════════════════════════════════════════════════════════════
 
     private fun setupMenuBar() {
+        binding.btnHeaderBackHome.setOnClickListener { finish() }
+        binding.btnHeaderMenuFile.setOnClickListener { showFileMenu(it) }
+        binding.btnHeaderMenuCanvas.setOnClickListener { showImageMenu(it) }
+        binding.btnHeaderMenuEffect.setOnClickListener { showFilterMenu(it) }
+        binding.btnHeaderMenuMore.setOnClickListener { showWindowMenu(it) }
+
         binding.menuFile.setOnClickListener   { showFileMenu(it) }
         binding.menuEdit.setOnClickListener   { showEditMenu(it) }
         binding.menuLayer.setOnClickListener  { showLayersPopup() }

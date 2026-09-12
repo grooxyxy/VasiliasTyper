@@ -285,14 +285,21 @@ internal fun EditorComposeOverlay(
 
             // IbisPaint Tool Picker Bottom Sheet Dialog Grid
             if (toolPickerOpen) {
-                IbisToolPickerSheet(
-                    selectedToolId = selectedToolId,
-                    onDismiss = onToggleToolPicker,
-                    onSelectTool = { toolId ->
-                        onSelectToolById(toolId)
-                        onToggleToolPicker()
-                    }
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 58.dp),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    IbisToolPickerSheet(
+                        selectedToolId = selectedToolId,
+                        onDismiss = onToggleToolPicker,
+                        onSelectTool = { toolId ->
+                            onSelectToolById(toolId)
+                            onToggleToolPicker()
+                        }
+                    )
+                }
             }
         }
     }
