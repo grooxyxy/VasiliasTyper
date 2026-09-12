@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -110,7 +109,7 @@ internal data class ToolItem(
 
 internal enum class VectorToolType {
     BRUSH, TEXT, TEXT_SHAPER, MOVE_CANVAS, MOVE_ELEMENT, RECT_SELECT, FREE_SELECT, MAGIC_WAND,
-    REMOVR, CLEAN_BUBBLE, TRANSLATE, OCR, MASK, SCRIPT, VASTYPE, AI_CHAT, WATERMARK, UNWATERMARK, MORE
+    REMOVR, CLEAN_BUBBLE, TRANSLATE, OCR, MASK, SCRIPT, VASTYPE, AI_CHAT, WATERMARK, UNWATERMARK, DESELECT, MORE
 }
 
 @Composable
@@ -145,14 +144,15 @@ internal fun EditorComposeOverlay(
     onBrushForceFade: (Float) -> Unit,
     onBrushSpacing: (Float) -> Unit,
     onBrushFlow: (Float) -> Unit,
-    // IbisPaint-style Tool Picker Bottom Sheet State & Callbacks
+    // Bottom Sheet State & Callbacks
     toolPickerOpen: Boolean = false,
     selectedToolId: String = "toolBrush",
     onToggleToolPicker: () -> Unit = {},
     onSelectToolById: (String) -> Unit = {},
     // Quick Action Bar Triggers
     onUndo: () -> Unit = {},
-    onRedo: () -> Unit = {}
+    onRedo: () -> Unit = {},
+    onClearSelection: () -> Unit = {}
 ) {
     MaterialTheme(
         colorScheme = darkColorScheme(
@@ -235,17 +235,26 @@ internal fun EditorComposeOverlay(
                 )
             }
 
-            // Clean Mobile Bottom Navigation Tool Bar
-            val quickTools = listOf(
+            // Clean Mobile Bottom Navigation Tool Bar — ALL TOOLS INLINED DIRECTLY
+            val allTools = listOf(
                 ToolItem("toolBrush", "Kuas", "LUKIS", VectorToolType.BRUSH),
                 ToolItem("toolText", "Teks", "LUKIS", VectorToolType.TEXT),
+                ToolItem("toolTextShaper", "Shaper", "LUKIS", VectorToolType.TEXT_SHAPER),
+                ToolItem("toolRectSelect", "Kotak", "SELEKSI", VectorToolType.RECT_SELECT),
                 ToolItem("toolFreeSelect", "Lasso", "SELEKSI", VectorToolType.FREE_SELECT),
                 ToolItem("toolMagicWand", "Wand", "SELEKSI", VectorToolType.MAGIC_WAND),
                 ToolItem("toolRemovR", "RemovR", "CLEANUP", VectorToolType.REMOVR),
                 ToolItem("toolBubbleClean", "Clean", "CLEANUP", VectorToolType.CLEAN_BUBBLE),
                 ToolItem("toolBubbleTranslate", "Terjemah", "MANGA", VectorToolType.TRANSLATE),
                 ToolItem("toolOcrPanel", "OCR", "MANGA", VectorToolType.OCR),
-                ToolItem("toolAiChat", "AI Studio", "AI", VectorToolType.AI_CHAT)
+                ToolItem("toolMask", "Mask", "MANGA", VectorToolType.MASK),
+                ToolItem("toolScript", "Script", "MANGA", VectorToolType.SCRIPT),
+                ToolItem("toolVasType", "VasType", "MANGA", VectorToolType.VASTYPE),
+                ToolItem("toolAiChat", "AI Studio", "AI", VectorToolType.AI_CHAT),
+                ToolItem("toolMove", "Kanvas", "NAVIGASI", VectorToolType.MOVE_CANVAS),
+                ToolItem("toolMoveElement", "Elemen", "NAVIGASI", VectorToolType.MOVE_ELEMENT),
+                ToolItem("toolWatermark", "Watermark", "UTILITY", VectorToolType.WATERMARK),
+                ToolItem("toolUnwatermark", "Unwatermark", "UTILITY", VectorToolType.UNWATERMARK)
             )
 
             Surface(
@@ -264,7 +273,7 @@ internal fun EditorComposeOverlay(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Scrollable Quick Tool Buttons
+                    // Scrollable Tool Buttons (Includes ALL tools)
                     Row(
                         modifier = Modifier
                             .weight(1f)
@@ -272,7 +281,7 @@ internal fun EditorComposeOverlay(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        quickTools.forEach { tool ->
+                        allTools.forEach { tool ->
                             val isSelected = tool.id == selectedToolId
                             val iconColor = if (isSelected) Color(0xFF4FD6B8) else Color(0xFFEBF1F4)
                             Surface(
@@ -306,69 +315,52 @@ internal fun EditorComposeOverlay(
                                 }
                             }
                         }
-
-                        // "Lainnya..." Button for full tool grid sheet
-                        Surface(
-                            modifier = Modifier
-                                .height(44.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable(onClick = onToggleToolPicker)
-                                .border(1.dp, Color(0xFF35444D), RoundedCornerShape(10.dp)),
-                            color = Color(0xFF222B35)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                CustomToolIcon(
-                                    type = VectorToolType.MORE,
-                                    tint = Color(0xFF4FD6B8),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "Lainnya",
-                                    color = Color.White,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
                     }
 
                     Spacer(Modifier.width(6.dp))
 
-                    // Undo & Redo Quick Triggers
+                    // Action Triggers: Batal Mask (Deselect), Undo, & Redo
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(2.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = onUndo, modifier = Modifier.size(38.dp)) {
+                        // Batal Mask / Deselect Button
+                        Surface(
+                            modifier = Modifier
+                                .height(38.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable(onClick = onClearSelection)
+                                .border(1.dp, Color(0xFFE57373), RoundedCornerShape(8.dp)),
+                            color = Color(0xFF2C1E21)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                CustomToolIcon(
+                                    type = VectorToolType.DESELECT,
+                                    tint = Color(0xFFEF5350),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = "Batal Mask",
+                                    color = Color(0xFFEF5350),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        // Undo
+                        IconButton(onClick = onUndo, modifier = Modifier.size(36.dp)) {
                             LayerGlyph(LayerGlyphType.MOVE_DOWN, Color(0xFFEBF1F4), Modifier.size(18.dp))
                         }
-                        IconButton(onClick = onRedo, modifier = Modifier.size(38.dp)) {
+                        // Redo
+                        IconButton(onClick = onRedo, modifier = Modifier.size(36.dp)) {
                             LayerGlyph(LayerGlyphType.MOVE_UP, Color(0xFFEBF1F4), Modifier.size(18.dp))
                         }
                     }
-                }
-            }
-
-            // IbisPaint Tool Picker Bottom Sheet Dialog Grid (for additional tools)
-            if (toolPickerOpen) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 60.dp),
-                    contentAlignment = Alignment.BottomCenter
-                ) {
-                    IbisToolPickerSheet(
-                        selectedToolId = selectedToolId,
-                        onDismiss = onToggleToolPicker,
-                        onSelectTool = { toolId ->
-                            onSelectToolById(toolId)
-                            onToggleToolPicker()
-                        }
-                    )
                 }
             }
         }
@@ -466,133 +458,13 @@ private fun CustomToolIcon(
                 drawCircle(tint, radius = w * 0.28f, center = Offset(w / 2f, h * 0.55f), style = Stroke(stroke))
                 line(Offset(w * 0.2f, h * 0.2f), Offset(w * 0.8f, h * 0.8f))
             }
+            VectorToolType.DESELECT -> {
+                line(Offset(w * 0.22f, h * 0.22f), Offset(w * 0.78f, h * 0.78f))
+                line(Offset(w * 0.78f, h * 0.22f), Offset(w * 0.22f, h * 0.78f))
+            }
             VectorToolType.MORE -> {
                 listOf(0.25f, 0.5f, 0.75f).forEach { y ->
                     drawCircle(tint, radius = stroke * 0.75f, center = Offset(w / 2f, h * y))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun IbisToolPickerSheet(
-    selectedToolId: String,
-    onDismiss: () -> Unit,
-    onSelectTool: (String) -> Unit
-) {
-    val tools = listOf(
-        ToolItem("toolBrush", "Brush", "LUKIS", VectorToolType.BRUSH),
-        ToolItem("toolText", "Teks", "LUKIS", VectorToolType.TEXT),
-        ToolItem("toolTextShaper", "Text Shaper", "LUKIS", VectorToolType.TEXT_SHAPER),
-        ToolItem("toolMove", "Geser Canvas", "NAVIGASI", VectorToolType.MOVE_CANVAS),
-        ToolItem("toolMoveElement", "Geser Elemen", "NAVIGASI", VectorToolType.MOVE_ELEMENT),
-        ToolItem("toolRectSelect", "Seleksi Kotak", "SELEKSI", VectorToolType.RECT_SELECT),
-        ToolItem("toolFreeSelect", "Lasso", "SELEKSI", VectorToolType.FREE_SELECT),
-        ToolItem("toolMagicWand", "Tongkat Sihir", "SELEKSI", VectorToolType.MAGIC_WAND),
-        ToolItem("toolRemovR", "RemovR", "CLEANUP", VectorToolType.REMOVR),
-        ToolItem("toolBubbleClean", "Clean Bubble", "CLEANUP", VectorToolType.CLEAN_BUBBLE),
-        ToolItem("toolBubbleTranslate", "Terjemah", "MANGA", VectorToolType.TRANSLATE),
-        ToolItem("toolOcrPanel", "OCR Studio", "MANGA", VectorToolType.OCR),
-        ToolItem("toolMask", "Auto Mask", "MANGA", VectorToolType.MASK),
-        ToolItem("toolScript", "Script Workspace", "MANGA", VectorToolType.SCRIPT),
-        ToolItem("toolVasType", "VasType", "MANGA", VectorToolType.VASTYPE),
-        ToolItem("toolAiChat", "AI Studio", "AI", VectorToolType.AI_CHAT),
-        ToolItem("toolWatermark", "Watermark", "UTILITY", VectorToolType.WATERMARK),
-        ToolItem("toolUnwatermark", "Unwatermark", "UTILITY", VectorToolType.UNWATERMARK)
-    )
-
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 420.dp),
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .background(Color(0xFF13171C))
-                .border(1.dp, Color(0xFF2A333C), RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "PILIH ALAT",
-                    color = Color(0xFF4FD6B8),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
-                )
-                IconButton(onClick = onDismiss) {
-                    LayerGlyph(LayerGlyphType.CLOSE, Color(0xFFB8B5C2), Modifier.size(20.dp))
-                }
-            }
-
-            HorizontalDivider(color = Color(0xFF2A333C), modifier = Modifier.padding(vertical = 12.dp))
-
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                val grouped = tools.groupBy { it.category }
-                grouped.forEach { (category, items) ->
-                    item {
-                        Text(
-                            text = category,
-                            color = Color(0xFF8F8B99),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items.forEach { tool ->
-                                val isSelected = tool.id == selectedToolId
-                                val iconColor = if (isSelected) Color(0xFF4FD6B8) else Color(0xFFEBF1F4)
-                                Surface(
-                                    modifier = Modifier
-                                        .width(96.dp)
-                                        .height(72.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .clickable { onSelectTool(tool.id) }
-                                        .border(
-                                            1.dp,
-                                            if (isSelected) Color(0xFF4FD6B8) else Color(0xFF2A333C),
-                                            RoundedCornerShape(12.dp)
-                                        ),
-                                    color = if (isSelected) Color(0xFF1E3A34) else Color(0xFF1A2129)
-                                ) {
-                                    Column(
-                                        modifier = Modifier.fillMaxSize(),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        CustomToolIcon(
-                                            type = tool.vectorType,
-                                            tint = iconColor,
-                                            modifier = Modifier.size(22.dp)
-                                        )
-                                        Spacer(Modifier.height(4.dp))
-                                        Text(
-                                            tool.label,
-                                            color = if (isSelected) Color(0xFF4FD6B8) else Color(0xFFEBF1F4),
-                                            fontSize = 11.sp,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }

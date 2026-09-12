@@ -5097,6 +5097,7 @@ class MainActivity : AppCompatActivity() {
                 },
                 onUndo = { doUndo() },
                 onRedo = { doRedo() },
+                onClearSelection = { binding.canvasView.clearSelection() },
                 onToggleLayers = { showLayersPopup() },
                 onAddLayer = {
                     vm.activeWorkspace?.let { workspace ->
