@@ -165,7 +165,10 @@ class MainActivity : AppCompatActivity() {
     private var unwatermarkSelectionManuallyAdjusted = false
 
     // ── Reference window state ────────────────────────────────────────────────
+    // Bertindak seperti kanvas referensi: menampung Uri + snapshot bitmap kanvas asli,
+    // dengan preview yang bisa pan/zoom via sentuhan (mirip kanvas, tapi read-only).
     private val referenceImages = mutableListOf<Uri>()
+    private val referenceCanvasBitmaps = mutableListOf<Bitmap>()
     private var referenceDialog: AlertDialog? = null
 
     // ── Tab state ─────────────────────────────────────────────────────────────
@@ -180,6 +183,18 @@ class MainActivity : AppCompatActivity() {
     private val workspaceTextStates = mutableMapOf<String, MutableList<TextElement>>()
     private val workspaceImageStates = mutableMapOf<String, MutableList<ImageElement>>()
     private val workspaceMaskStates = mutableMapOf<String, MutableList<PaddleDbNetDetector.DetectedRegion>>()
+    // Isolasi seleksi per-tab: snapshot transient SelectionState agar pindah tab tidak menghapus.
+    private data class SelectionSnapshot(
+        val type: com.vasiliastyper.model.SelectionType,
+        val rect: RectF,
+        val path: android.graphics.Path,
+        val region: Region?,
+        val isActive: Boolean,
+        val parts: List<RectF>,
+        val partRegions: List<Region>,
+        val isManualUnion: Boolean
+    )
+    private val workspaceSelectionStates = mutableMapOf<String, SelectionSnapshot?>()
     private var autoSaveJob: kotlinx.coroutines.Job? = null
     private var periodicAutoSaveJob: kotlinx.coroutines.Job? = null
     private val autoSaveMutex = Mutex()
@@ -1800,25 +1815,99 @@ class MainActivity : AppCompatActivity() {
         }
         val matrix = android.graphics.Matrix()
         var currentScale = 1f
+        var transX = 0f
+        var transY = 0f
         var previewBitmap: Bitmap? = null
+        // Preview tidak me-recycle bitmap milik referenceCanvasBitmaps (masih dipakai thumbs).
 
-        fun applyScale(scale: Float) {
-            val bm = previewBitmap ?: return
-            currentScale = scale.coerceIn(0.2f, 6f)
-            val px = bm.width / 2f
-            val py = bm.height / 2f
+        fun applyTransform() {
+            previewBitmap ?: return
+            currentScale = currentScale.coerceIn(0.2f, 6f)
             matrix.reset()
-            matrix.postScale(currentScale, currentScale, px, py)
+            matrix.postScale(currentScale, currentScale)
+            matrix.postTranslate(transX, transY)
             preview.imageMatrix = matrix
+        }
+        fun applyScale(scale: Float) {
+            currentScale = scale.coerceIn(0.2f, 6f)
+            applyTransform()
+        }
+        // Pan/zoom ala kanvas: drag 1 jari = pan, pinch 2 jari = zoom.
+        run {
+            var lastX = 0f; var lastY = 0f; var lastDist = 0f; var panning = false
+            preview.setOnTouchListener { v, ev ->
+                when (ev.actionMasked) {
+                    android.view.MotionEvent.ACTION_DOWN -> {
+                        lastX = ev.x; lastY = ev.y; panning = true
+                        v.parent?.requestDisallowInterceptTouchEvent(true)
+                    }
+                    android.view.MotionEvent.ACTION_POINTER_DOWN -> {
+                        if (ev.pointerCount == 2) {
+                            val dx = ev.getX(0) - ev.getX(1); val dy = ev.getY(0) - ev.getY(1)
+                            lastDist = kotlin.math.sqrt(dx * dx + dy * dy)
+                        }
+                    }
+                    android.view.MotionEvent.ACTION_MOVE -> {
+                        if (ev.pointerCount == 2) {
+                            val dx = ev.getX(0) - ev.getX(1); val dy = ev.getY(0) - ev.getY(1)
+                            val d = kotlin.math.sqrt(dx * dx + dy * dy)
+                            if (lastDist > 0f && d > 0f) applyScale(currentScale * d / lastDist)
+                            lastDist = d
+                        } else if (panning && ev.pointerCount == 1) {
+                            transX += ev.x - lastX; transY += ev.y - lastY
+                            lastX = ev.x; lastY = ev.y
+                            applyTransform()
+                        }
+                    }
+                    android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                        panning = false; lastDist = 0f
+                        v.parent?.requestDisallowInterceptTouchEvent(false)
+                        v.performClick()
+                    }
+                }
+                true
+            }
         }
 
         val zoomRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
+        // Helper preview didefinisikan awal agar bisa dipakai tombol Canvas.
+        fun showBitmapPreview(bm: Bitmap) {
+            previewBitmap = bm
+            preview.setImageBitmap(bm)
+            currentScale = 1f; transX = 0f; transY = 0f
+            applyTransform()
+        }
+        var rebuildThumbsFn: () -> Unit = {}
         val btnAdd = Button(this).apply {
             text = "＋ Add"
             setOnClickListener { referenceImagePickerLauncher.launch("image/*") }
+        }
+        val btnFromCanvas = Button(this).apply {
+            text = "▣ Canvas"
+            setOnClickListener {
+                // Ambil image yang sama dengan kanvas asli sebagai referensi.
+                try {
+                    val ws = vm.activeWorkspace
+                    val src = ws?.layers?.getOrNull(ws.activeLayerIndex)?.bitmap
+                        ?: ws?.layers?.firstOrNull()?.bitmap
+                    if (src == null || src.isRecycled) {
+                        Toast.makeText(this@MainActivity, "Kanvas kosong", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val copy = src.copy(Bitmap.Config.ARGB_8888, false)
+                        if (copy != null) {
+                            referenceCanvasBitmaps.add(copy)
+                            showBitmapPreview(copy)
+                            rebuildThumbsFn()
+                            Toast.makeText(this@MainActivity, "Referensi dari kanvas ditambahkan", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(this@MainActivity, "Gagal ambil kanvas: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
         val btnZoomOut = Button(this).apply {
             text = "－"
@@ -1828,9 +1917,15 @@ class MainActivity : AppCompatActivity() {
             text = "+"
             setOnClickListener { applyScale(currentScale * 1.15f) }
         }
+        val btnFit = Button(this).apply {
+            text = "Fit"
+            setOnClickListener { currentScale = 1f; transX = 0f; transY = 0f; applyTransform() }
+        }
         zoomRow.addView(btnAdd)
+        zoomRow.addView(btnFromCanvas)
         zoomRow.addView(btnZoomOut)
         zoomRow.addView(btnZoomIn)
+        zoomRow.addView(btnFit)
 
         val thumbsScroll = HorizontalScrollView(this).apply {
             isFillViewport = true
@@ -1847,11 +1942,16 @@ class MainActivity : AppCompatActivity() {
         fun reloadPreview(uri: Uri) {
             lifecycleScope.launch {
                 val bm = FileManager.loadBitmap(this@MainActivity, uri) ?: return@launch
+                // Uri bitmap adalah salinan sekali pakai → aman recycle yang lama bila bukan milik canvas.
                 val oldBm = previewBitmap
+                val owned = oldBm?.let { ownedBm -> referenceCanvasBitmaps.any { it === ownedBm } } ?: false
                 previewBitmap = bm
                 preview.setImageBitmap(bm)
-                if (oldBm != null && oldBm !== bm && !oldBm.isRecycled) oldBm.recycle()
-                applyScale(1f)
+                if (oldBm != null && oldBm !== bm && !owned && !oldBm.isRecycled) {
+                    try { oldBm.recycle() } catch (_: Exception) { }
+                }
+                currentScale = 1f; transX = 0f; transY = 0f
+                applyTransform()
             }
         }
 
@@ -1871,15 +1971,38 @@ class MainActivity : AppCompatActivity() {
                 thumb.setOnLongClickListener {
                     referenceImages.removeAt(index)
                     rebuildThumbs()
-                    if (referenceImages.isEmpty()) preview.setImageDrawable(null) else referenceImages.lastOrNull()?.let { reloadPreview(it) }
+                    if (referenceImages.isEmpty() && referenceCanvasBitmaps.isEmpty()) preview.setImageDrawable(null)
+                    else referenceImages.lastOrNull()?.let { reloadPreview(it) }
                     true
                 }
                 thumbsRow.addView(thumb)
             }
-            if (referenceImages.isNotEmpty() && preview.drawable == null) {
-                referenceImages.lastOrNull()?.let { reloadPreview(it) }
+            // Thumbs dari snapshot kanvas asli (in-memory, seperti kanvas kedua).
+            referenceCanvasBitmaps.forEachIndexed { index, bm ->
+                val thumb = ImageView(this).apply {
+                    layoutParams = LinearLayout.LayoutParams(180, 180).apply { marginEnd = 12 }
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    setBackgroundColor(Color.parseColor("#2A4A6B"))
+                    setPadding(4, 4, 4, 4)
+                }
+                thumb.setImageBitmap(bm)
+                thumb.setOnClickListener { showBitmapPreview(bm) }
+                thumb.setOnLongClickListener {
+                    referenceCanvasBitmaps.removeAt(index)
+                    try { if (!bm.isRecycled) bm.recycle() } catch (_: Exception) { }
+                    rebuildThumbs()
+                    true
+                }
+                thumbsRow.addView(thumb)
+            }
+            if (preview.drawable == null) {
+                when {
+                    referenceImages.isNotEmpty() -> referenceImages.lastOrNull()?.let { reloadPreview(it) }
+                    referenceCanvasBitmaps.isNotEmpty() -> referenceCanvasBitmaps.lastOrNull()?.let { showBitmapPreview(it) }
+                }
             }
         }
+        rebuildThumbsFn = { rebuildThumbs() }
 
         layout.addView(zoomRow)
         layout.addView(thumbsScroll)
@@ -1897,7 +2020,11 @@ class MainActivity : AppCompatActivity() {
         referenceDialog = dialog
         dialog.setOnDismissListener {
             referenceDialog = null
-            previewBitmap?.takeIf { !it.isRecycled }?.recycle()
+            // Jangan recycle bitmap milik referenceCanvasBitmaps (masih dipakai sesi).
+            val owned = previewBitmap?.let { cur -> referenceCanvasBitmaps.any { it === cur } } ?: false
+            if (!owned) {
+                try { previewBitmap?.takeIf { !it.isRecycled }?.recycle() } catch (_: Exception) { }
+            }
             previewBitmap = null
         }
         dialog.show()
@@ -1964,11 +2091,20 @@ class MainActivity : AppCompatActivity() {
         "Zoom In"       to { binding.canvasView.zoomIn() },
         "Zoom Out"      to { binding.canvasView.zoomOut() },
         "Fit to Screen" to { binding.canvasView.zoomToFit() },
-        // v2.0.3: toggle X/Y/Z centre guides + selection crosshair
+        // v2.0.3: toggle X/Y/Z centre guides + selection crosshair (persist agar bisa dinonaktifkan permanen)
         (if (binding.canvasView.showGuides) "Hide Guides (X/Y/Z)" else "Show Guides (X/Y/Z)") to {
             binding.canvasView.showGuides = !binding.canvasView.showGuides
+            getSharedPreferences("vasilia_editor", MODE_PRIVATE).edit()
+                .putBoolean("show_guides", binding.canvasView.showGuides).apply()
             binding.canvasView.invalidate()
             val msg = if (binding.canvasView.showGuides) "Guides ditampilkan" else "Guides disembunyikan"
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        },
+        (if (binding.canvasView.snapToCenterEnabled) "Nonaktifkan Force-Center" else "Aktifkan Force-Center") to {
+            binding.canvasView.snapToCenterEnabled = !binding.canvasView.snapToCenterEnabled
+            getSharedPreferences("vasilia_editor", MODE_PRIVATE).edit()
+                .putBoolean("snap_center", binding.canvasView.snapToCenterEnabled).apply()
+            val msg = if (binding.canvasView.snapToCenterEnabled) "Force-center aktif" else "Force-center nonaktif"
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         }
     )
@@ -2590,9 +2726,11 @@ class MainActivity : AppCompatActivity() {
     private fun switchToWorkspace(wsId: String) {
         val current = vm.activeWorkspace
         if (current?.id == wsId) return
+        // Snapshot per-tab agar tiap tab terisolasi: teks, gambar, OCR, mask, DAN seleksi.
         snapshotActiveWorkspaceElements()
         snapshotActiveOcrResults()
         snapshotActiveMaskRegions()
+        snapshotActiveSelection()
         // Detection results are workspace-bound. Cancel scans before switching so
         // a late callback cannot paint one tab's boxes onto another tab.
         bubbleDetectionJob?.cancel()
@@ -2652,6 +2790,7 @@ class MainActivity : AppCompatActivity() {
             snapshotActiveWorkspaceElements()
             snapshotActiveOcrResults()
             snapshotActiveMaskRegions()
+            snapshotActiveSelection()
         }
 
         tabViews.firstOrNull { it.first == wsId }?.second?.let(binding.tabsContainer::removeView)
@@ -2661,6 +2800,7 @@ class MainActivity : AppCompatActivity() {
         workspaceImageStates.remove(wsId)
         workspaceMaskStates.remove(wsId)
         workspaceOcrStates.remove(wsId)
+        workspaceSelectionStates.remove(wsId)
         vm.closeWorkspace(closeIndex)
 
         val remaining = vm.workspaces.value.orEmpty()
@@ -2693,6 +2833,7 @@ class MainActivity : AppCompatActivity() {
         snapshotActiveWorkspaceElements()
         snapshotActiveOcrResults()
         snapshotActiveMaskRegions()
+        snapshotActiveSelection()
 
         tabViews.forEach { (_, tab) -> binding.tabsContainer.removeView(tab) }
         tabViews.clear()
@@ -2701,6 +2842,7 @@ class MainActivity : AppCompatActivity() {
         workspaceImageStates.clear()
         workspaceMaskStates.clear()
         workspaceOcrStates.clear()
+        workspaceSelectionStates.clear()
         vm.closeAllWorkspaces()
 
         startActivity(Intent(this, HomeActivity::class.java).apply {
@@ -2734,15 +2876,17 @@ class MainActivity : AppCompatActivity() {
         binding.comparePanel.visibility = View.GONE
         binding.canvasView.textElements.clear()
         binding.canvasView.imageElements.clear()
-        binding.canvasView.clearSelection()
         binding.canvasView.activeTextId = null
         binding.canvasView.activeImageId = null
         workspaceTextStates.putIfAbsent(ws.id, mutableListOf())
         workspaceImageStates.putIfAbsent(ws.id, mutableListOf())
+        if (!workspaceSelectionStates.containsKey(ws.id)) workspaceSelectionStates[ws.id] = null
         binding.canvasView.post { binding.canvasView.zoomToFit() }
         restoreWorkspaceElements(ws)
         restoreOcrResultsFor(ws)
         restoreMaskRegionsFor(ws)
+        // Seleksi dipulihkan per-tab (bukan clear polos) agar permanen saat pindah tab.
+        restoreSelectionFor(ws)
         binding.canvasView.invalidate()
         updateStatus("Studio siap • ${ws.width}×${ws.height}")
     }
@@ -7284,6 +7428,14 @@ class MainActivity : AppCompatActivity() {
     // ══════════════════════════════════════════════════════════════════════════
 
     private fun setupCanvas() {
+        // Restore persist flags (guides X/Y + force-center + grid) agar opsi nonaktif permanen.
+        run {
+            val p = getSharedPreferences("vasilia_editor", MODE_PRIVATE)
+            binding.canvasView.snapToCenterEnabled = p.getBoolean("snap_center", true)
+            binding.canvasView.clampToCanvasEnabled = p.getBoolean("force_inside", true)
+            binding.canvasView.snapGridEnabled = p.getBoolean("snap_grid", true)
+            binding.canvasView.showGuides = p.getBoolean("show_guides", true)
+        }
         binding.canvasView.onSelectionChanged = selectionChanged@{ sel ->
             val has = sel.hasSelection()
             binding.btnFillWhite.visibility      = if (has) View.VISIBLE else View.GONE
@@ -7366,9 +7518,13 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
         binding.canvasView.onImageSelected = { el -> updateImageQuickToolbar(el) }
-        // Ukuran px realtime saat resize manual lewat handle.
+        // Ukuran px realtime saat resize/rotate/move manual lewat handle.
         binding.canvasView.onTextSizePreview = { px ->
-            binding.statusInfo.text = "${px.roundToInt()} px"
+            binding.statusInfo.text = "${px.roundToInt()}px"
+            try {
+                val tb = binding.textQuickToolbar
+                tb.findViewById<Button>(R.id.qtbSize)?.text = "${px.roundToInt()}px"
+            } catch (_: Exception) { }
         }
         setupTextQuickToolbar()
         setupImageQuickToolbar()
@@ -8532,19 +8688,27 @@ class MainActivity : AppCompatActivity() {
             }
         })
         db.seekFontSize.progress = (size - 8f).roundToInt().coerceIn(0, db.seekFontSize.max)
-        db.tvFontSize.text = size.roundToInt().toString()
+        db.tvFontSize.text = "${size.roundToInt()}px"
         db.tvTextPreview.textSize = size
+        fun refreshPreviewSpacing() {
+            // Preview TextView harus mencerminkan leading+paragraph agar slider terlihat hidup.
+            // setLineSpacing(add, mult): mult = leading, add = paragraph per baris.
+            try { db.tvTextPreview.setLineSpacing(paragraph, leading.coerceAtLeast(0.05f)) } catch (_: Exception) { }
+        }
+        refreshPreviewSpacing()
         db.seekFontSize.setOnSeekBarChangeListener(seekListener { progress ->
             size = progress + 8f
-            db.tvFontSize.text = size.roundToInt().toString()
+            db.tvFontSize.text = "${size.roundToInt()}px"
             db.tvTextPreview.textSize = size
+            refreshPreviewSpacing()
         })
         db.tvFontSize.setOnClickListener {
             askNumberInput("Ukuran font (px)", size, 4f, 512f) {
                 size = it
                 db.seekFontSize.progress = (size - 8f).roundToInt().coerceIn(0, db.seekFontSize.max)
-                db.tvFontSize.text = size.roundToInt().toString()
+                db.tvFontSize.text = "${size.roundToInt()}px"
                 db.tvTextPreview.textSize = size
+                refreshPreviewSpacing()
             }
         }
         db.seekTracking.progress = (tracking + 50).coerceIn(0, db.seekTracking.max)
@@ -8567,33 +8731,43 @@ class MainActivity : AppCompatActivity() {
         db.seekLeading.setOnSeekBarChangeListener(seekListener { progress ->
             leading = (progress - 50) / 100f
             db.tvLeading.text = "${(leading * 100).roundToInt()}%"
+            refreshPreviewSpacing()
         })
         db.tvLeading.setOnClickListener {
             askNumberInput("Leading (%)", leading * 100f, -50f, 270f) {
                 leading = it / 100f
                 db.seekLeading.progress = ((leading * 100f).roundToInt() + 50).coerceIn(0, db.seekLeading.max)
                 db.tvLeading.text = "${(leading * 100).roundToInt()}%"
+                refreshPreviewSpacing()
             }
         }
         // Paragraph -50 … +50 px (ibispaint).
         db.seekParagraph.progress = (paragraph.roundToInt() + 50).coerceIn(0, db.seekParagraph.max)
-        db.tvParagraph.text = paragraph.roundToInt().toString()
+        db.tvParagraph.text = "${paragraph.roundToInt()}px"
         db.seekParagraph.setOnSeekBarChangeListener(seekListener { progress ->
             paragraph = (progress - 50).toFloat()
-            db.tvParagraph.text = paragraph.roundToInt().toString()
+            db.tvParagraph.text = "${paragraph.roundToInt()}px"
+            refreshPreviewSpacing()
         })
         db.tvParagraph.setOnClickListener {
             askNumberInput("Jarak paragraph (px)", paragraph, -50f, 50f) {
                 paragraph = it
                 db.seekParagraph.progress = (paragraph.roundToInt() + 50).coerceIn(0, db.seekParagraph.max)
-                db.tvParagraph.text = paragraph.roundToInt().toString()
+                db.tvParagraph.text = "${paragraph.roundToInt()}px"
+                refreshPreviewSpacing()
             }
         }
-        // Toggle force/snap — tersimpan agar tidak reset tiap buka dialog.
+        // Toggle force/snap/guides — tersimpan agar tidak reset tiap buka dialog.
         val snapPrefs = getSharedPreferences("vasilia_editor", MODE_PRIVATE)
-        db.cbSnapCenter.isChecked = snapPrefs.getBoolean("snap_center", true)
-        db.cbForceInside.isChecked = snapPrefs.getBoolean("force_inside", true)
-        db.cbSnapGrid.isChecked = snapPrefs.getBoolean("snap_grid", true)
+        // Restore canvas flags saat dialog dibuka (persist antar sesi).
+        binding.canvasView.snapToCenterEnabled = snapPrefs.getBoolean("snap_center", true)
+        binding.canvasView.clampToCanvasEnabled = snapPrefs.getBoolean("force_inside", true)
+        binding.canvasView.snapGridEnabled = snapPrefs.getBoolean("snap_grid", true)
+        binding.canvasView.showGuides = snapPrefs.getBoolean("show_guides", true)
+        db.cbSnapCenter.isChecked = binding.canvasView.snapToCenterEnabled
+        db.cbForceInside.isChecked = binding.canvasView.clampToCanvasEnabled
+        db.cbSnapGrid.isChecked = binding.canvasView.snapGridEnabled
+        try { db.cbShowGuides.isChecked = binding.canvasView.showGuides } catch (_: Exception) { }
         binding.canvasView.snapToCenterEnabled = db.cbSnapCenter.isChecked
         binding.canvasView.clampToCanvasEnabled = db.cbForceInside.isChecked
         binding.canvasView.snapGridEnabled = db.cbSnapGrid.isChecked
@@ -8609,6 +8783,13 @@ class MainActivity : AppCompatActivity() {
             binding.canvasView.snapGridEnabled = checked
             snapPrefs.edit().putBoolean("snap_grid", checked).apply()
         }
+        try {
+            db.cbShowGuides.setOnCheckedChangeListener { _, checked ->
+                binding.canvasView.showGuides = checked
+                snapPrefs.edit().putBoolean("show_guides", checked).apply()
+                binding.canvasView.invalidate()
+            }
+        } catch (_: Exception) { }
         db.seekTextOpacity.progress = opacity.coerceIn(0, 100)
         db.tvTextOpacity.text = "${db.seekTextOpacity.progress}%"
         db.tvTextPreview.alpha = db.seekTextOpacity.progress / 100f
@@ -8958,7 +9139,8 @@ class MainActivity : AppCompatActivity() {
                 typeface = selectedFont?.typeface,
                 maxFontSize = size,
                 leading = leading * 100f,
-                roundBubbleMode = binding.canvasView.selection.isRoundBubble
+                roundBubbleMode = binding.canvasView.selection.isRoundBubble,
+                paragraphSpacing = paragraph
             )
             // Text edits only need the lightweight text-history stack. Serializing
             // the complete workspace here PNG-encodes every canvas layer on the UI
@@ -10492,6 +10674,45 @@ class MainActivity : AppCompatActivity() {
         workspaceImageStates[ws.id] = binding.canvasView.imageElements.map { it.copy() }.toMutableList()
     }
 
+    private fun snapshotActiveSelection() {
+        val ws = vm.activeWorkspace ?: return
+        try {
+            val s = binding.canvasView.selection
+            workspaceSelectionStates[ws.id] = SelectionSnapshot(
+                type = s.type,
+                rect = RectF(s.rect),
+                path = android.graphics.Path(s.path),
+                region = s.region?.let { Region(it) },
+                isActive = s.isActive,
+                parts = s.parts.map { RectF(it) },
+                partRegions = s.partRegions.map { Region(it) },
+                isManualUnion = s.isManualUnion
+            )
+        } catch (_: Exception) { }
+    }
+
+    private fun restoreSelectionFor(ws: Workspace) {
+        val snap = workspaceSelectionStates[ws.id] ?: run {
+            binding.canvasView.clearSelection()
+            return
+        }
+        try {
+            val s = binding.canvasView.selection
+            s.clear()
+            s.type = snap.type
+            s.rect.set(snap.rect)
+            s.path.set(snap.path)
+            s.region = snap.region?.let { Region(it) }
+            s.isActive = snap.isActive
+            s.parts.clear(); s.parts.addAll(snap.parts.map { RectF(it) })
+            s.partRegions.clear(); s.partRegions.addAll(snap.partRegions.map { Region(it) })
+            s.isManualUnion = snap.isManualUnion
+            binding.canvasView.onSelectionChanged?.invoke(s)
+        } catch (_: Exception) {
+            binding.canvasView.clearSelection()
+        }
+    }
+
     private fun snapshotActiveOcrResults() {
         val ws = vm.activeWorkspace ?: return
         workspaceOcrStates[ws.id] = ocrResults.map {
@@ -10856,13 +11077,33 @@ class MainActivity : AppCompatActivity() {
         qtbSizeUp.setOnClickListener {
             val el = activeEl() ?: return@setOnClickListener
             binding.canvasView.pushTextHistory()
-            el.fontSize = (el.fontSize + 4f).coerceAtMost(300f); commit()
+            el.fontSize = (el.fontSize + 4f).coerceAtMost(512f); commit(); updateTextQuickToolbar(el)
         }
         qtbSizeDown.setOnClickListener {
             val el = activeEl() ?: return@setOnClickListener
             binding.canvasView.pushTextHistory()
-            el.fontSize = (el.fontSize - 4f).coerceAtLeast(8f); commit()
+            el.fontSize = (el.fontSize - 4f).coerceAtLeast(4f); commit(); updateTextQuickToolbar(el)
         }
+        try {
+            val qtbSize = tb.findViewById<Button>(R.id.qtbSize)
+            // Tap = ketik manual size px; long-press = reset ke auto-fit.
+            qtbSize.setOnClickListener {
+                val el = activeEl() ?: return@setOnClickListener
+                askNumberInput("Ukuran teks (px)", el.fontSize, 4f, 512f) {
+                    binding.canvasView.pushTextHistory()
+                    el.fontSize = it; commit(); updateTextQuickToolbar(el)
+                }
+            }
+            qtbSize.setOnLongClickListener {
+                val el = activeEl() ?: return@setOnLongClickListener true
+                binding.canvasView.pushTextHistory()
+                el.fontSize = TextRenderer.autoFitFontSize(
+                    el.text, el.width, el.height, el.typeface,
+                    leading = el.leading, paragraphSpacing = el.paragraphSpacing
+                )
+                commit(); updateTextQuickToolbar(el); true
+            }
+        } catch (_: Exception) { }
         qtbBold.setOnClickListener {
             val el = activeEl() ?: return@setOnClickListener
             binding.canvasView.pushTextHistory()
@@ -11184,9 +11425,10 @@ class MainActivity : AppCompatActivity() {
         }
         binding.imageQuickToolbar.visibility = View.GONE
         tb.visibility = View.VISIBLE
-        // Reflect bold/italic toggle state
+        // Reflect bold/italic toggle state + size px agar bisa ketik manual.
         tb.findViewById<Button>(R.id.qtbBold).alpha   = if (el.isBold)   1f else 0.55f
         tb.findViewById<Button>(R.id.qtbItalic).alpha = if (el.isItalic) 1f else 0.55f
+        try { tb.findViewById<Button>(R.id.qtbSize)?.text = "${el.fontSize.roundToInt()}px" } catch (_: Exception) { }
         tb.findViewById<Button>(R.id.qtbAlign).text   = when (el.align) {
             TextAlign.LEFT   -> "☰"
             TextAlign.CENTER -> "≡"
@@ -13779,7 +14021,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun smartFillBackendLabel(backend: SmartFillBackend): String = when (backend) {
-        SmartFillBackend.LAMA_MANGA -> "LaMa Original"
+        SmartFillBackend.LAMA_MANGA -> "LaMa Manga"
         SmartFillBackend.OPENCV_PATCH -> "OpenCV Fast Inpaint"
         @Suppress("DEPRECATION")
         SmartFillBackend.NAVIER_STOKES -> "OpenCV Fast Inpaint"
@@ -13791,9 +14033,9 @@ class MainActivity : AppCompatActivity() {
         val lamaMangaReady = ModelDownloader.isLamaMangaReady(this)
         val db = com.vasiliastyper.databinding.DialogSmartfillChooserBinding.inflate(layoutInflater)
         db.tvSmartFillStatus.text = if (lamaMangaReady) {
-            "LaMa Original tersedia · dibundle di APK"
+            "LaMa Manga tersedia · dibundle di APK"
         } else {
-            "LaMa Original belum ada · akan fallback ke OpenCV Patch"
+            "LaMa Manga belum ada · akan fallback ke OpenCV Patch"
         }
         db.tvLamaMangaDesc.text = if (lamaMangaReady) {
             "Model tersedia dan siap dipakai untuk hasil yang lebih natural."
@@ -13807,7 +14049,7 @@ class MainActivity : AppCompatActivity() {
 
         db.btnLamaManga.setOnClickListener {
             if (!lamaMangaReady) {
-                Toast.makeText(this, "lama-fp32.onnx tidak ditemukan. Model dibundle saat build — gunakan engine lain bila belum tersedia.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "lama-manga-dynamic.onnx tidak ditemukan. Model dibundle saat build — gunakan engine lain bila belum tersedia.", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
             dialog.dismiss()

@@ -732,10 +732,10 @@ class HomeActivity : AppCompatActivity() {
             val lama = ModelDownloader.isLamaMangaReady(this)
             val yolo = YoloV8mBubbleDetector.isAvailable(this)
             modelStatus?.text =
-                "LaMa Original: ${if (lama) "tersedia (bundled)" else "belum ada (dibundle saat build)"}\n" +
+                "LaMa Manga: ${if (lama) "tersedia (bundled)" else "belum ada (dibundle saat build)"}\n" +
                 "Bubble YOLOv8m: ${if (yolo) "siap" else "belum ada (dibundle saat build)"}"
             btnDownload?.isEnabled = !lama
-            btnDownload?.text = if (lama) "Model LaMa Sudah Tersedia" else "Unduh Model LaMa (~200 MB)"
+            btnDownload?.text = if (lama) "Model LaMa Sudah Tersedia" else "Unduh Model LaMa Manga (~40 MB)"
         }
         refreshModelStatus()
         btnCheck?.setOnClickListener { refreshModelStatus() }
@@ -749,7 +749,7 @@ class HomeActivity : AppCompatActivity() {
                         runOnUiThread { btnDownload.text = "Mengunduh… $pct%" }
                     }
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@HomeActivity, "Model LaMa berhasil diunduh", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@HomeActivity, "Model LaMa Manga berhasil diunduh", Toast.LENGTH_LONG).show()
                         refreshModelStatus()
                     }
                 } catch (e: Exception) {

@@ -647,7 +647,8 @@ class CanvasView @JvmOverloads constructor(
     // ── Snap-to-centre helper ─────────────────────────────────────────────────
     private fun applySnapToCenter(x: Float, y: Float, w: Float, h: Float): Pair<Float, Float> {
         if (!snapToCenterEnabled) { snapToX = false; snapToY = false; return Pair(x, y) }
-        val threshold = SNAP_THRESHOLD
+        // Threshold dikompensasi zoom agar terasa sama di semua level zoom.
+        val threshold = (SNAP_THRESHOLD / scaleFactor.coerceAtLeast(0.2f)).coerceIn(4f, 48f)
         val cx = canvasWidth  / 2f; val cy = canvasHeight / 2f
         val elCx = x + w / 2f; val elCy = y + h / 2f
         snapToX = abs(elCx - cx) < threshold; snapToY = abs(elCy - cy) < threshold
@@ -1256,13 +1257,14 @@ class CanvasView @JvmOverloads constructor(
             }
             canvas.drawLine(cx, cy, cx, el.y - rotOff2, refPaint)
             val normalDeg = ((el.rotation % 360f) + 360f) % 360f
-            val degLabel  = "%.0f°".format(normalDeg)
+            // Tampilkan size px + sudut agar terlihat saat resize/rotate/move.
+            val degLabel  = "${el.fontSize.roundToInt()}px • %.0f°".format(normalDeg)
             val badgeBgP  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#CC1A1A2E"); style = Paint.Style.FILL }
             val badgeTxtP = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = Color.WHITE; textSize = 11f / scaleFactor; textAlign = Paint.Align.CENTER
             }
             val badgeCy = el.y - rotOff2 - (16f / scaleFactor)
-            val badgeW  = 24f / scaleFactor
+            val badgeW  = (42f / scaleFactor).coerceAtLeast(badgeTxtP.measureText(degLabel) / 2f + 8f / scaleFactor)
             canvas.drawRoundRect(cx - badgeW, badgeCy - 11f / scaleFactor,
                 cx + badgeW, badgeCy + 4f / scaleFactor, 3f / scaleFactor, 3f / scaleFactor, badgeBgP)
             canvas.drawText(degLabel, cx, badgeCy, badgeTxtP)
@@ -1947,7 +1949,7 @@ class CanvasView @JvmOverloads constructor(
                         val cx = img.x + img.width / 2f; val cy = img.y + img.height / 2f
                         val fingerAngle = atan2(pt.y - cy, pt.x - cx) * 180f / PI.toFloat()
                         val raw = rotStartAngle + (fingerAngle - rotStartFingerAngle)
-                        img.rotation = smoothAngle(img.rotation, raw)
+                        img.rotation = raw
                         invalidateDrag()
                     }
                 }
@@ -2246,13 +2248,17 @@ class CanvasView @JvmOverloads constructor(
                 }
 
                 // ── Normal drag ───────────────────────────────────────────────
+                // FIX move: pakai delta kanvas (pt - last) agar mengikuti jari 1:1.
+                // Dulu unrot-offset membuat arah gerak terasa diputar saat teks di-rotate.
                 draggingTextId?.let { id ->
                     textElements.find { it.id == id }?.let { el ->
-                        val cx = el.x + el.width / 2f; val cy = el.y + el.height / 2f
-                        val unrot = unrotatePoint(pt, cx, cy, el.rotation)
-                        el.x = unrot.x - dragOffsetX; el.y = unrot.y - dragOffsetY
+                        val lastPt = screenToCanvas(lastTouchX, lastTouchY)
+                        val dx = pt.x - lastPt.x; val dy = pt.y - lastPt.y
+                        el.x += dx; el.y += dy
                         val (sx, sy) = applySnapToCenter(el.x, el.y, el.width, el.height)
-                        el.x = sx; el.y = sy; clampTextElementToCanvas(el); invalidate()
+                        el.x = sx; el.y = sy; clampTextElementToCanvas(el)
+                        onTextSizePreview?.invoke(el.fontSize)
+                        invalidate()
                     }
                 }
 
@@ -2270,8 +2276,8 @@ class CanvasView @JvmOverloads constructor(
                             "br" -> { val oldH=el.height; el.width=snapToGrid((unrot.x-el.x).coerceAtLeast(40f)); el.height=snapToGrid((unrot.y-el.y).coerceAtLeast(20f)); if(oldH>0f)el.fontSize=(el.fontSize*(el.height/oldH)).coerceIn(4f,512f) }
                             "ml" -> { val right=el.x+el.width; el.x=snapToGrid(unrot.x.coerceAtMost(right-40f)); el.width=snapToGrid((right-el.x).coerceAtLeast(40f)) }
                             "mr" -> { el.width=snapToGrid((unrot.x-el.x).coerceAtLeast(40f)) }
-                            "mt" -> { val bottom=el.y+el.height; el.y=snapToGrid(unrot.y.coerceAtMost(bottom-20f)); el.height=snapToGrid((bottom-el.y).coerceAtLeast(20f)); el.fontSize=TextRenderer.autoFitFontSize(el.text,el.width,el.height,el.typeface); onTextSizePreview?.invoke(el.fontSize) }
-                            "mb" -> { el.height=snapToGrid((unrot.y-el.y).coerceAtLeast(20f)); el.fontSize=TextRenderer.autoFitFontSize(el.text,el.width,el.height,el.typeface); onTextSizePreview?.invoke(el.fontSize) }
+                            "mt" -> { val bottom=el.y+el.height; el.y=snapToGrid(unrot.y.coerceAtMost(bottom-20f)); el.height=snapToGrid((bottom-el.y).coerceAtLeast(20f)); el.fontSize=TextRenderer.autoFitFontSize(el.text,el.width,el.height,el.typeface,leading=el.leading,paragraphSpacing=el.paragraphSpacing); onTextSizePreview?.invoke(el.fontSize) }
+                            "mb" -> { el.height=snapToGrid((unrot.y-el.y).coerceAtLeast(20f)); el.fontSize=TextRenderer.autoFitFontSize(el.text,el.width,el.height,el.typeface,leading=el.leading,paragraphSpacing=el.paragraphSpacing); onTextSizePreview?.invoke(el.fontSize) }
                         }
                         if (handle in setOf("tl", "tr", "bl", "br")) onTextSizePreview?.invoke(el.fontSize)
                         invalidate()
@@ -2297,11 +2303,13 @@ class CanvasView @JvmOverloads constructor(
                                 corners[c*2+1] = cy + dx*sinR + dy*cosR
                             }
                         } else {
-                            // Normal mode: update rotation angle with snap
+                            // Normal mode: update rotation angle langsung (tanpa lag).
+                            // Snap kardinal hanya saat sangat dekat (≤2°) agar tidak lompat tiba-tiba.
                             val cx = el.x + el.width / 2f; val cy = el.y + el.height / 2f
                             val fingerAngle = atan2(pt.y - cy, pt.x - cx) * 180f / PI.toFloat()
                             val raw = rotStartAngle + (fingerAngle - rotStartFingerAngle)
-                            el.rotation = snapRotationToCardinal(smoothAngle(el.rotation, raw))
+                            el.rotation = snapRotationToCardinal(raw)
+                            onTextSizePreview?.invoke(el.fontSize)
                         }
                         invalidate()
                     }
@@ -3676,21 +3684,24 @@ class CanvasView @JvmOverloads constructor(
         img.y = img.y.coerceIn(0f, (canvasHeight - img.height).coerceAtLeast(0f))
     }
 
-    private fun smoothAngle(current: Float, target: Float, factor: Float = 0.35f): Float {
+    private fun smoothAngle(current: Float, target: Float, factor: Float = 1f): Float {
+        // FIX rotate: tanpa smoothing (factor=1) agar sudut mengikuti jari 1:1.
+        // Smoothing 0.35 dulu membuat sudut tertinggal/terbalik saat jari berbalik arah.
+        if (factor >= 1f) return target
         val delta = ((target - current + 540f) % 360f) - 180f
         return current + delta * factor
     }
 
     /**
-     * Force sudut ke 0/90/180/270 bila sudah dekat (≤4°) agar user mudah
-     * meluruskan teks tanpa presisi jari.
+     * Force sudut ke 0/90/180/270 bila sudah sangat dekat (≤2°) agar user mudah
+     * meluruskan teks tanpa presisi jari, tapi tidak lompat tiba-tiba.
      */
     private fun snapRotationToCardinal(deg: Float): Float {
         val n = ((deg % 360f) + 360f) % 360f
         for (snap in floatArrayOf(0f, 90f, 180f, 270f)) {
             var d = kotlin.math.abs(n - snap)
             if (d > 180f) d = 360f - d
-            if (d <= 4f) return snap
+            if (d <= 2f) return snap
         }
         return deg
     }
@@ -3817,12 +3828,16 @@ class CanvasView @JvmOverloads constructor(
     fun autoFitActiveText() {
         val el = textElements.find { it.id == activeTextId } ?: return
         pushTextHistory()
-        el.fontSize = TextRenderer.autoFitFontSize(el.text, el.width, el.height, el.typeface)
+        el.fontSize = TextRenderer.autoFitFontSize(
+            el.text, el.width, el.height, el.typeface,
+            leading = el.leading, paragraphSpacing = el.paragraphSpacing
+        )
         val fittedH = TextRenderer.computeWrappedHeight(
             el.text, el.fontSize, el.width, el.typeface,
             leading = el.leading, paragraphSpacing = el.paragraphSpacing
         )
         el.height   = fittedH.coerceAtLeast(el.fontSize * 1.3f)
+        onTextSizePreview?.invoke(el.fontSize)
         onTextHistoryPush?.invoke(); invalidate()
     }
 

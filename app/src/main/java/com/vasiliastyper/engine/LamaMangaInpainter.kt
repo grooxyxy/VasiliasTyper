@@ -14,16 +14,15 @@ import kotlin.math.floor
 import kotlin.math.min
 
 /**
- * Android inference pipeline for original LaMa (advimman/lama, Apache-2.0).
+ * Android inference pipeline for LaMa manga (ogkalu/lama-manga-onnx-dynamic, Apache-2.0).
  *
- * Model: Carve/LaMa-ONNX lama_fp32.onnx (fixed 512x512, opset 17).
+ * Model: lama-manga-dynamic.onnx (dinamis, opset 18).
  * Kontrak:
- *  image  float32 [1,3,512,512], RGB [0,1]
- *  mask   float32 [1,1,512,512], 1 = hole, 0 = keep
- *  output float32 [1,3,512,512], RGB [0,255] (otomatis dinormalisasi bila [0,1])
- * Ref kontrak terdokumentasi: sapienkit/LaMa-ONNX (turunan Carve, Apache-2.0).
- * Legacy manga (ogkalu dynamic, output inpainted [0,1]) tetap didukung baca
- * bila file lama masih ada, tapi bundle baru selalu model asli.
+ *  image  float32 [1,3,H,W], RGB [0,1]
+ *  mask   float32 [1,1,H,W], 1 = hole, 0 = keep
+ *  output inpainted float32 [1,3,H,W], RGB [0,1] (otomatis dinormalisasi bila [0,255])
+ * Legacy original fixed-512 (output [0,255]) tetap didukung baca
+ * bila file lama masih ada, tapi bundle baru selalu model manga.
  *
  * 720x16000+: region besar diproses via TilingEngine (tile 512 + overlap 64,
  * center-write) sehingga memori tetap ~1MB/tile, bukan 46MB full-strip.

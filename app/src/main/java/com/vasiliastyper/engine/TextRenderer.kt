@@ -548,12 +548,20 @@ private fun toTitleCase(text: String): String {
     private fun paragraphExtra(lines: List<String>, gap: Float): Float =
         if (gap == 0f) 0f else lines.count { it.isBlank() } * gap
 
-    /** FIX #3: leading langsung dipakai tanpa clamp 1.05× natural-height yang
-     * membuat 60%…120% terlihat sama (tidak berfungsi). Floor 1px agar -50%
-     * benar-benar rapat tapi tidak hilang/terbalik. */
+    /** FIX leading lintas-font: advance = naturalHeight (descent-ascent) * leading%.
+     * Dulu fontSize * p/100 sehingga font jangkung/pendek terlihat beda (120% di
+     * satu font renggang, di font lain tumpuk). 100% kini = single-spacing alami
+     * tiap font. Floor 1px agar -50% rapat tapi tidak hilang. */
     private fun lineAdvanceFor(fontSize: Float, leadingPercent: Float): Float {
         val p = leadingPercent.takeIf(Float::isFinite) ?: 120f
         return (fontSize * (p / 100f)).coerceAtLeast(1f)
+    }
+
+    private fun lineAdvanceForPaint(paint: Paint, leadingPercent: Float): Float {
+        val p = leadingPercent.takeIf(Float::isFinite) ?: 120f
+        val fm = paint.fontMetrics
+        val natural = (fm.descent - fm.ascent).coerceAtLeast(paint.textSize.coerceAtLeast(1f))
+        return (natural * (p / 100f)).coerceAtLeast(1f)
     }
 
     /** Pecah teks per paragraf lalu wrap tiap paragraf — dipakai semua renderer
@@ -578,10 +586,11 @@ private fun toTitleCase(text: String): String {
             this.typeface = typeface ?: Typeface.DEFAULT
         }
         val lines = wrapLines(text, paint, boxWidth)
-        // FIX #3: pakai leading murni + gap per '\n' agar keduanya berfungsi.
+        // FIX leading lintas-font: pakai natural height tiap ukuran font + gap per '\n'.
         val glyph = (paint.fontMetrics.descent - paint.fontMetrics.ascent).coerceAtLeast(1f)
         val gap = paragraphSpacing.takeIf(Float::isFinite)?.coerceIn(-50f, 50f) ?: 0f
-        val adv = lineAdvanceFor(fontSize, leading)
+        paint.textSize = fontSize
+        val adv = lineAdvanceForPaint(paint, leading)
         val total = glyph + (lines.size - 1).coerceAtLeast(0) * adv + paragraphExtraForText(text, gap)
         return total.coerceAtLeast(glyph)
     }
@@ -753,12 +762,14 @@ private fun toTitleCase(text: String): String {
     }
 
     private fun renderWarped(canvas: Canvas, element: TextElement, paint: Paint) {
-        // FIX #3: pakai leading murni + gap per paragraf.
-        val lineHeight  = lineAdvanceFor(element.fontSize, element.leading)
+        // FIX leading lintas-font: advance dari natural height paint aktif.
+        val lineHeight  = lineAdvanceForPaint(paint, element.leading)
         val paraGap     = paragraphGap(element)
         val paras = wrapParagraphs(element.text, paint, element.width, element.tracking)
-        val flatCount = paras.sumOf { it.size }.coerceAtLeast(1)
-        val totalHeight = (flatCount * lineHeight + paragraphExtraForText(element.text, paraGap)).coerceAtLeast(1f)
+        val flatLines = paras.flatten()
+        val fmW = paint.fontMetrics
+        val glyphH = (fmW.descent - fmW.ascent).coerceAtLeast(1f)
+        val totalHeight = (glyphH + (flatLines.size - 1).coerceAtLeast(0) * lineHeight + paragraphExtraForText(element.text, paraGap)).coerceAtLeast(1f)
         val amplitude   = element.fontSize * 0.15f
         val frequency   = PI / (element.fontSize * 2)
         val startY      = element.y + (element.height - totalHeight) / 2f + element.fontSize
@@ -814,9 +825,9 @@ private fun toTitleCase(text: String): String {
         val contentW = (element.width - insetX * 2f).coerceAtLeast(1f)
         val top = element.y + insetY
         val contentH = (element.height - insetY * 2f).coerceAtLeast(1f)
-        // FIX #3: leading murni + gap per '\n' (dulu max() 1.05× membuat leading tak berefek).
+        // FIX leading lintas-font: advance dari natural height paint aktif.
         val fm = paint.fontMetrics
-        val lineAdvance = lineAdvanceFor(element.fontSize, element.leading)
+        val lineAdvance = lineAdvanceForPaint(paint, element.leading)
         val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
         val paraGap = paragraphGap(element)
         val paras = wrapParagraphs(text, paint, contentW, element.tracking)
@@ -902,9 +913,9 @@ private fun toTitleCase(text: String): String {
         val contentW = (right - left).coerceAtLeast(1f)
         val contentH = (bottom - top).coerceAtLeast(1f)
 
-        // FIX #3: leading murni + gap per '\n'.
+        // FIX leading lintas-font: advance dari natural height paint aktif.
         val fm = paint.fontMetrics
-        val lineAdvance = lineAdvanceFor(element.fontSize, element.leading)
+        val lineAdvance = lineAdvanceForPaint(paint, element.leading)
         val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
         val paraGap = paragraphGap(element)
         val paras = wrapParagraphs(text, paint, contentW, element.tracking)
@@ -1059,8 +1070,8 @@ private fun toTitleCase(text: String): String {
 
         val lines = wrapLines(text, layoutPaint, contentW)
         val fm = layoutPaint.fontMetrics
-        // FIX #3: leading murni + gap per '\n'.
-        val lineAdvance = lineAdvanceFor(element.fontSize, element.leading)
+        // FIX leading lintas-font: advance dari natural height layoutPaint.
+        val lineAdvance = lineAdvanceForPaint(layoutPaint, element.leading)
         val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
         val paraGap = paragraphGap(element)
         val totalHeight = glyphHeight + (lines.size - 1).coerceAtLeast(0) * lineAdvance +
@@ -1207,7 +1218,8 @@ private fun toTitleCase(text: String): String {
         maxFontSize: Float = 120f,
         minFontSize: Float = 8f,
         leading: Float = 120f,
-        roundBubbleMode: Boolean = false
+        roundBubbleMode: Boolean = false,
+        paragraphSpacing: Float = 0f
     ): Float {
         if (boxWidth <= 0f || boxHeight <= 0f) return minFontSize
         if (text.isBlank()) return minFontSize
@@ -1232,10 +1244,12 @@ private fun toTitleCase(text: String): String {
             val fitH = if (roundBubbleMode) roundSafeSide else contentH
             val wrapped = wrapLines(text, paint, fitW)
             val fm = paint.fontMetrics
-            // FIX #3: leading murni agar auto-fit menghormati leading/paragraph.
-            val lineAdvance = lineAdvanceFor(size, leading)
+            // FIX leading lintas-font + paragraph agar auto-fit tidak overflow.
+            val lineAdvance = lineAdvanceForPaint(paint, leading)
             val glyphHeight = (fm.descent - fm.ascent).coerceAtLeast(1f)
-            val totalHeight = glyphHeight + (wrapped.size - 1).coerceAtLeast(0) * lineAdvance
+            val gap = paragraphSpacing.takeIf(Float::isFinite)?.coerceIn(-50f, 50f) ?: 0f
+            val totalHeight = glyphHeight + (wrapped.size - 1).coerceAtLeast(0) * lineAdvance +
+                paragraphExtraForText(text, gap)
             val maxLineW = wrapped.maxOfOrNull { paint.measureText(it) } ?: 0f
             return maxLineW <= fitW && totalHeight <= fitH
         }
@@ -1252,7 +1266,7 @@ private fun toTitleCase(text: String): String {
             val fitW = if (roundBubbleMode) roundSafeSide else contentW
             val fitH = if (roundBubbleMode) roundSafeSide else contentH
             val fm = paint.fontMetrics
-            val lineAdvance = lineAdvanceFor(paint.textSize, leading)
+            val lineAdvance = lineAdvanceForPaint(paint, leading)
             if (paint.measureText(text) <= fitW && lineAdvance <= fitH) {
                 return maxFontSize.coerceIn(minFontSize, maxFontSize)
             }

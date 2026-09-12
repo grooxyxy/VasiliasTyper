@@ -176,7 +176,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
-// ── Bubble YOLOv8m bundle (Drive milik user) + LaMa Original bundle (Hugging Face) ──
+// ── Bubble YOLOv8m bundle (Drive milik user) + LaMa Manga bundle (Hugging Face) ──
 // Task bundleBubbleModel menyediakan comic-speech-bubble-detector.onnx (~99MB)
 // di assets/models/bubble_yolov8m/v1/ SEBELUM build, dari salah satu sumber
 // (prioritas: file lokal > URL > default Drive):
@@ -184,12 +184,12 @@ dependencies {
 //  -PBUBBLE_MODEL_URL=https://.../bubble.onnx (atau env/secret BUBBLE_MODEL_URL)
 //  - default: Google Drive user (publik "Anyone with the link"), ID:
 //      13B42NV0mPPBzUUVsIvD4SvE3QXEaLOlv
-// Task bundleLamaModel menyediakan lama-fp32.onnx (original LaMa ~200MB,
-// Carve/LaMa-ONNX, Apache-2.0, fixed 512) di assets/models/lama/v1/ SEBELUM
+// Task bundleLamaModel menyediakan lama-manga-dynamic.onnx (LaMa manga ~40MB,
+// ogkalu/lama-manga-onnx-dynamic, Apache-2.0, dinamis) di assets/models/lama_manga/v1/ SEBELUM
 // build, dari salah satu sumber (prioritas: file lokal > URL > default HF):
-//  -PLAMA_MODEL_PATH=/lokal/lama-fp32.onnx (atau env)
-//  -PLAMA_MODEL_URL=https://.../lama_fp32.onnx (atau env/secret LAMA_MODEL_URL)
-//  - default: https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx
+//  -PLAMA_MODEL_PATH=/lokal/lama-manga-dynamic.onnx (atau env)
+//  -PLAMA_MODEL_URL=https://.../lama-manga-dynamic.onnx (atau env/secret LAMA_MODEL_URL)
+//  - default: https://huggingface.co/ogkalu/lama-manga-onnx-dynamic/resolve/main/lama-manga-dynamic.onnx
 // Kedua file TIDAK di-commit (*.onnx di .gitignore) tapi DIBUNDLE ke APK,
 // sehingga aplikasi tidak perlu download model tambahan saat runtime.
 // Model lain (PP-OCR/ComicTextDetector) tetap manual via Hugging Face sesuai
@@ -225,14 +225,14 @@ tasks.register("bundleBubbleModel") {
     }
 }
 
-// ── LaMa Original bundle (Hugging Face, langsung ke CI — tanpa download lokal) ──
-def lamaDefaultUrl = "https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx"
+// ── LaMa Manga bundle (Hugging Face, langsung ke CI — tanpa download lokal) ──
+def lamaDefaultUrl = "https://huggingface.co/ogkalu/lama-manga-onnx-dynamic/resolve/main/lama-manga-dynamic.onnx"
 def lamaModelPath = project.findProperty("LAMA_MODEL_PATH") ?: System.getenv("LAMA_MODEL_PATH") ?: ""
 def lamaModelUrl = project.findProperty("LAMA_MODEL_URL") ?: System.getenv("LAMA_MODEL_URL") ?: lamaDefaultUrl
-def lamaAsset = file("src/main/assets/models/lama/v1/lama-fp32.onnx")
+def lamaAsset = file("src/main/assets/models/lama_manga/v1/lama-manga-dynamic.onnx")
 
 tasks.register("bundleLamaModel") {
-    description = "Sediakan LaMa original .onnx di assets (path lokal, URL, atau HF default)."
+    description = "Sediakan LaMa manga .onnx di assets (path lokal, URL, atau HF default)."
     onlyIf { !lamaAsset.exists() || lamaAsset.length() == 0L }
     doLast {
         lamaAsset.parentFile?.mkdirs()
@@ -244,10 +244,10 @@ tasks.register("bundleLamaModel") {
             src.withInputStream { ins -> lamaAsset.withOutputStream { outs -> outs << ins } }
             println("bundleLamaModel: disalin dari $lamaModelPath")
         } else {
-            println("bundleLamaModel: mengunduh LaMa original (~200MB, sekali per mesin CI) ...")
+            println("bundleLamaModel: mengunduh LaMa manga (~40MB, sekali per mesin CI) ...")
             downloadDriveAware(lamaModelUrl.toString(), lamaAsset)
             def sz = lamaAsset.length()
-            if (sz <= 50L * 1024 * 1024) {
+            if (sz <= 10L * 1024 * 1024) {
                 lamaAsset.delete()
                 throw new GradleException("Unduhan LaMa mencurigakan (${sz} byte). " +
                     "Pastikan URL Hugging Face benar.")

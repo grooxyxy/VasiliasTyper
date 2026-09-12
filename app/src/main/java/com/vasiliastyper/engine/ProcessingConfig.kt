@@ -39,8 +39,8 @@ object ProcessingConfig {
         .coerceAtLeast(2).coerceAtMost(4)
 
     // ── Asset names ───────────────────────────────────────────────────────────
-    // Original LaMa (dibundle via CI bundleLamaModel, tanpa download in-app).
-    const val LAMA_ASSET = "models/lama/v1/lama-fp32.onnx"
-    @Deprecated("Gunakan LAMA_ASSET", ReplaceWith("LAMA_ASSET"))
+    // LaMa manga (dibundle via CI bundleLamaModel, tanpa download in-app).
     const val LAMA_MANGA_ASSET = "models/lama_manga/v1/lama-manga-dynamic.onnx"
+    @Deprecated("Gunakan LAMA_MANGA_ASSET", ReplaceWith("LAMA_MANGA_ASSET"))
+    const val LAMA_ASSET = "models/lama/v1/lama-fp32.onnx"
 }

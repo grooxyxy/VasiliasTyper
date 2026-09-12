@@ -36,12 +36,12 @@ jobs:
           chmod +x gradlew
           ./gradlew :app:bundleBubbleModel --no-daemon --stacktrace
 
-      - name: Bundle LaMa Original (HF default / secret)
-        # Model asli Carve/LaMa-ONNX lama_fp32.onnx (~200MB, Apache-2.0, fixed 512).
+      - name: Bundle LaMa Manga (HF default / secret)
+        # Model manga ogkalu/lama-manga-onnx-dynamic (~40MB, Apache-2.0, dinamis).
         # Langsung diunduh ke GitHub (sesuai permintaan: jangan download lokal),
         # lalu dibundle ke APK sehingga aplikasi tanpa download tambahan.
         # Sumber (prioritas: LAMA_MODEL_PATH > LAMA_MODEL_URL > HF default):
-        # - LAMA_MODEL_URL = secret repo opsional berisi link lama_fp32.onnx.
+        # - LAMA_MODEL_URL = secret repo opsional berisi link lama-manga-dynamic.onnx.
         env:
           LAMA_MODEL_URL: ${{ secrets.LAMA_MODEL_URL }}
         run: |

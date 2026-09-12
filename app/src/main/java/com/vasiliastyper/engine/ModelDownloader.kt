@@ -6,44 +6,44 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
-/** Downloads the Apache-2.0 original LaMa ONNX model from Hugging Face (bundled via CI). */
+/** Downloads the Apache-2.0 LaMa manga ONNX model from Hugging Face (bundled via CI). */
 object ModelDownloader {
     private const val TAG = "ModelDownloader"
-    const val MODEL_KEY = "lama"
+    const val MODEL_KEY = "lama_manga"
     const val MODEL_VERSION = 1
-    const val LAMA_FILENAME = "lama-fp32.onnx"
-    // Original LaMa (advimman/lama, Apache-2.0), port ONNX Carve/LaMa-ONNX.
-    // Fixed 512x512, opset 17. Kontrak: image [1,3,512,512] RGB /255,
-    // mask [1,1,512,512] 1=erase, output [1,3,512,512] RGB [0,255].
-    // Ref kontrak terdokumentasi: sapienkit/LaMa-ONNX (turunan Carve, Apache-2.0).
+    const val LAMA_FILENAME = "lama-manga-dynamic.onnx"
+    // LaMa manga (ogkalu/lama-manga-onnx-dynamic, Apache-2.0), ONNX dinamis.
+    // Kontrak: image [1,3,H,W] RGB /255, mask [1,1,H,W] 1=erase,
+    // output inpainted [1,3,H,W] RGB [0,1] (otomatis dinormalisasi bila [0,255]).
     const val LAMA_URL =
-        "https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx"
-
-    // Legacy manga names — tetap didukung baca agar file lama tidak crash,
-    // tapi unduhan/bundle baru selalu memakai model asli di atas.
-    @Deprecated("Gunakan LAMA_FILENAME", ReplaceWith("LAMA_FILENAME"))
-    const val LAMA_MANGA_FILENAME = "lama-manga-dynamic.onnx"
-    private const val LEGACY_MODEL_KEY = "lama_manga"
-    private const val LEGACY_URL =
         "https://huggingface.co/ogkalu/lama-manga-onnx-dynamic/resolve/main/lama-manga-dynamic.onnx"
 
-    // Model asli ~200MB single-file. Tolak HTML/error-page (<50MB).
-    const val MIN_MODEL_BYTES = 50_000_000L
+    // Legacy original LaMa — tetap didukung baca agar file lama tidak crash,
+    // tapi unduhan/bundle baru selalu memakai model manga di atas.
+    @Deprecated("Gunakan LAMA_FILENAME", ReplaceWith("LAMA_FILENAME"))
+    const val LAMA_MANGA_FILENAME = "lama-manga-dynamic.onnx"
+    private const val LEGACY_MODEL_KEY = "lama"
+    private const val LEGACY_FILENAME = "lama-fp32.onnx"
+    private const val LEGACY_URL =
+        "https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx"
 
-    private val models = listOf(
-        ModelInfo(
-            filename = LAMA_FILENAME,
-            url = LAMA_URL,
-            displayName = "LaMa ONNX Original",
-            sizeDesc = "~200 MiB"
-        )
-    )
+    // Model manga ~30-60MB single-file. Tolak HTML/error-page (<10MB).
+    const val MIN_MODEL_BYTES = 10_000_000L
 
     data class ModelInfo(
         val filename: String,
         val url: String,
         val displayName: String,
         val sizeDesc: String
+    )
+
+    private val models = listOf(
+        ModelInfo(
+            filename = LAMA_FILENAME,
+            url = LAMA_URL,
+            displayName = "LaMa Manga ONNX",
+            sizeDesc = "~40 MiB"
+        )
     )
 
     data class DownloadStatus(val lamaMangaReady: Boolean) {
@@ -65,9 +65,9 @@ object ModelDownloader {
 
     fun isLamaMangaReady(context: Context): Boolean {
         if (isValidLamaMangaFile(lamaMangaFile(context))) return true
-        // Legacy file lama_manga tetap dianggap ready agar tidak crash pasca-migrasi.
+        // Legacy file lama original tetap dianggap ready agar tidak crash pasca-migrasi.
         try {
-            val legacy = File(context.filesDir, "models/$LEGACY_MODEL_KEY/v$MODEL_VERSION/$LAMA_MANGA_FILENAME")
+            val legacy = File(context.filesDir, "models/$LEGACY_MODEL_KEY/v$MODEL_VERSION/$LEGACY_FILENAME")
             if (isValidLamaMangaFile(legacy)) return true
         } catch (_: Exception) { }
         return assetCandidates().any { assetPath ->
@@ -121,10 +121,10 @@ object ModelDownloader {
         "models/$MODEL_KEY/v$MODEL_VERSION/$LAMA_FILENAME",
         "models/$MODEL_KEY/$LAMA_FILENAME",
         LAMA_FILENAME,
-        // Legacy manga paths (baca saja, bundle baru memakai path lama/* di atas).
-        "models/$LEGACY_MODEL_KEY/v$MODEL_VERSION/$LAMA_MANGA_FILENAME",
-        "models/$LEGACY_MODEL_KEY/$LAMA_MANGA_FILENAME",
-        LAMA_MANGA_FILENAME
+        // Legacy original paths (baca saja, bundle baru memakai path lama_manga/* di atas).
+        "models/$LEGACY_MODEL_KEY/v$MODEL_VERSION/$LEGACY_FILENAME",
+        "models/$LEGACY_MODEL_KEY/$LEGACY_FILENAME",
+        LEGACY_FILENAME
     )
 
     private fun downloadFile(
