@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -53,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -103,8 +105,13 @@ internal data class ToolItem(
     val id: String,
     val label: String,
     val category: String,
-    val iconGlyph: String = ""
+    val vectorType: VectorToolType
 )
+
+internal enum class VectorToolType {
+    BRUSH, TEXT, TEXT_SHAPER, MOVE_CANVAS, MOVE_ELEMENT, RECT_SELECT, FREE_SELECT, MAGIC_WAND,
+    REMOVR, CLEAN_BUBBLE, TRANSLATE, OCR, MASK, SCRIPT, VASTYPE, AI_CHAT, WATERMARK, UNWATERMARK, MORE
+}
 
 @Composable
 internal fun EditorComposeOverlay(
@@ -230,15 +237,15 @@ internal fun EditorComposeOverlay(
 
             // Clean Mobile Bottom Navigation Tool Bar
             val quickTools = listOf(
-                ToolItem("toolBrush", "Kuas", "LUKIS", "🖌️"),
-                ToolItem("toolText", "Teks", "LUKIS", "📝"),
-                ToolItem("toolFreeSelect", "Lasso", "SELEKSI", "✏️"),
-                ToolItem("toolMagicWand", "Wand", "SELEKSI", "🪄"),
-                ToolItem("toolRemovR", "RemovR", "CLEANUP", "🧹"),
-                ToolItem("toolBubbleClean", "Clean", "CLEANUP", "🫧"),
-                ToolItem("toolBubbleTranslate", "Terjemah", "MANGA", "🌐"),
-                ToolItem("toolOcrPanel", "OCR", "MANGA", "🔍"),
-                ToolItem("toolAiChat", "AI Studio", "AI", "🤖")
+                ToolItem("toolBrush", "Kuas", "LUKIS", VectorToolType.BRUSH),
+                ToolItem("toolText", "Teks", "LUKIS", VectorToolType.TEXT),
+                ToolItem("toolFreeSelect", "Lasso", "SELEKSI", VectorToolType.FREE_SELECT),
+                ToolItem("toolMagicWand", "Wand", "SELEKSI", VectorToolType.MAGIC_WAND),
+                ToolItem("toolRemovR", "RemovR", "CLEANUP", VectorToolType.REMOVR),
+                ToolItem("toolBubbleClean", "Clean", "CLEANUP", VectorToolType.CLEAN_BUBBLE),
+                ToolItem("toolBubbleTranslate", "Terjemah", "MANGA", VectorToolType.TRANSLATE),
+                ToolItem("toolOcrPanel", "OCR", "MANGA", VectorToolType.OCR),
+                ToolItem("toolAiChat", "AI Studio", "AI", VectorToolType.AI_CHAT)
             )
 
             Surface(
@@ -267,6 +274,7 @@ internal fun EditorComposeOverlay(
                     ) {
                         quickTools.forEach { tool ->
                             val isSelected = tool.id == selectedToolId
+                            val iconColor = if (isSelected) Color(0xFF4FD6B8) else Color(0xFFEBF1F4)
                             Surface(
                                 modifier = Modifier
                                     .height(44.dp)
@@ -284,7 +292,11 @@ internal fun EditorComposeOverlay(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Text(tool.iconGlyph, fontSize = 16.sp)
+                                    CustomToolIcon(
+                                        type = tool.vectorType,
+                                        tint = iconColor,
+                                        modifier = Modifier.size(18.dp)
+                                    )
                                     Text(
                                         text = tool.label,
                                         color = if (isSelected) Color(0xFF4FD6B8) else Color(0xFFEBF1F4),
@@ -309,7 +321,11 @@ internal fun EditorComposeOverlay(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                LayerGlyph(LayerGlyphType.MORE, Color(0xFF4FD6B8), Modifier.size(16.dp))
+                                CustomToolIcon(
+                                    type = VectorToolType.MORE,
+                                    tint = Color(0xFF4FD6B8),
+                                    modifier = Modifier.size(16.dp)
+                                )
                                 Text(
                                     text = "Lainnya",
                                     color = Color.White,
@@ -360,30 +376,130 @@ internal fun EditorComposeOverlay(
 }
 
 @Composable
+private fun CustomToolIcon(
+    type: VectorToolType,
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val stroke = (minOf(w, h) * 0.1f).coerceAtLeast(1.8f)
+        fun line(a: Offset, b: Offset) = drawLine(tint, a, b, stroke, StrokeCap.Round)
+
+        when (type) {
+            VectorToolType.BRUSH -> {
+                line(Offset(w * 0.2f, h * 0.8f), Offset(w * 0.7f, h * 0.3f))
+                line(Offset(w * 0.7f, h * 0.3f), Offset(w * 0.85f, h * 0.15f))
+                drawCircle(tint, radius = stroke * 1.2f, center = Offset(w * 0.18f, h * 0.82f))
+            }
+            VectorToolType.TEXT -> {
+                line(Offset(w * 0.2f, h * 0.2f), Offset(w * 0.8f, h * 0.2f))
+                line(Offset(w * 0.5f, h * 0.2f), Offset(w * 0.5f, h * 0.85f))
+                line(Offset(w * 0.35f, h * 0.85f), Offset(w * 0.65f, h * 0.85f))
+            }
+            VectorToolType.TEXT_SHAPER -> {
+                line(Offset(w * 0.2f, h * 0.25f), Offset(w * 0.8f, h * 0.25f))
+                line(Offset(w * 0.5f, h * 0.25f), Offset(w * 0.5f, h * 0.8f))
+                drawCircle(tint, radius = stroke * 1.1f, center = Offset(w * 0.82f, h * 0.18f))
+            }
+            VectorToolType.MOVE_CANVAS -> {
+                line(Offset(w * 0.2f, h * 0.5f), Offset(w * 0.8f, h * 0.5f))
+                line(Offset(w * 0.5f, h * 0.2f), Offset(w * 0.5f, h * 0.8f))
+            }
+            VectorToolType.MOVE_ELEMENT -> {
+                drawCircle(tint, radius = w * 0.25f, center = Offset(w / 2f, h / 2f), style = Stroke(stroke))
+                drawCircle(tint, radius = stroke * 0.8f, center = Offset(w / 2f, h / 2f))
+            }
+            VectorToolType.RECT_SELECT -> {
+                drawRoundRect(tint, Offset(w * 0.18f, h * 0.18f), Size(w * 0.64f, h * 0.64f), androidx.compose.ui.geometry.CornerRadius(w * 0.08f), style = Stroke(stroke))
+            }
+            VectorToolType.FREE_SELECT -> {
+                line(Offset(w * 0.2f, h * 0.3f), Offset(w * 0.5f, h * 0.15f))
+                line(Offset(w * 0.5f, h * 0.15f), Offset(w * 0.8f, h * 0.4f))
+                line(Offset(w * 0.8f, h * 0.4f), Offset(w * 0.6f, h * 0.85f))
+                line(Offset(w * 0.6f, h * 0.85f), Offset(w * 0.2f, h * 0.3f))
+            }
+            VectorToolType.MAGIC_WAND -> {
+                line(Offset(w * 0.2f, h * 0.8f), Offset(w * 0.65f, h * 0.35f))
+                drawCircle(tint, radius = stroke * 1.2f, center = Offset(w * 0.8f, h * 0.2f))
+            }
+            VectorToolType.REMOVR -> {
+                line(Offset(w * 0.2f, h * 0.7f), Offset(w * 0.7f, h * 0.2f))
+                drawRect(tint, Offset(w * 0.15f, h * 0.65f), Size(w * 0.3f, h * 0.2f), style = Stroke(stroke))
+            }
+            VectorToolType.CLEAN_BUBBLE -> {
+                drawCircle(tint, radius = w * 0.32f, center = Offset(w * 0.45f, h * 0.45f), style = Stroke(stroke))
+                drawCircle(tint, radius = w * 0.12f, center = Offset(w * 0.72f, h * 0.28f), style = Stroke(stroke))
+            }
+            VectorToolType.TRANSLATE -> {
+                drawCircle(tint, radius = w * 0.36f, center = Offset(w / 2f, h / 2f), style = Stroke(stroke))
+                line(Offset(w * 0.14f, h * 0.5f), Offset(w * 0.86f, h * 0.5f))
+            }
+            VectorToolType.OCR -> {
+                drawRoundRect(tint, Offset(w * 0.15f, h * 0.15f), Size(w * 0.7f, h * 0.7f), androidx.compose.ui.geometry.CornerRadius(w * 0.08f), style = Stroke(stroke))
+                line(Offset(w * 0.3f, h * 0.4f), Offset(w * 0.7f, h * 0.4f))
+                line(Offset(w * 0.3f, h * 0.6f), Offset(w * 0.6f, h * 0.6f))
+            }
+            VectorToolType.MASK -> {
+                drawRoundRect(tint, Offset(w * 0.2f, h * 0.25f), Size(w * 0.6f, h * 0.5f), androidx.compose.ui.geometry.CornerRadius(w * 0.25f), style = Stroke(stroke))
+            }
+            VectorToolType.SCRIPT -> {
+                line(Offset(w * 0.25f, h * 0.2f), Offset(w * 0.75f, h * 0.2f))
+                line(Offset(w * 0.25f, h * 0.5f), Offset(w * 0.75f, h * 0.5f))
+                line(Offset(w * 0.25f, h * 0.8f), Offset(w * 0.55f, h * 0.8f))
+            }
+            VectorToolType.VASTYPE -> {
+                line(Offset(w * 0.2f, h * 0.8f), Offset(w * 0.5f, h * 0.2f))
+                line(Offset(w * 0.5f, h * 0.2f), Offset(w * 0.8f, h * 0.8f))
+                line(Offset(w * 0.32f, h * 0.6f), Offset(w * 0.68f, h * 0.6f))
+            }
+            VectorToolType.AI_CHAT -> {
+                drawRoundRect(tint, Offset(w * 0.15f, h * 0.2f), Size(w * 0.7f, h * 0.5f), androidx.compose.ui.geometry.CornerRadius(w * 0.12f), style = Stroke(stroke))
+                line(Offset(w * 0.3f, h * 0.7f), Offset(w * 0.2f, h * 0.88f))
+            }
+            VectorToolType.WATERMARK -> {
+                drawCircle(tint, radius = w * 0.28f, center = Offset(w / 2f, h * 0.55f), style = Stroke(stroke))
+                line(Offset(w / 2f, h * 0.15f), Offset(w / 2f, h * 0.27f))
+            }
+            VectorToolType.UNWATERMARK -> {
+                drawCircle(tint, radius = w * 0.28f, center = Offset(w / 2f, h * 0.55f), style = Stroke(stroke))
+                line(Offset(w * 0.2f, h * 0.2f), Offset(w * 0.8f, h * 0.8f))
+            }
+            VectorToolType.MORE -> {
+                listOf(0.25f, 0.5f, 0.75f).forEach { y ->
+                    drawCircle(tint, radius = stroke * 0.75f, center = Offset(w / 2f, h * y))
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun IbisToolPickerSheet(
     selectedToolId: String,
     onDismiss: () -> Unit,
     onSelectTool: (String) -> Unit
 ) {
     val tools = listOf(
-        ToolItem("toolBrush", "Brush", "LUKIS", "🖌️"),
-        ToolItem("toolText", "Teks", "LUKIS", "📝"),
-        ToolItem("toolTextShaper", "Text Shaper", "LUKIS", "✨"),
-        ToolItem("toolMove", "Geser Canvas", "NAVIGASI", "✋"),
-        ToolItem("toolMoveElement", "Geser Elemen", "NAVIGASI", "🎯"),
-        ToolItem("toolRectSelect", "Seleksi Kotak", "SELEKSI", "🔲"),
-        ToolItem("toolFreeSelect", "Lasso", "SELEKSI", "✏️"),
-        ToolItem("toolMagicWand", "Tongkat Sihir", "SELEKSI", "🪄"),
-        ToolItem("toolRemovR", "RemovR", "CLEANUP", "🧹"),
-        ToolItem("toolBubbleClean", "Clean Bubble", "CLEANUP", "🫧"),
-        ToolItem("toolBubbleTranslate", "Terjemah", "MANGA", "🌐"),
-        ToolItem("toolOcrPanel", "OCR Studio", "MANGA", "🔍"),
-        ToolItem("toolMask", "Auto Mask", "MANGA", "🎭"),
-        ToolItem("toolScript", "Script Workspace", "MANGA", "📑"),
-        ToolItem("toolVasType", "VasType", "MANGA", "🎨"),
-        ToolItem("toolAiChat", "AI Studio", "AI", "🤖"),
-        ToolItem("toolWatermark", "Watermark", "UTILITY", "💧"),
-        ToolItem("toolUnwatermark", "Unwatermark", "UTILITY", "⚡")
+        ToolItem("toolBrush", "Brush", "LUKIS", VectorToolType.BRUSH),
+        ToolItem("toolText", "Teks", "LUKIS", VectorToolType.TEXT),
+        ToolItem("toolTextShaper", "Text Shaper", "LUKIS", VectorToolType.TEXT_SHAPER),
+        ToolItem("toolMove", "Geser Canvas", "NAVIGASI", VectorToolType.MOVE_CANVAS),
+        ToolItem("toolMoveElement", "Geser Elemen", "NAVIGASI", VectorToolType.MOVE_ELEMENT),
+        ToolItem("toolRectSelect", "Seleksi Kotak", "SELEKSI", VectorToolType.RECT_SELECT),
+        ToolItem("toolFreeSelect", "Lasso", "SELEKSI", VectorToolType.FREE_SELECT),
+        ToolItem("toolMagicWand", "Tongkat Sihir", "SELEKSI", VectorToolType.MAGIC_WAND),
+        ToolItem("toolRemovR", "RemovR", "CLEANUP", VectorToolType.REMOVR),
+        ToolItem("toolBubbleClean", "Clean Bubble", "CLEANUP", VectorToolType.CLEAN_BUBBLE),
+        ToolItem("toolBubbleTranslate", "Terjemah", "MANGA", VectorToolType.TRANSLATE),
+        ToolItem("toolOcrPanel", "OCR Studio", "MANGA", VectorToolType.OCR),
+        ToolItem("toolMask", "Auto Mask", "MANGA", VectorToolType.MASK),
+        ToolItem("toolScript", "Script Workspace", "MANGA", VectorToolType.SCRIPT),
+        ToolItem("toolVasType", "VasType", "MANGA", VectorToolType.VASTYPE),
+        ToolItem("toolAiChat", "AI Studio", "AI", VectorToolType.AI_CHAT),
+        ToolItem("toolWatermark", "Watermark", "UTILITY", VectorToolType.WATERMARK),
+        ToolItem("toolUnwatermark", "Unwatermark", "UTILITY", VectorToolType.UNWATERMARK)
     )
 
     ElevatedCard(
@@ -439,6 +555,7 @@ private fun IbisToolPickerSheet(
                         ) {
                             items.forEach { tool ->
                                 val isSelected = tool.id == selectedToolId
+                                val iconColor = if (isSelected) Color(0xFF4FD6B8) else Color(0xFFEBF1F4)
                                 Surface(
                                     modifier = Modifier
                                         .width(96.dp)
@@ -457,7 +574,11 @@ private fun IbisToolPickerSheet(
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.Center
                                     ) {
-                                        Text(tool.iconGlyph.ifEmpty { "🛠️" }, fontSize = 20.sp)
+                                        CustomToolIcon(
+                                            type = tool.vectorType,
+                                            tint = iconColor,
+                                            modifier = Modifier.size(22.dp)
+                                        )
                                         Spacer(Modifier.height(4.dp))
                                         Text(
                                             tool.label,

@@ -5072,25 +5072,27 @@ class MainActivity : AppCompatActivity() {
                 onToggleToolPicker = { composeToolPickerOpen.value = !composeToolPickerOpen.value },
                 onSelectToolById = { toolId ->
                     composeSelectedToolId.value = toolId
-                    when (toolId) {
-                        "toolMove" -> binding.toolMove.performClick()
-                        "toolMoveElement" -> binding.toolMoveElement.performClick()
-                        "toolRectSelect" -> binding.toolRectSelect.performClick()
-                        "toolFreeSelect" -> binding.toolFreeSelect.performClick()
-                        "toolMagicWand" -> binding.toolMagicWand.performClick()
-                        "toolBubbleClean" -> binding.toolBubbleClean.performClick()
-                        "toolBubbleTranslate" -> binding.toolBubbleTranslate.performClick()
-                        "toolBrush" -> binding.toolBrush.performClick()
-                        "toolRemovR" -> binding.toolRemovR.performClick()
-                        "toolText" -> binding.toolText.performClick()
-                        "toolTextShaper" -> binding.toolTextShaper.performClick()
-                        "toolOcrPanel" -> binding.toolOcrPanel.performClick()
-                        "toolMask" -> binding.toolMask.performClick()
-                        "toolScript" -> binding.toolScript.performClick()
-                        "toolVasType" -> binding.toolVasType.performClick()
-                        "toolAiChat" -> binding.toolAiChat.performClick()
-                        "toolWatermark" -> binding.toolWatermark.performClick()
-                        "toolUnwatermark" -> binding.toolUnwatermark.performClick()
+                    binding.editorComposeOverlay.post {
+                        when (toolId) {
+                            "toolMove" -> binding.toolMove.performClick()
+                            "toolMoveElement" -> binding.toolMoveElement.performClick()
+                            "toolRectSelect" -> binding.toolRectSelect.performClick()
+                            "toolFreeSelect" -> binding.toolFreeSelect.performClick()
+                            "toolMagicWand" -> binding.toolMagicWand.performClick()
+                            "toolBubbleClean" -> binding.toolBubbleClean.performClick()
+                            "toolBubbleTranslate" -> binding.toolBubbleTranslate.performClick()
+                            "toolBrush" -> binding.toolBrush.performClick()
+                            "toolRemovR" -> binding.toolRemovR.performClick()
+                            "toolText" -> binding.toolText.performClick()
+                            "toolTextShaper" -> binding.toolTextShaper.performClick()
+                            "toolOcrPanel" -> binding.toolOcrPanel.performClick()
+                            "toolMask" -> binding.toolMask.performClick()
+                            "toolScript" -> binding.toolScript.performClick()
+                            "toolVasType" -> binding.toolVasType.performClick()
+                            "toolAiChat" -> binding.toolAiChat.performClick()
+                            "toolWatermark" -> binding.toolWatermark.performClick()
+                            "toolUnwatermark" -> binding.toolUnwatermark.performClick()
+                        }
                     }
                 },
                 onUndo = { doUndo() },
