@@ -99,6 +99,13 @@ internal data class BrushUiState(
     val flow: Float = 100f
 )
 
+internal data class ToolItem(
+    val id: String,
+    val label: String,
+    val category: String,
+    val iconGlyph: String = ""
+)
+
 @Composable
 internal fun EditorComposeOverlay(
     layersOpen: Boolean,
@@ -130,7 +137,15 @@ internal fun EditorComposeOverlay(
     onBrushStabilizer: (Float) -> Unit,
     onBrushForceFade: (Float) -> Unit,
     onBrushSpacing: (Float) -> Unit,
-    onBrushFlow: (Float) -> Unit
+    onBrushFlow: (Float) -> Unit,
+    // IbisPaint-style Tool Picker Bottom Sheet State & Callbacks
+    toolPickerOpen: Boolean = false,
+    selectedToolId: String = "toolBrush",
+    onToggleToolPicker: () -> Unit = {},
+    onSelectToolById: (String) -> Unit = {},
+    // Quick Action Bar Triggers
+    onUndo: () -> Unit = {},
+    onRedo: () -> Unit = {}
 ) {
     MaterialTheme(
         colorScheme = darkColorScheme(
@@ -213,6 +228,190 @@ internal fun EditorComposeOverlay(
                     expanded = layersOpen,
                     onClick = onToggleLayers
                 )
+            }
+
+            // Clean IbisPaint-Style Bottom Navigation Bar
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(58.dp),
+                color = Color(0xFF13171C),
+                tonalElevation = 12.dp,
+                shadowElevation = 16.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Tool Picker Button (IbisPaint Style)
+                    Surface(
+                        modifier = Modifier
+                            .height(42.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable(onClick = onToggleToolPicker)
+                            .border(1.dp, Color(0xFF35444D), RoundedCornerShape(12.dp)),
+                        color = Color(0xFF1A2129)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            LayerGlyph(LayerGlyphType.MORE, Color(0xFF4FD6B8), Modifier.size(18.dp))
+                            Text(
+                                text = "ALAT",
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    // Undo & Redo Quick Triggers
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        IconButton(onClick = onUndo, modifier = Modifier.size(40.dp)) {
+                            LayerGlyph(LayerGlyphType.MOVE_DOWN, Color(0xFFEBF1F4), Modifier.size(18.dp))
+                        }
+                        IconButton(onClick = onRedo, modifier = Modifier.size(40.dp)) {
+                            LayerGlyph(LayerGlyphType.MOVE_UP, Color(0xFFEBF1F4), Modifier.size(18.dp))
+                        }
+                    }
+                }
+            }
+
+            // IbisPaint Tool Picker Bottom Sheet Dialog Grid
+            if (toolPickerOpen) {
+                IbisToolPickerSheet(
+                    selectedToolId = selectedToolId,
+                    onDismiss = onToggleToolPicker,
+                    onSelectTool = { toolId ->
+                        onSelectToolById(toolId)
+                        onToggleToolPicker()
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun IbisToolPickerSheet(
+    selectedToolId: String,
+    onDismiss: () -> Unit,
+    onSelectTool: (String) -> Unit
+) {
+    val tools = listOf(
+        ToolItem("toolBrush", "Brush", "LUKIS", "🖌️"),
+        ToolItem("toolText", "Teks", "LUKIS", "📝"),
+        ToolItem("toolTextShaper", "Text Shaper", "LUKIS", "✨"),
+        ToolItem("toolMove", "Geser Canvas", "NAVIGASI", "✋"),
+        ToolItem("toolMoveElement", "Geser Elemen", "NAVIGASI", "🎯"),
+        ToolItem("toolRectSelect", "Seleksi Kotak", "SELEKSI", "🔲"),
+        ToolItem("toolFreeSelect", "Lasso", "SELEKSI", "✏️"),
+        ToolItem("toolMagicWand", "Tongkat Sihir", "SELEKSI", "🪄"),
+        ToolItem("toolRemovR", "RemovR", "CLEANUP", "🧹"),
+        ToolItem("toolBubbleClean", "Clean Bubble", "CLEANUP", "🫧"),
+        ToolItem("toolBubbleTranslate", "Terjemah", "MANGA", "🌐"),
+        ToolItem("toolOcrPanel", "OCR Studio", "MANGA", "🔍"),
+        ToolItem("toolMask", "Auto Mask", "MANGA", "🎭"),
+        ToolItem("toolScript", "Script Workspace", "MANGA", "📑"),
+        ToolItem("toolVasType", "VasType", "MANGA", "🎨"),
+        ToolItem("toolAiChat", "AI Studio", "AI", "🤖"),
+        ToolItem("toolWatermark", "Watermark", "UTILITY", "💧"),
+        ToolItem("toolUnwatermark", "Unwatermark", "UTILITY", "⚡")
+    )
+
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 420.dp),
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .background(Color(0xFF13171C))
+                .border(1.dp, Color(0xFF2A333C), RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "PILIH ALAT",
+                    color = Color(0xFF4FD6B8),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.2.sp
+                )
+                IconButton(onClick = onDismiss) {
+                    LayerGlyph(LayerGlyphType.CLOSE, Color(0xFFB8B5C2), Modifier.size(20.dp))
+                }
+            }
+
+            HorizontalDivider(color = Color(0xFF2A333C), modifier = Modifier.padding(vertical = 12.dp))
+
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                val grouped = tools.groupBy { it.category }
+                grouped.forEach { (category, items) ->
+                    item {
+                        Text(
+                            text = category,
+                            color = Color(0xFF8F8B99),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items.forEach { tool ->
+                                val isSelected = tool.id == selectedToolId
+                                Surface(
+                                    modifier = Modifier
+                                        .width(96.dp)
+                                        .height(72.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable { onSelectTool(tool.id) }
+                                        .border(
+                                            1.dp,
+                                            if (isSelected) Color(0xFF4FD6B8) else Color(0xFF2A333C),
+                                            RoundedCornerShape(12.dp)
+                                        ),
+                                    color = if (isSelected) Color(0xFF1E3A34) else Color(0xFF1A2129)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.fillMaxSize(),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(tool.iconGlyph.ifEmpty { "🛠️" }, fontSize = 20.sp)
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(
+                                            tool.label,
+                                            color = if (isSelected) Color(0xFF4FD6B8) else Color(0xFFEBF1F4),
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
